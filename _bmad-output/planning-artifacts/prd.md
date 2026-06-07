@@ -84,7 +84,7 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - H1 — Le MVP cible un coach indépendant désigné, pas une marketplace multi-coachs.
 - H2 — En P0, l’association élève/coach est directe: comme il n’y a qu’un coach, tous les élèves de l’application sont visibles par ce coach.
 - H3 — Une réservation élève crée une demande que le coach doit valider ou refuser.
-- H4 — Une demande en attente bloque le créneau pour les autres élèves jusqu’à validation, refus ou expiration.
+- H4 — Un créneau peut recevoir jusqu’à 2 demandes en attente; une réservation confirmée bloque ensuite définitivement le créneau pour les autres élèves.
 - H5 — Les annulations et modifications de réservation sont P0.
 - H6 — Les notifications push coach sont P0 pour les nouvelles demandes.
 - H7 — Le paiement intégré est hors MVP.
@@ -102,6 +102,7 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - H19 — La priorité produit est l’expérience coach, avec rapidité de réservation et simplicité de planning.
 - H20 — Une demande expire automatiquement après 7 jours si le coach ne répond pas.
 - H21 — Un élève peut avoir plusieurs demandes en parallèle, avec une limite P0 de 10 demandes en attente (`pending`) auprès du coach.
+- H21b — Un même créneau peut avoir au maximum 2 demandes en attente (`pending`) avant décision coach.
 - H22 — En P1/futur, le coach pourra donner un lien d’invitation ou un code pour que l’élève l’ajoute dans l’application.
 - H23 — Le libellé affiché côté élève après envoi d’une demande est `demande envoyée`.
 - H24 — Un élève peut demander un cours collectif en sélectionnant des joueurs de l’application.
@@ -110,12 +111,24 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - H27 — Coach et élève disposent d’un onglet Notifications listant les notifications in-app, même si l’utilisateur refuse les notifications push système.
 - H27b — Toute notification push déclenchée doit aussi créer une notification in-app visible dans l’onglet Notifications.
 - H28 — L’interface utilise une identité visuelle Roland-Garros premium avec ocre terre battue, vert profond et fonds chauds.
-- H29 — Le planning coach P0 propose deux vues: jour et semaine, avec un bouton pour changer de mode.
+- H29 — Le planning coach P0 propose deux vues: semaine et jour, avec la vue semaine prioritaire/par défaut et un bouton pour changer de mode.
 - H30 — La validation ou le refus d’une demande `pending` se fait depuis l’écran de détail de la demande.
 - H31 — Le revenu affiché dans les statistiques coach doit être explicitement libellé `revenu estimé`.
 - H32 — Côté élève, l’agenda de la page principale affiche exclusivement les disponibilités demandables et les cours de cet élève.
 - H33 — En P1, le coach pourra limiter l’horizon de visibilité des disponibilités côté élève: 1 semaine, 2 semaines, 3 semaines, 1 mois, 2 mois, 3 mois ou non défini (`pas set`).
 - H34 — Le coach peut créer un cours individuel en P0, en plus des cours collectifs.
+- H35 — Le coach peut créer un cours récurrent hebdomadaire en P0; l’élève ne peut pas créer de demande récurrente.
+- H36 — Le profil élève côté coach doit afficher un historique exploitable des cours, demandes, annulations, modifications et packs.
+- H37 — Le coach peut rattacher un pack de cours individuels à un élève en P0 pour suivre les crédits/consommations, sans paiement intégré.
+- H38 — La génération de facture est une évolution V2, hors P0/P1.
+- H39 — Seul le coach peut donner/rattacher un pack de cours individuels à un élève.
+- H40 — La page publique avant inscription affiche uniquement les tarifs et un bouton principal `S’inscrire`, sans disponibilités.
+- H41 — Côté élève, les tarifs sont affichés au-dessus de l’agenda et l’agenda est hebdomadaire par défaut avec bascule jour.
+- H42 — Le tarif applicable est sélectionné automatiquement selon type de cours et durée; l’élève ne choisit pas manuellement une ligne tarifaire.
+- H43 — Une demande de réservation peut inclure un commentaire libre de l’élève.
+- H44 — Un refus coach ne demande pas de confirmation et peut inclure un commentaire transmis à l’élève dans la notification.
+- H45 — Les heures pleines/heures creuses sont hors P0.
+- H46 — Les statistiques coach priorisent le mois; trimestre et année sont utiles, semaine est secondaire.
 
 ## 6. Périmètre MVP
 
@@ -129,6 +142,7 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - Demande de réservation d’un créneau libre par l’élève.
 - Validation ou refus de la demande par le coach.
 - Blocage des doubles réservations.
+- Jusqu’à 2 demandes en attente possibles sur un même créneau avant validation coach.
 - Tableau de bord coach avec nouvelles réservations mises en évidence.
 - Notifications push coach pour nouvelle demande.
 - Notification in-app créée en parallèle de chaque notification push.
@@ -139,6 +153,8 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - Gestion des tarifs coach.
 - Liste des élèves côté coach.
 - Notes privées coach sur élèves.
+- Historique élève visible par le coach sur la fiche élève.
+- Pack de cours individuels rattaché à un élève pour suivi simple des crédits/consommations.
 - Création de fiche élève par le coach sans inscription élève.
 - Plages de disponibilité générant des créneaux.
 - Disponibilités récurrentes.
@@ -146,6 +162,7 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - Statuts visibles élève: en attente, confirmé, refusé.
 - Demande de cours collectif avec sélection de joueurs de l’application.
 - Création de cours individuel par le coach.
+- Création de cours récurrent hebdomadaire par le coach.
 - Création de cours collectif par le coach avec sélection d’élèves.
 - Support d’interface français, anglais, espagnol.
 - Light theme et dark theme basés sur les tokens de design validés.
@@ -159,6 +176,11 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - Notification push paramétrable côté élève lorsqu’une place se libère sur un cours collectif.
 - Connexion à Google Agenda pour synchroniser les réservations confirmées côté coach et côté élève si le compte est connecté.
 - Messagerie contextualisée sur une réservation.
+- Écran coach regroupant les messageries liées aux créneaux/réservations/événements.
+
+### Prévu V2
+
+- Génération de facture.
 
 ### Exclu P0
 
@@ -208,7 +230,7 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 5. L’élève envoie une demande de réservation.
 6. Le système confirme que la demande a été envoyée.
 
-**Résultat attendu:** la demande apparaît côté coach comme nouvelle, déclenche une notification push coach et bloque le créneau pour les autres élèves.
+**Résultat attendu:** la demande apparaît côté coach comme nouvelle, déclenche une notification push coach et occupe une des 2 places de demande en attente possibles sur ce créneau.
 
 ### P0-FLOW-004 — Traitement Réservation Coach
 
@@ -279,8 +301,8 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - FR-046 — L’élève doit voir uniquement les créneaux disponibles et demandables, ainsi que ses propres cours sur l’agenda de la page principale.
 - FR-047 — Le lieu/club doit être visible dans le détail du créneau.
 - FR-048 — Le système doit fournir une liste simple de lieux/clubs, avec `Les Bruyères Centre Sportif` comme valeur initiale.
-- FR-049 — Un créneau avec une demande en attente ou une réservation confirmée ne doit plus être proposé comme disponible.
-- FR-050 — Le système doit refuser une demande si le créneau n’est plus disponible.
+- FR-049 — Un créneau avec une réservation confirmée ne doit plus être proposé comme disponible.
+- FR-050 — Le système doit refuser une demande si le créneau n’est plus disponible ou s’il a déjà 2 demandes en attente.
 - FR-051 — Le coach doit pouvoir consulter ses créneaux à venir.
 
 ### 8.6 Réservations
@@ -292,19 +314,24 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - FR-064 — Une nouvelle demande doit avoir un état visible `nouveau`.
 - FR-065 — Le coach doit recevoir une notification push lors d’une nouvelle demande.
 - FR-066 — Le coach doit pouvoir valider une demande depuis l’écran de détail de la demande.
-- FR-067 — Le coach doit pouvoir refuser une demande depuis l’écran de détail de la demande, sans proposer d’autre créneau.
-- FR-068 — Le système doit empêcher deux demandes actives ou réservations confirmées sur le même créneau.
+- FR-067 — Le coach doit pouvoir refuser une demande depuis l’écran de détail de la demande, sans proposer d’autre créneau et sans confirmation supplémentaire.
+- FR-067b — Le coach doit pouvoir ajouter un commentaire optionnel lors d’un refus.
+- FR-068 — Le système doit empêcher plus de 2 demandes en attente ou plus d’une réservation confirmée sur le même créneau.
 - FR-069 — Le détail d’une demande/réservation doit afficher au minimum l’élève, la date, l’heure, le lieu et le statut.
 - FR-070 — L’élève doit voir le statut de sa demande: en attente, confirmée, refusée ou expirée.
 - FR-071 — Une demande en attente doit expirer automatiquement après 7 jours.
 - FR-072 — Un élève ne doit pas pouvoir avoir plus de 10 demandes en attente (`pending`) auprès du coach.
+- FR-072b — Un même créneau ne doit pas pouvoir avoir plus de 2 demandes en attente (`pending`).
 - FR-073 — Quand le coach valide une demande, le demandeur doit recevoir une notification push.
 - FR-074 — Quand le coach refuse une demande, le demandeur doit recevoir une notification push.
+- FR-074b — Si le coach saisit un commentaire de refus, ce commentaire doit être visible dans la notification et le détail de la demande côté élève.
 - FR-075 — L’élève doit pouvoir demander un cours collectif.
 - FR-076 — Lors d’une demande de cours collectif, l’élève doit pouvoir sélectionner des joueurs de l’application.
 - FR-077 — Le coach doit pouvoir créer un cours collectif en sélectionnant des élèves de l’application.
 - FR-078 — Une réservation collective doit conserver la liste des participants.
 - FR-079 — Le coach doit pouvoir créer un cours individuel lié à un élève, une date, une heure, une durée, un lieu et un tarif.
+- FR-079a — Le coach doit pouvoir créer un cours individuel récurrent hebdomadaire.
+- FR-079a-2 — L’élève ne doit pas pouvoir créer de demande de cours récurrente.
 - FR-079b — Le coach et l’élève doivent pouvoir annuler ou modifier une réservation confirmée en P0.
 - FR-079c — L’élève doit pouvoir annuler une réservation jusqu’à l’heure de début du cours.
 - FR-079d — Lorsqu’une annulation ou modification est initiée par une partie, l’autre partie doit recevoir une notification push et une notification in-app.
@@ -317,9 +344,15 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - FR-083 — L’élève doit voir les tarifs publiés du coach avant de demander un créneau.
 - FR-084 — Un tarif doit contenir au minimum un libellé, un prix, une durée et un type.
 - FR-085 — Les types de tarifs P0 doivent couvrir au minimum individuel et groupe.
-- FR-086 — Le modèle de tarif doit pouvoir représenter heures pleines et heures creuses.
+- FR-086 — Les tarifs P0 doivent être attachés à des durées précises.
 - FR-087 — Le MVP ne doit pas masquer les tarifs par élève.
 - FR-088 — Le MVP affiche les prix, mais aucun message de paiement ni paiement intégré.
+- FR-088b — Les heures pleines/heures creuses sont hors P0.
+- FR-089 — Le coach doit pouvoir donner/rattacher un pack de cours individuels à un élève.
+- FR-089b — Un pack de cours individuels doit permettre de suivre au minimum le nombre de cours inclus, utilisés et restants.
+- FR-089c — L’élève ne doit pas pouvoir créer, acheter ou s’attribuer lui-même un pack de cours.
+- FR-089d — Le coach doit pouvoir marquer une session de pack individuel comme consommée, ce qui décrémente le nombre de cours restants du pack associé.
+- FR-089e — Les sessions restantes du pack doivent être visibles sur la fiche élève.
 
 ### 8.8 Élèves et Notes Privées
 
@@ -330,6 +363,7 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - FR-094 — Le coach doit pouvoir modifier la note privée unique.
 - FR-095 — Une note privée doit être accessible uniquement au coach qui l’a créée.
 - FR-096 — Le MVP ne doit pas suivre la progression sportive de l’élève.
+- FR-097 — La fiche élève côté coach doit afficher un historique des demandes, cours confirmés, annulations, modifications et packs associés.
 
 ### 8.9 App Mobile et Webapp
 
@@ -342,8 +376,8 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - FR-106 — Le front doit utiliser les tokens de design définis dans `design-tokens.md`.
 - FR-107 — Le front doit supporter un light theme et un dark theme cohérents avec l’identité Roland-Garros premium.
 - FR-108 — Les couleurs ne doivent pas être codées en dur dans les composants.
-- FR-109 — Le planning coach doit proposer une vue jour et une vue semaine.
-- FR-110 — Le planning coach doit permettre de changer de vue via un bouton de switch jour/semaine.
+- FR-109 — Le planning coach doit proposer une vue semaine prioritaire/par défaut et une vue jour secondaire.
+- FR-110 — Le planning coach doit permettre de changer de vue via un bouton de switch semaine/jour.
 
 ### 8.10 Statistiques Coach
 
@@ -366,22 +400,26 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 
 ## 9. Règles Métier
 
-- BR-001 — Un créneau ne peut avoir qu’une seule demande active ou réservation confirmée.
+- BR-001 — Un créneau peut avoir jusqu’à 2 demandes en attente, mais une seule réservation confirmée.
 - BR-002 — Un élève ne peut demander que les créneaux visibles d’un coach associé.
 - BR-003 — Une demande nouvellement créée reste `nouvelle` côté coach jusqu’à validation ou refus.
 - BR-004 — Le coach peut modifier un créneau uniquement s’il n’a pas de demande active ou réservation confirmée.
 - BR-005 — Les notes coach sont privées et ne sont jamais visibles par l’élève.
 - BR-006 — Les tarifs affichés à l’élève doivent être ceux publiés par le coach au moment de la consultation.
 - BR-007 — Le MVP ne gère pas les paiements; un prix affiché n’implique pas transaction.
-- BR-008 — Si deux élèves tentent de demander le même créneau, une seule demande active doit réussir.
-- BR-009 — Une demande en attente bloque le créneau pour les autres élèves.
+- BR-008 — Si plusieurs élèves tentent de demander le même créneau, les 2 premières demandes en attente peuvent réussir; les suivantes doivent échouer avec un message clair.
+- BR-009 — Une demande en attente occupe une des 2 places de demande du créneau; une réservation confirmée bloque le créneau.
 - BR-010 — Une demande en attente expire automatiquement après 7 jours.
 - BR-011 — Un refus coach libère le créneau.
 - BR-012 — Une validation coach transforme la demande en réservation confirmée.
+- BR-012b — Quand le coach valide une demande sur un créneau, les autres demandes en attente du même créneau doivent être refusées ou expirées selon un traitement explicite côté produit.
 - BR-013 — Le coach ne propose pas d’autre créneau dans le workflow P0.
 - BR-014 — Un élève peut avoir au maximum 10 demandes en attente (`pending`) auprès du coach.
+- BR-014b — Un même créneau peut avoir au maximum 2 demandes en attente (`pending`).
 - BR-015 — Les créneaux P0 sont générés depuis des plages de disponibilité.
 - BR-016 — Les disponibilités peuvent être ponctuelles ou récurrentes en P0.
+- BR-016b — Les cours créés par le coach peuvent être récurrents hebdomadaires en P0.
+- BR-016c — Les élèves ne peuvent pas demander de cours récurrent en P0.
 - BR-022 — Les récurrences P0 autorisées sont ponctuelle, quotidienne et hebdomadaire.
 - BR-023 — Après envoi d’une demande, le statut/libellé principal visible côté élève est `demande envoyée`.
 - BR-017 — Le MVP a un seul coach désigné; tous les élèves de l’application sont visibles par ce coach.
@@ -398,13 +436,17 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - BR-030 — Une annulation P0 libère le créneau ou la place selon le type de cours.
 - BR-031 — Une modification P0 doit notifier la partie qui n’a pas initié l’action.
 - BR-032 — L’agenda principal élève ne doit pas exposer les cours d’autres élèves.
+- BR-033 — Le tarif d’une demande est sélectionné automatiquement à partir du type de cours, de la durée et des tarifs actifs.
+- BR-034 — Seul le coach peut attribuer un pack de cours individuels à un élève.
+- BR-035 — Un pack de cours individuels ne représente pas un paiement intégré en P0.
+- BR-036 — Les heures pleines/heures creuses ne doivent pas être implémentées en P0.
 
 ## 10. États et Statuts
 
 ### Créneau
 
 - `available`: visible et demandable.
-- `pending`: demande envoyée par un élève, en attente de validation coach.
+- `pending`: une ou deux demandes envoyées par des élèves, en attente de validation coach.
 - `booked`: validé par le coach, non réservable.
 - `expired`: demande non traitée sous 7 jours, créneau libéré.
 - `cancelled`: réservation annulée en P0 par le coach ou par l’élève.
@@ -447,9 +489,9 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 
 Étant donné un élève associé à un coach, quand il demande un créneau disponible, alors une demande est créée, le créneau passe en attente et le coach la voit comme nouvelle.
 
-### CA-003 — Double Réservation Empêchée
+### CA-003 — Limite de Demandes par Créneau
 
-Étant donné deux élèves qui tentent de demander le même créneau, quand la première demande réussit, alors la seconde tentative échoue avec un message clair.
+Étant donné un créneau sans réservation confirmée, quand deux élèves envoient une demande sur ce même créneau, alors les deux demandes peuvent passer en attente; une troisième demande échoue avec un message clair.
 
 ### CA-004 — Mise en Évidence Coach
 
@@ -461,7 +503,7 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 
 ### CA-006 — Refus Coach
 
-Étant donné une demande nouvelle, quand le coach la refuse, alors l’élève voit le refus et le créneau peut redevenir disponible.
+Étant donné une demande nouvelle, quand le coach la refuse, alors l’élève voit le refus, le commentaire de refus si renseigné, et le créneau peut redevenir disponible selon les autres demandes en attente.
 
 ### CA-007 — Expiration Automatique
 
@@ -485,7 +527,7 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 
 ### CA-012 — Tarifs Visibles
 
-Étant donné un coach ayant configuré ses tarifs, quand un élève consulte l’espace du coach, alors les tarifs sont visibles avant réservation.
+Étant donné un coach ayant configuré ses tarifs, quand un élève consulte l’espace du coach, alors les tarifs sont visibles au-dessus de l’agenda avant réservation.
 
 ### CA-013 — Gestion des Tarifs
 
@@ -555,6 +597,34 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 
 Étant donné un coach connecté, quand il crée un cours individuel, alors il peut sélectionner l’élève, la date, l’heure, la durée, le lieu et le tarif.
 
+### CA-030 — Cours Récurrent Hebdomadaire Coach
+
+Étant donné un coach connecté, quand il crée un cours, alors il peut choisir une récurrence hebdomadaire; un élève ne peut pas créer de demande récurrente.
+
+### CA-031 — Historique Élève Coach
+
+Étant donné un coach connecté sur une fiche élève, quand il consulte le profil, alors il voit l’historique des demandes, cours confirmés, annulations, modifications et packs associés.
+
+### CA-032 — Pack de Cours Individuels
+
+Étant donné un coach connecté sur une fiche élève, quand il rattache un pack de cours individuels, alors le pack affiche le nombre de cours inclus, utilisés et restants.
+
+### CA-033 — Attribution Pack Coach Uniquement
+
+Étant donné un élève connecté, quand il consulte son compte ou ses réservations, alors il ne peut pas créer, acheter ou s’attribuer lui-même un pack de cours individuels.
+
+### CA-034 — Décompte Pack Individuel
+
+Étant donné un élève avec un pack de cours individuels applicable, quand le coach marque une session du pack comme consommée, alors le nombre de sessions restantes du pack est décrémenté.
+
+### CA-035 — Commentaire de Demande
+
+Étant donné un élève qui demande un créneau, quand il ajoute un commentaire libre, alors ce commentaire est visible dans le détail de la demande côté coach.
+
+### CA-036 — Tarif Automatique
+
+Étant donné un élève qui demande un cours individuel ou collectif, quand le type et la durée sont connus, alors le tarif applicable est sélectionné automatiquement.
+
 ## 13. Évolutions P1 Validées
 
 ### P0-EXT — Annulation et Modification
@@ -600,6 +670,14 @@ Le coach et l’élève doivent pouvoir échanger des messages contextualisés s
 
 Le coach doit pouvoir choisir jusqu’où les élèves peuvent voir ses disponibilités. Options: 1 semaine, 2 semaines, 3 semaines, 1 mois, 2 mois, 3 mois ou non défini (`pas set`, toutes les disponibilités visibles).
 
+### P1-006 — Écran Coach de Messageries
+
+Le coach doit disposer d’un écran regroupant les conversations liées aux créneaux, réservations et événements afin d’éviter de devoir ouvrir chaque réservation une par une.
+
+### V2-001 — Génération de Facture
+
+Le système doit permettre de générer une facture à partir d’une réservation, d’un pack ou d’une période d’activité. Cette capacité est V2 et reste hors P0/P1.
+
 ## 14. Inventaire UX Initial
 
 Référence détaillée: `_bmad-output/planning-artifacts/ux-screen-inventory.md`.
@@ -607,25 +685,26 @@ Tokens de design: `_bmad-output/planning-artifacts/design-tokens.md`.
 
 ### Élève P0
 
-- Page publique avant inscription: présentation coach, tarifs, bouton/lien d’inscription.
+- Page publique avant inscription: présentation coach, tarifs uniquement, bouton principal `S’inscrire`.
 - Inscription / connexion.
-- Accueil élève: disponibilités demandables du coach unique, cours de cet élève dans l’agenda, tarifs individuels/collectifs mis en évidence.
-- Détail créneau / demande: date, heure, durée, lieu, tarif, demande de validation coach.
-- Planning élève / demandes: demandes en attente, confirmées, refusées et expirées.
+- Accueil élève: disponibilités demandables du coach unique, cours de cet élève dans l’agenda hebdomadaire par défaut, tarifs individuels/collectifs au-dessus de l’agenda.
+- Détail créneau / demande: date, heure, durée, lieu, tarif automatique, commentaire libre, demande de validation coach.
+- Planning élève / demandes: page unique avec filtres, demandes en attente, confirmées, refusées et expirées.
 - Notifications élève: historique in-app des notifications.
 - Compte élève: nom, téléphone, email, niveau, âge, langue.
 
 ### Coach P0
 
-- Accueil coach / planning.
-- Demandes `pending` affichées directement dans le planning avec couleur distincte ou surbrillance.
-- Gestion disponibilités: plages, récurrence, durée 1h/1h30, lieu, créneaux générés.
+- Accueil coach / planning: vue semaine prioritaire, vue jour secondaire.
+- Demandes `pending` affichées directement dans le planning avec couleur distincte ou surbrillance, jusqu’à 2 demandes par créneau.
+- Gestion disponibilités: plages, récurrence, durée 1h/1h30, lieu, créneaux générés, cours récurrent hebdomadaire coach.
 - Élèves / recherche: liste, recherche par nom, filtres niveau/âge.
-- Fiche élève: profil, historique simple, note privée unique.
+- Fiche élève: profil, historique des cours/demandes/annulations/modifications/packs, note privée unique.
 - Statistiques coach légères: cours, heures, revenu estimé, élèves les plus actifs si possible.
 - Notifications coach: historique in-app des notifications.
 - Profil coach / paramètres.
-- Gestion tarifs: individuel, collectif, durée, prix, activation.
+- Gestion tarifs: écran dédié, tarifs individuels/collectifs attachés à une durée, prix, activation.
+- Messageries coach P1: regroupement des conversations liées aux créneaux/réservations/événements.
 
 ### Écrans à Clarifier
 
@@ -674,7 +753,8 @@ Tokens de design: `_bmad-output/planning-artifacts/design-tokens.md`.
 - durée;
 - lieu/club;
 - statut;
-- réservation liée si réservé.
+- réservation liée si réservé;
+- nombre de demandes en attente associées.
 
 ### `AvailabilityRange`
 
@@ -693,17 +773,49 @@ Tokens de design: `_bmad-output/planning-artifacts/design-tokens.md`.
 - créneau;
 - type: individuel ou collectif;
 - statut;
+- récurrence hebdomadaire si créée par le coach;
 - indicateur de demande nouvelle;
 - date de création;
 - date d’expiration;
 - date d’annulation si applicable;
-- date de modification si applicable.
+- date de modification si applicable;
+- commentaire élève si fourni;
+- commentaire de refus coach si fourni;
+- tarif appliqué.
 
 ### `GroupBookingParticipant`
 
 - réservation collective liée;
 - élève participant;
 - statut de participation.
+
+### `StudentLessonPack`
+
+- coach;
+- élève;
+- type: cours individuel;
+- nombre de cours inclus;
+- nombre de cours utilisés;
+- nombre de cours restants;
+- attribution par le coach;
+- statut.
+
+### `MessageThread`
+
+- réservation, créneau ou événement lié;
+- participants;
+- dernier message;
+- statut lu/non lu;
+- date de dernière activité.
+
+### `Invoice`
+
+- réservation, pack ou période liée;
+- destinataire;
+- montant;
+- statut;
+- date de génération;
+- statut produit: V2.
 
 ### `Pricing`
 
@@ -712,7 +824,7 @@ Tokens de design: `_bmad-output/planning-artifacts/design-tokens.md`.
 - prix;
 - devise;
 - durée;
-- type: individuel, groupe, heure pleine ou heure creuse;
+- type: individuel ou groupe;
 - statut actif/inactif.
 
 ### `StudentNote`
@@ -749,6 +861,9 @@ Tokens de design: `_bmad-output/planning-artifacts/design-tokens.md`.
 | Voir les disponibilités d’un coach associé | Oui | Oui |
 | Demander un créneau | Non | Oui |
 | Demander un cours collectif | Non | Oui |
+| Demander un cours récurrent | Non | Non |
+| Créer un cours individuel | Oui | Non |
+| Créer un cours récurrent hebdomadaire | Oui | Non |
 | Créer un cours collectif | Oui | Non |
 | Valider/refuser une demande | Oui | Non |
 | Recevoir une notification push de nouvelle demande | Oui | Non |
@@ -761,6 +876,8 @@ Tokens de design: `_bmad-output/planning-artifacts/design-tokens.md`.
 | Créer une fiche élève manuelle | Oui | Non |
 | Créer une note privée | Oui | Non |
 | Voir une note privée coach | Oui, propriétaire uniquement | Non |
+| Voir l’historique d’un élève | Oui | Non |
+| Gérer un pack de cours individuels élève | Oui | Non |
 
 ## 17. Mesure du Succès
 
@@ -806,7 +923,7 @@ Pour garder le MVP livrable:
 - associer directement tous les élèves au coach unique en P0;
 - garder le lien/code d’invitation coach pour une évolution future;
 - faire valider chaque demande par le coach;
-- bloquer le créneau pendant qu’une demande est en attente;
+- autoriser jusqu’à 2 demandes en attente par créneau, puis bloquer à la confirmation;
 - faire expirer une demande après 7 jours;
 - générer les créneaux depuis des plages de disponibilité;
 - inclure les récurrences ponctuelle, quotidienne et hebdomadaire en P0;
@@ -814,13 +931,14 @@ Pour garder le MVP livrable:
 - utiliser 1h30 comme durée par défaut, avec 1h disponible;
 - inclure une liste simple de lieux avec `Les Bruyères Centre Sportif` comme première valeur;
 - activer les notifications push coach pour nouvelle demande en P0;
-- utiliser un planning coach avec vues jour/semaine et bouton de switch;
+- utiliser un planning coach avec vue semaine prioritaire, vue jour secondaire et bouton de switch;
 - valider/refuser les demandes depuis l’écran de détail;
 - libeller explicitement l’indicateur stats `revenu estimé`;
 - inclure annulation/modification en P0;
 - créer systématiquement une notification in-app pour chaque notification push;
 - reporter Google Agenda en P1;
-- reporter la messagerie liée à une réservation en P1;
+- reporter la messagerie liée à une réservation et l’écran coach de messageries en P1;
+- reporter la génération de facture en V2;
 - garder les statistiques coach en P0 dans une version légère;
 - permettre plusieurs lignes tarifaires avec libellé, prix, durée et type;
 - préparer l’interface en français, anglais et espagnol.
@@ -833,11 +951,11 @@ Créer les comptes coach/élève et sécuriser les accès.
 
 ### Epic 2 — Profil Coach, Tarifs, Élèves et Invitation
 
-Permettre au coach de publier les informations nécessaires à la réservation, gérer ses tarifs et créer des fiches élèves.
+Permettre au coach de publier les informations nécessaires à la réservation, gérer ses tarifs, créer des fiches élèves, consulter l’historique élève et suivre les packs de cours individuels.
 
 ### Epic 3 — Disponibilités, Récurrence et Demandes
 
-Permettre la création de plages, la génération de créneaux, la récurrence, la demande élève et la validation/refus coach sans double booking.
+Permettre la création de plages, la génération de créneaux, la récurrence coach hebdomadaire, la demande élève avec maximum 2 demandes par créneau et la validation/refus coach sans double réservation confirmée.
 
 ### Epic 4 — Tableau de Bord Coach et Push
 

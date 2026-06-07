@@ -6,7 +6,7 @@ Statut: brouillon initial
 
 ## Résumé
 
-NextPoint est une application mobile-first, complétée par une webapp, destinée principalement à un coach de padel désigné et à ses élèves. Le produit facilite la mise en relation des disponibilités coach/élève, les demandes de réservation, la validation par le coach, la gestion des tarifs et le suivi simple des élèves via une note privée.
+NextPoint est une application mobile-first, complétée par une webapp, destinée principalement à un coach de padel désigné et à ses élèves. Le produit facilite la mise en relation des disponibilités coach/élève, les demandes de réservation, la validation par le coach, la gestion des tarifs et le suivi des élèves via historique, notes privées et packs de cours individuels.
 
 Le support prioritaire du MVP est le téléphone. La webapp doit exister dès le MVP, mais elle peut être plus simple si elle couvre les mêmes actions essentielles.
 
@@ -29,6 +29,9 @@ Besoins:
 - voir les nouvelles demandes mises en évidence;
 - consulter la liste de leurs élèves;
 - ajouter une note/remarque privée unique sur chaque élève;
+- consulter l’historique d’un élève;
+- suivre les packs de cours individuels d’un élève;
+- donner un pack de cours individuels à un élève;
 - gérer leur activité depuis le téléphone.
 
 ### Élèves
@@ -39,6 +42,7 @@ Besoins:
 - créer un profil;
 - consulter les disponibilités du coach;
 - demander un créneau;
+- ajouter un commentaire libre lors d’une demande;
 - suivre le statut en attente, confirmé, refusé ou expiré;
 - retrouver ses informations de profil et ses réservations.
 
@@ -50,7 +54,7 @@ Pour un élève, NextPoint permet de demander un cours disponible sans passer pa
 
 ## Objectif MVP
 
-Permettre à un élève de créer un profil, consulter les disponibilités d’un coach et réserver un créneau, puis permettre au coach de voir cette nouvelle réservation mise en évidence, gérer ses tarifs, consulter ses élèves et ajouter des notes privées.
+Permettre à un élève de créer un profil, consulter les disponibilités d’un coach et demander un créneau, puis permettre au coach de voir les demandes mises en évidence, gérer ses tarifs, créer des cours individuels ou collectifs, consulter l’historique de ses élèves, suivre leurs packs et ajouter des notes privées.
 
 ## Plateformes
 
@@ -76,22 +80,30 @@ Orientation produit:
 - Lieu/club simple sur disponibilité/réservation, avec `Les Bruyères Centre Sportif` comme valeur initiale.
 - Demande de réservation de créneau par un élève.
 - Validation ou refus de la demande par le coach.
-- Blocage du créneau pendant qu’une demande est en attente.
+- Maximum 2 demandes en attente possibles sur un même créneau; blocage définitif à la confirmation.
 - Expiration automatique d’une demande après 7 jours.
 - Mise en évidence des nouvelles demandes côté coach.
 - Notification push coach pour nouvelle demande.
 - Notification push demandeur lorsque le coach valide ou refuse.
 - Onglet Notifications coach et élève.
 - Historique in-app des notifications même si les push système sont refusées.
+- Commentaire libre possible lors d’une demande.
+- Commentaire optionnel du coach lors d’un refus, visible par l’élève.
 - Demande de cours collectif avec sélection de joueurs de l’application.
+- Création de cours individuel par le coach.
+- Création de cours individuel récurrent hebdomadaire par le coach uniquement.
 - Création de cours collectif par le coach avec sélection d’élèves.
 - Gestion des tarifs par le coach.
 - Liste des élèves côté coach.
 - Création manuelle d’une fiche élève par le coach.
 - Notes/remarques privées uniques du coach sur ses élèves.
+- Historique élève visible par le coach sur la fiche élève.
+- Pack de cours individuels donné par le coach à un élève pour suivre les cours inclus, utilisés et restants.
 - Interface préparée pour français, anglais et espagnol.
 - Light theme et dark theme définis via tokens de design.
-- Planning coach avec vue jour et vue semaine, via bouton de switch.
+- Page publique avant inscription limitée aux tarifs et au bouton `S’inscrire`.
+- Agenda élève hebdomadaire par défaut, avec tarifs au-dessus de l’agenda.
+- Planning coach avec vue semaine prioritaire, vue jour secondaire et bouton de switch.
 - Validation/refus d’une demande depuis l’écran de détail.
 - Statistiques coach avec indicateur explicitement libellé `revenu estimé`.
 - Expérience mobile-first.
@@ -107,12 +119,13 @@ Orientation produit:
 - Synchronisation avec Google Agenda, prévue en P1.
 - Notifications push avancées, prévues en P1.
 - Messagerie liée à une réservation, prévue en P1.
-- Page de suivi des statistiques coach légère, incluse en P0.
-- Annulation/modification P1 avec notification push à la partie qui n’a pas initié l’action.
+- Écran coach regroupant les messageries des créneaux/réservations/événements, prévu en P1.
+- Génération de facture, prévue en V2.
 - Annulation élève possible jusqu’à l’heure du cours en P1.
 - Notification élève paramétrable lorsqu’une place se libère sur un cours collectif en P1.
 - Synchronisation Google Agenda P1 côté coach et élève si connecté.
 - Masquage des tarifs par élève.
+- Heures pleines/heures creuses.
 - Suivi de progression de l’élève.
 - Adaptation tennis/squash.
 - Gestion de plusieurs coachs par élève.
@@ -141,26 +154,33 @@ Orientation produit:
 
 ### Réservations
 
-- Un créneau disponible doit pouvoir être demandé par un seul élève à la fois.
+- Un créneau disponible peut recevoir jusqu’à 2 demandes en attente.
 - Une demande doit être visible côté coach.
+- Une demande peut contenir un commentaire libre.
 - Le coach doit pouvoir valider ou refuser une demande.
+- Le coach peut ajouter un commentaire optionnel lors d’un refus.
 - Les nouvelles demandes doivent être visuellement distinguées jusqu’à action du coach.
+- La confirmation d’une demande bloque le créneau et traite les autres demandes en attente du même créneau.
 
 ### Disponibilités
 
 - Le coach doit pouvoir publier ses disponibilités.
 - L’élève doit voir uniquement les créneaux réservables.
-- Le système doit éviter les doubles réservations.
+- Le système doit éviter les doubles réservations confirmées tout en autorisant jusqu’à 2 demandes en attente par créneau.
 
 ### Tarifs
 
 - Le coach doit pouvoir saisir et modifier ses tarifs.
+- Les tarifs doivent être attachés à une durée précise.
 - Les tarifs doivent être visibles par l’élève avant réservation ou depuis la fiche coach.
+- Le tarif applicable doit être sélectionné automatiquement selon le type de cours et la durée.
+- Heures pleines/heures creuses sont hors P0.
 
 ### Élèves et Notes
 
 - Le coach doit voir ses élèves.
 - Le coach doit pouvoir ajouter des notes/remarques sur chaque élève.
+- Le coach doit pouvoir consulter l’historique élève et suivre les packs de cours individuels.
 - Les notes coach sont privées et non visibles par l’élève.
 
 ## Contraintes et Hypothèses
