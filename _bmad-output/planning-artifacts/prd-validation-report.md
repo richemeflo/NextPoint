@@ -9,7 +9,7 @@ Statut global: prêt pour UX détaillée et architecture
 
 Le PRD est maintenant suffisamment structuré pour servir de base au workflow UX. Il contient le problème, les utilisateurs, le périmètre MVP, les exclusions, les parcours, les exigences fonctionnelles, les règles métier, les critères d’acceptation, les données conceptuelles, les permissions, les risques et le découpage fonctionnel préliminaire.
 
-Les décisions structurantes sur validation coach, blocage du créneau, notification push coach P0, association directe P0, disponibilités, récurrence, libellé élève, tarifs, langues, périmètre single-coach, interaction validation/refus et libellé revenu estimé ont été tranchées.
+Les décisions structurantes sur validation coach, blocage du créneau, notification push coach P0, notification in-app miroir, association directe P0, disponibilités, récurrence, libellé élève, tarifs, langues, périmètre single-coach, interaction validation/refus, annulation/modification P0, agenda élève et libellé revenu estimé ont été tranchées.
 
 ## Contrôles BMAD
 
@@ -40,15 +40,16 @@ Les décisions structurantes sur validation coach, blocage du créneau, notifica
 - Association élève/coach P0: directe, tous les élèves sont visibles par le coach unique.
 - Invitation lien/code coach: future évolution.
 - Limite demandes: 10 demandes en attente (`pending`) par élève.
-- Annulation et modification: P1.
+- Annulation et modification: P0.
 - Notifications push coach sur nouvelle demande: P0.
+- Toute notification push crée aussi une notification in-app dans l’onglet Notifications: P0.
 - Notifications push demandeur sur validation/refus coach: P0.
 - Onglet Notifications coach et élève: P0.
 - Notifications in-app créées même si les push système sont refusées.
 - Connexion Google Agenda: P1.
 - Messagerie liée à une réservation: P1.
 - Annulation élève P1: possible jusqu’à l’heure du cours.
-- Notifications P1 annulation/modification: push à la partie qui n’a pas initié l’action.
+- Notifications P0 annulation/modification: push et notification in-app à la partie qui n’a pas initié l’action.
 - Notification P1 place collective disponible: paramétrable côté compte élève.
 - Google Agenda P1: synchronisation des réservations confirmées côté coach et côté élève si connecté.
 - Page de suivi des statistiques coach: P0, version légère.
@@ -64,7 +65,10 @@ Les décisions structurantes sur validation coach, blocage du créneau, notifica
 - Profil élève P0: nom, téléphone, email, niveau, âge.
 - Notes coach P0: note libre unique.
 - Cours collectif P0: demande élève avec sélection de joueurs, création coach avec sélection d’élèves.
+- Cours individuel P0: création directe par le coach.
 - Centre notifications P0: historique in-app pour coach et élève.
+- Agenda principal élève P0: uniquement disponibilités demandables et cours de cet élève.
+- Horizon de visibilité des disponibilités côté élève: P1, configurable par le coach.
 - Planning coach P0: vues jour/semaine avec bouton de switch.
 - Design tokens: light/dark theme Roland-Garros premium validés.
 - Langues front: français, anglais, espagnol.
@@ -86,8 +90,9 @@ Pour tenir un MVP strict et mobile-first:
 - plages générant des créneaux;
 - récurrence P0 ponctuelle, quotidienne ou hebdomadaire;
 - notification push coach P0 sur nouvelle demande;
-- annulation/modification en P1;
-- notifications avancées en P1;
+- annulation/modification en P0;
+- notification in-app miroir pour chaque notification push;
+- notifications avancées hors événements P0 en P1;
 - Google Agenda en P1;
 - messagerie sur réservation en P1;
 - statistiques coach P0 légères;
@@ -99,7 +104,7 @@ Pour tenir un MVP strict et mobile-first:
 - Pas encore de wireframes; liste d’écrans initiale créée.
 - Pas encore d’architecture technique.
 - Pas encore de backlog détaillé en stories.
-- Pas encore de wireframes pour les écrans P1 annulation/modification, Google Agenda et notification place collective disponible.
+- Pas encore de wireframes pour Google Agenda, notification place collective disponible et horizon de visibilité des disponibilités.
 - Pas encore de wireframes haute fidélité.
 
 ## Verdict

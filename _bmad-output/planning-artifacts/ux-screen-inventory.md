@@ -49,10 +49,14 @@ Objectif: permettre à l’élève de voir rapidement les disponibilités du coa
 
 Contenu:
 - calendrier ou agenda des disponibilités;
-- créneaux disponibles uniquement;
+- créneaux disponibles et demandables uniquement;
+- cours propres à l’élève connecté;
 - tarifs individuels et collectifs mis en évidence;
 - bannière tarifaire au-dessus ou au-dessous de l’agenda;
 - action principale: demander un créneau.
+
+Décision:
+- L’agenda principal élève affiche exclusivement les disponibilités demandables et les cours de cet élève.
 
 Questions:
 - Les tarifs doivent-ils être au-dessus de l’agenda pour rassurer avant choix, ou sous l’agenda pour ne pas ralentir la réservation ?
@@ -89,6 +93,7 @@ Contenu:
 - demandes confirmées;
 - demandes refusées;
 - demandes expirées;
+- réservations annulées ou modifiées;
 - vue proche d’un emploi du temps personnel.
 
 Question:
@@ -186,12 +191,25 @@ Contenu:
 - choisir lieu: `Les Bruyères Centre Sportif`;
 - activer/désactiver récurrence;
 - visualiser créneaux générés.
+- créer un cours individuel en sélectionnant l’élève concerné.
 - créer un cours collectif en sélectionnant les élèves concernés.
 
 Questions critiques:
 - La gestion des disponibilités est un écran dédié en plus du planning coach.
 - La récurrence P0 est limitée à ponctuelle, quotidienne ou hebdomadaire.
 - Le coach doit-il pouvoir modifier une série entière ou seulement une occurrence ?
+
+#### E-COACH-003b — Création Cours Individuel
+
+Objectif: permettre au coach de créer directement un cours individuel, en plus du collectif.
+
+Contenu:
+- sélection de l’élève;
+- date/heure;
+- durée 1h ou 1h30;
+- lieu `Les Bruyères Centre Sportif`;
+- tarif applicable;
+- statut confirmé par défaut ou demande associée selon règle à détailler.
 
 #### E-COACH-004 — Élèves / Recherche
 
@@ -237,6 +255,9 @@ Contenu:
 - accès gestion disponibilités;
 - paramètres de notification push.
 
+Évolution P1:
+- paramètre d’horizon de visibilité des disponibilités côté élève.
+
 Question:
 - Les tarifs doivent-ils être dans le profil coach ou dans un écran dédié ?
 
@@ -262,11 +283,10 @@ Objectif: lister les notifications in-app même si les notifications push systè
 
 Contenu:
 - nouvelles demandes;
+- annulations ou modifications initiées par l’élève;
 - événements de réservation pertinents;
 - état lu/non lu;
 - lien vers la demande ou réservation concernée.
-
-### Écrans Coach P1
 
 #### E-COACH-008 — Statistiques Coach
 
@@ -285,21 +305,23 @@ Contenu envisagé:
 Question:
 - Quelles périodes sont nécessaires: semaine, mois, année ?
 
-### Écrans Coach P1 Déjà Validés
+### Écrans Transverses P0
 
-- Annulation/modification réservation.
-- Google Agenda.
-- Messagerie sur réservation.
-- Notifications push avancées.
+#### E-P0-001 — Annulation / Modification Réservation
 
-#### E-P1-001 — Annulation / Modification Réservation
-
-Objectif: permettre au coach ou à l’élève d’annuler ou modifier une réservation confirmée.
+Objectif: permettre au coach ou à l’élève d’annuler ou modifier une réservation confirmée en P0.
 
 Règles UX:
 - l’élève peut annuler jusqu’à l’heure du cours;
-- la partie qui n’a pas initié l’action reçoit une notification push;
+- la partie qui n’a pas initié l’action reçoit une notification push et une notification in-app;
 - une annulation sur cours collectif peut libérer une place.
+
+### Écrans Coach P1 Déjà Validés
+
+- Google Agenda.
+- Messagerie sur réservation.
+- Notifications push avancées hors événements P0.
+- Horizon de visibilité des disponibilités côté élève.
 
 #### E-P1-002 — Paramètres Google Agenda
 
@@ -317,6 +339,19 @@ Objectif: permettre à l’élève d’activer ou désactiver une notification p
 Emplacement recommandé:
 - compte élève;
 - section notifications.
+
+#### E-P1-004 — Horizon Disponibilités Élève
+
+Objectif: permettre au coach de limiter la visibilité de ses disponibilités côté élève.
+
+Options:
+- 1 semaine;
+- 2 semaines;
+- 3 semaines;
+- 1 mois;
+- 2 mois;
+- 3 mois;
+- non défini (`pas set`, toutes les disponibilités visibles).
 
 ## Navigation Mobile Proposée
 

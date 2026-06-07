@@ -10,7 +10,7 @@ Sources:
 
 ## 1. Résumé Exécutif
 
-NextPoint est une application mobile-first avec webapp complémentaire pour un coach de padel désigné et ses élèves. Elle permet au coach de publier ses disponibilités, gérer ses tarifs, voir ses demandes/réservations, suivre ses élèves et conserver une note privée par élève. Elle permet à l’élève de créer son profil, rejoindre l’espace du coach, consulter les créneaux disponibles et demander une réservation sans échange manuel.
+NextPoint est une application mobile-first avec webapp complémentaire pour un coach de padel désigné et ses élèves. Elle permet au coach de publier ses disponibilités, créer des cours individuels ou collectifs, gérer ses tarifs, voir ses demandes/réservations, suivre ses élèves et conserver une note privée par élève. Elle permet à l’élève de créer son profil, rejoindre l’espace du coach, consulter les disponibilités pertinentes et demander une réservation sans échange manuel.
 
 Le MVP doit résoudre un problème précis: réduire la friction de coordination entre les disponibilités du coach et celles de l’élève. Toute fonctionnalité qui ne renforce pas directement la réservation ou le suivi coach est hors MVP.
 
@@ -85,7 +85,7 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - H2 — En P0, l’association élève/coach est directe: comme il n’y a qu’un coach, tous les élèves de l’application sont visibles par ce coach.
 - H3 — Une réservation élève crée une demande que le coach doit valider ou refuser.
 - H4 — Une demande en attente bloque le créneau pour les autres élèves jusqu’à validation, refus ou expiration.
-- H5 — Les annulations et modifications de réservation sont P1.
+- H5 — Les annulations et modifications de réservation sont P0.
 - H6 — Les notifications push coach sont P0 pour les nouvelles demandes.
 - H7 — Le paiement intégré est hors MVP.
 - H8 — L’app mobile est prioritaire; la webapp doit couvrir les parcours critiques sans viser la même finesse UX.
@@ -108,10 +108,14 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - H25 — Le coach peut créer un cours collectif en sélectionnant les élèves concernés.
 - H26 — Quand le coach valide ou refuse une demande, le demandeur reçoit une notification push.
 - H27 — Coach et élève disposent d’un onglet Notifications listant les notifications in-app, même si l’utilisateur refuse les notifications push système.
+- H27b — Toute notification push déclenchée doit aussi créer une notification in-app visible dans l’onglet Notifications.
 - H28 — L’interface utilise une identité visuelle Roland-Garros premium avec ocre terre battue, vert profond et fonds chauds.
 - H29 — Le planning coach P0 propose deux vues: jour et semaine, avec un bouton pour changer de mode.
 - H30 — La validation ou le refus d’une demande `pending` se fait depuis l’écran de détail de la demande.
 - H31 — Le revenu affiché dans les statistiques coach doit être explicitement libellé `revenu estimé`.
+- H32 — Côté élève, l’agenda de la page principale affiche exclusivement les disponibilités demandables et les cours de cet élève.
+- H33 — En P1, le coach pourra limiter l’horizon de visibilité des disponibilités côté élève: 1 semaine, 2 semaines, 3 semaines, 1 mois, 2 mois, 3 mois ou non défini (`pas set`).
+- H34 — Le coach peut créer un cours individuel en P0, en plus des cours collectifs.
 
 ## 6. Périmètre MVP
 
@@ -121,15 +125,17 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - Profils coach et élève.
 - Association directe élève/coach, car le MVP contient un seul coach.
 - Création et gestion de créneaux disponibles par le coach.
-- Consultation des créneaux disponibles par l’élève.
+- Consultation par l’élève des disponibilités demandables et de ses propres cours sur l’agenda principal.
 - Demande de réservation d’un créneau libre par l’élève.
 - Validation ou refus de la demande par le coach.
 - Blocage des doubles réservations.
 - Tableau de bord coach avec nouvelles réservations mises en évidence.
 - Notifications push coach pour nouvelle demande.
+- Notification in-app créée en parallèle de chaque notification push.
 - Onglet Notifications coach et élève.
 - Historique in-app des notifications importantes, indépendant de l’autorisation push système.
 - Statistiques coach simples.
+- Annulation et modification de réservation.
 - Gestion des tarifs coach.
 - Liste des élèves côté coach.
 - Notes privées coach sur élèves.
@@ -139,6 +145,7 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - Lieu/club simple sur disponibilité/réservation, avec `Les Bruyères Centre Sportif` comme valeur initiale.
 - Statuts visibles élève: en attente, confirmé, refusé.
 - Demande de cours collectif avec sélection de joueurs de l’application.
+- Création de cours individuel par le coach.
 - Création de cours collectif par le coach avec sélection d’élèves.
 - Support d’interface français, anglais, espagnol.
 - Light theme et dark theme basés sur les tokens de design validés.
@@ -147,9 +154,8 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 
 ### Prévu P1
 
-- Annulation et modification de réservation.
-- Notifications push avancées au-delà de la nouvelle demande coach.
-- Notification push à la partie qui n’a pas initié une annulation ou modification.
+- Limitation configurable par le coach de l’horizon de visibilité des disponibilités côté élève: 1 semaine, 2 semaines, 3 semaines, 1 mois, 2 mois, 3 mois ou non défini (`pas set`).
+- Notifications push avancées hors événements P0 déjà couverts.
 - Notification push paramétrable côté élève lorsqu’une place se libère sur un cours collectif.
 - Connexion à Google Agenda pour synchroniser les réservations confirmées côté coach et côté élève si le compte est connecté.
 - Messagerie contextualisée sur une réservation.
@@ -160,7 +166,7 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - Messagerie générale hors réservation.
 - Recherche publique de coachs.
 - Multi-coach/club.
-- Annulation ou modification de réservation.
+- Limitation de visibilité des disponibilités côté élève.
 - Connexion à Google Agenda.
 - Messagerie liée à une réservation.
 - Récurrence avancée des disponibilités.
@@ -206,7 +212,7 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 
 ### P0-FLOW-004 — Traitement Réservation Coach
 
-1. Le coach ouvre son tableau de bord.
+1. Le coach ouvre son planning.
 2. Le coach voit les demandes `pending` directement dans son planning, dans une couleur distincte ou en surbrillance.
 3. Le coach ouvre le détail d’une demande depuis le planning.
 4. Le coach valide ou refuse la demande.
@@ -270,7 +276,7 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - FR-043 — Le coach doit pouvoir choisir une récurrence de disponibilité parmi ponctuelle, quotidienne ou hebdomadaire.
 - FR-044 — Le coach doit pouvoir modifier une plage ou un créneau sans demande active ni réservation confirmée.
 - FR-045 — Le coach doit pouvoir supprimer une plage ou un créneau sans demande active ni réservation confirmée.
-- FR-046 — L’élève doit voir uniquement les créneaux disponibles et demandables.
+- FR-046 — L’élève doit voir uniquement les créneaux disponibles et demandables, ainsi que ses propres cours sur l’agenda de la page principale.
 - FR-047 — Le lieu/club doit être visible dans le détail du créneau.
 - FR-048 — Le système doit fournir une liste simple de lieux/clubs, avec `Les Bruyères Centre Sportif` comme valeur initiale.
 - FR-049 — Un créneau avec une demande en attente ou une réservation confirmée ne doit plus être proposé comme disponible.
@@ -282,7 +288,7 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - FR-060 — L’élève doit pouvoir demander un créneau disponible.
 - FR-061 — Le système doit créer une demande liée au coach, à l’élève et au créneau.
 - FR-062 — Le système doit confirmer à l’élève que la demande a été envoyée.
-- FR-063 — Le coach doit voir la demande dans son tableau de bord.
+- FR-063 — Le coach doit voir la demande dans son planning.
 - FR-064 — Une nouvelle demande doit avoir un état visible `nouveau`.
 - FR-065 — Le coach doit recevoir une notification push lors d’une nouvelle demande.
 - FR-066 — Le coach doit pouvoir valider une demande depuis l’écran de détail de la demande.
@@ -298,6 +304,10 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - FR-076 — Lors d’une demande de cours collectif, l’élève doit pouvoir sélectionner des joueurs de l’application.
 - FR-077 — Le coach doit pouvoir créer un cours collectif en sélectionnant des élèves de l’application.
 - FR-078 — Une réservation collective doit conserver la liste des participants.
+- FR-079 — Le coach doit pouvoir créer un cours individuel lié à un élève, une date, une heure, une durée, un lieu et un tarif.
+- FR-079b — Le coach et l’élève doivent pouvoir annuler ou modifier une réservation confirmée en P0.
+- FR-079c — L’élève doit pouvoir annuler une réservation jusqu’à l’heure de début du cours.
+- FR-079d — Lorsqu’une annulation ou modification est initiée par une partie, l’autre partie doit recevoir une notification push et une notification in-app.
 
 ### 8.7 Tarifs
 
@@ -383,8 +393,11 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - BR-025 — Un cours collectif créé par le coach inclut les élèves sélectionnés par le coach.
 - BR-026 — Une validation coach notifie le demandeur.
 - BR-027 — Un refus coach notifie le demandeur.
-- BR-028 — Toute notification push fonctionnelle doit aussi créer une notification in-app.
+- BR-028 — Toute notification push fonctionnelle doit aussi créer une notification in-app visible dans l’onglet Notifications.
 - BR-029 — Le refus des permissions push système ne doit pas empêcher l’affichage des notifications in-app.
+- BR-030 — Une annulation P0 libère le créneau ou la place selon le type de cours.
+- BR-031 — Une modification P0 doit notifier la partie qui n’a pas initié l’action.
+- BR-032 — L’agenda principal élève ne doit pas exposer les cours d’autres élèves.
 
 ## 10. États et Statuts
 
@@ -394,7 +407,7 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - `pending`: demande envoyée par un élève, en attente de validation coach.
 - `booked`: validé par le coach, non réservable.
 - `expired`: demande non traitée sous 7 jours, créneau libéré.
-- `cancelled`: hors MVP P0, réservé pour P1.
+- `cancelled`: réservation annulée en P0 par le coach ou par l’élève.
 
 ### Réservation
 
@@ -402,7 +415,7 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - `confirmed`: demande validée par le coach.
 - `refused`: demande refusée par le coach.
 - `expired`: demande expirée après 7 jours sans action coach.
-- `cancelled`: hors MVP P0, réservé pour P1.
+- `cancelled`: réservation annulée en P0 par le coach ou par l’élève.
 
 ### Relation Coach/Élève
 
@@ -440,7 +453,7 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 
 ### CA-004 — Mise en Évidence Coach
 
-Étant donné une nouvelle réservation, quand le coach ouvre son tableau de bord, alors la réservation est visuellement mise en évidence comme nouvelle.
+Étant donné une nouvelle demande, quand le coach ouvre son planning, alors la demande est visuellement mise en évidence comme nouvelle.
 
 ### CA-005 — Validation Coach
 
@@ -522,31 +535,50 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 
 Étant donné un utilisateur qui a refusé les notifications push système, quand un événement important le concerne, alors une notification in-app est quand même créée et visible dans l’onglet Notifications.
 
+### CA-025 — Notification In-App Miroir
+
+Étant donné un événement qui déclenche une notification push, quand la notification push est créée, alors une notification in-app correspondante est aussi créée dans l’onglet Notifications du destinataire.
+
+### CA-026 — Annulation P0
+
+Étant donné une réservation confirmée, quand le coach ou l’élève l’annule, alors la réservation passe en `cancelled`, l’autre partie reçoit une notification push et une notification in-app, et le créneau ou la place est libéré selon le type de cours.
+
+### CA-027 — Modification P0
+
+Étant donné une réservation confirmée, quand le coach ou l’élève initie une modification, alors l’autre partie reçoit une notification push et une notification in-app, et la réservation conserve un statut clair pendant le traitement.
+
+### CA-028 — Agenda Principal Élève
+
+Étant donné un élève connecté, quand il ouvre la page principale, alors l’agenda affiche uniquement les disponibilités demandables et les cours de cet élève.
+
+### CA-029 — Création Cours Individuel Coach
+
+Étant donné un coach connecté, quand il crée un cours individuel, alors il peut sélectionner l’élève, la date, l’heure, la durée, le lieu et le tarif.
+
 ## 13. Évolutions P1 Validées
 
-### P1-001 — Annulation et Modification
+### P0-EXT — Annulation et Modification
 
-Le coach et/ou l’élève doivent pouvoir annuler ou modifier une réservation confirmée. L’élève peut annuler jusqu’à l’heure du cours, car le MVP/P1 ne gère pas le paiement et laisse l’arrangement opérationnel à la discrétion du coach et de l’élève.
+Le coach et/ou l’élève doivent pouvoir annuler ou modifier une réservation confirmée en P0. L’élève peut annuler jusqu’à l’heure du cours, car le MVP ne gère pas le paiement et laisse l’arrangement opérationnel à la discrétion du coach et de l’élève.
 
-Règles P1:
+Règles P0:
 - l’élève peut annuler jusqu’à l’heure de début du cours;
 - le coach peut annuler une réservation;
 - le coach ou l’élève peut initier une modification selon un workflow à préciser;
 - une annulation libère la place ou le créneau selon le type de cours;
 - pour un cours collectif, une annulation peut créer une place disponible;
-- la partie qui n’a pas initié l’action reçoit une notification push.
+- la partie qui n’a pas initié l’action reçoit une notification push et une notification in-app.
 
 ### P1-002 — Notifications Push Avancées
 
-Le P0 couvre la notification push coach pour nouvelle demande. Le P1 doit étendre les notifications aux modifications, annulations et places disponibles.
+Le P0 couvre la notification push coach pour nouvelle demande, les notifications de validation/refus, et les notifications d’annulation/modification avec notification in-app miroir. Le P1 doit étendre les notifications aux places disponibles et aux règles avancées paramétrables.
 
 Règles P1:
-- si l’élève annule, le coach reçoit une notification push;
-- si le coach annule, l’élève reçoit une notification push;
-- si l’élève modifie une réservation, le coach reçoit une notification push;
-- si le coach modifie une réservation, l’élève reçoit une notification push;
-- si le coach valide une demande, le demandeur reçoit une notification push;
-- si le coach refuse une demande, le demandeur reçoit une notification push;
+- les notifications d’annulation/modification sont déjà P0;
+- les notifications in-app miroir sont déjà P0;
+- le P1 ajoute les notifications paramétrables de place disponible;
+- si une place se libère sur un cours collectif, les élèves abonnés à ce type d’alerte peuvent recevoir une notification push;
+- toute notification push P1 doit aussi créer une notification in-app;
 - l’élève peut activer/désactiver dans son compte une notification push lorsqu’une place se libère sur un cours collectif;
 - les notifications de place disponible sont conditionnées au paramètre du compte élève.
 
@@ -564,6 +596,10 @@ Règles P1:
 
 Le coach et l’élève doivent pouvoir échanger des messages contextualisés sur une réservation précise. Cette messagerie ne remplace pas une messagerie générale.
 
+### P1-005 — Horizon de Visibilité des Disponibilités
+
+Le coach doit pouvoir choisir jusqu’où les élèves peuvent voir ses disponibilités. Options: 1 semaine, 2 semaines, 3 semaines, 1 mois, 2 mois, 3 mois ou non défini (`pas set`, toutes les disponibilités visibles).
+
 ## 14. Inventaire UX Initial
 
 Référence détaillée: `_bmad-output/planning-artifacts/ux-screen-inventory.md`.
@@ -573,7 +609,7 @@ Tokens de design: `_bmad-output/planning-artifacts/design-tokens.md`.
 
 - Page publique avant inscription: présentation coach, tarifs, bouton/lien d’inscription.
 - Inscription / connexion.
-- Accueil élève: disponibilités du coach unique, agenda, tarifs individuels/collectifs mis en évidence.
+- Accueil élève: disponibilités demandables du coach unique, cours de cet élève dans l’agenda, tarifs individuels/collectifs mis en évidence.
 - Détail créneau / demande: date, heure, durée, lieu, tarif, demande de validation coach.
 - Planning élève / demandes: demandes en attente, confirmées, refusées et expirées.
 - Notifications élève: historique in-app des notifications.
@@ -658,8 +694,10 @@ Tokens de design: `_bmad-output/planning-artifacts/design-tokens.md`.
 - type: individuel ou collectif;
 - statut;
 - indicateur de demande nouvelle;
-- date de création.
-- date d’expiration.
+- date de création;
+- date d’expiration;
+- date d’annulation si applicable;
+- date de modification si applicable.
 
 ### `GroupBookingParticipant`
 
@@ -686,7 +724,7 @@ Tokens de design: `_bmad-output/planning-artifacts/design-tokens.md`.
 
 ### `PushNotification`
 
-- destinataire coach;
+- destinataire;
 - demande/réservation liée;
 - type;
 - statut d’envoi;
@@ -749,7 +787,7 @@ Tokens de design: `_bmad-output/planning-artifacts/design-tokens.md`.
 | Gestion de disponibilités trop lente pour le coach | Adoption faible | Créer des plages générant des créneaux et supporter la récurrence |
 | Élève confus sur les disponibilités | Réservations faibles | UX mobile claire avec créneaux disponibles seulement |
 | Double demande/réservation | Perte de confiance | Transaction atomique et contrainte d’unicité |
-| Nouvelles demandes manquées | Produit inutile côté coach | Notification push coach + badge/section dédiée `Nouvelles demandes` |
+| Nouvelles demandes manquées | Produit inutile côté coach | Notification push coach + demandes `pending` visibles directement dans le planning |
 | Notes privées exposées | Risque confidentialité | Contrôle d’accès strict et tests dédiés |
 | MVP trop large | Retard et dette | Exclure paiement, marketplace, club, messagerie générale |
 | Récurrence mal cadrée | Créneaux incorrects | Limiter les options de récurrence P0 et les tester explicitement |
@@ -779,8 +817,8 @@ Pour garder le MVP livrable:
 - utiliser un planning coach avec vues jour/semaine et bouton de switch;
 - valider/refuser les demandes depuis l’écran de détail;
 - libeller explicitement l’indicateur stats `revenu estimé`;
-- reporter annulation/modification en P1;
-- reporter les notifications avancées en P1;
+- inclure annulation/modification en P0;
+- créer systématiquement une notification in-app pour chaque notification push;
 - reporter Google Agenda en P1;
 - reporter la messagerie liée à une réservation en P1;
 - garder les statistiques coach en P0 dans une version légère;
