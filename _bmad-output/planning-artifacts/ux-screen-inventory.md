@@ -196,6 +196,7 @@ Contenu:
 - créer un cours individuel en sélectionnant l’élève concerné.
 - créer un cours individuel récurrent hebdomadaire.
 - créer un cours collectif en sélectionnant les élèves concernés.
+- demander l’horizon de génération des récurrences, avec 1 mois comme valeur par défaut.
 
 Questions critiques:
 - La gestion des disponibilités est un écran dédié en plus du planning coach.
@@ -215,7 +216,7 @@ Contenu:
 - lieu `Les Bruyères Centre Sportif`;
 - tarif applicable;
 - option de récurrence hebdomadaire;
-- statut confirmé par défaut ou demande associée selon règle à détailler.
+- statut `confirmed` par défaut.
 
 #### E-COACH-004 — Élèves / Recherche
 
@@ -231,7 +232,7 @@ Contenu:
 
 Décisions:
 - Le filtre âge est par tranches: enfants par tranches de 2 ans à partir de 5 ans, adultes par dizaines.
-- Le niveau est une liste fermée de niveaux padel, cible initiale 1 à 9 à confirmer.
+- Le niveau est une liste fermée de niveaux padel de 1 à 10.
 
 #### E-COACH-005 — Fiche Élève
 
@@ -280,7 +281,9 @@ Contenu:
 - tarifs collectifs;
 - durée 1h/1h30;
 - prix;
-- activation/désactivation.
+- activation/désactivation;
+- suppression;
+- critères d’applicabilité définis par le coach, par exemple certains élèves, tarif étudiant, tarif senior, week-end ou jour férié.
 
 Décisions:
 - Les tarifs sont attachés à des durées précises.
@@ -296,6 +299,18 @@ Contenu:
 - événements de réservation pertinents;
 - état lu/non lu;
 - lien vers la demande ou réservation concernée.
+
+#### E-COACH-010 — Messagerie Coach
+
+Objectif: permettre au coach de retrouver et traiter les discussions liées aux créneaux, demandes, réservations ou événements.
+
+Contenu:
+- liste des discussions liées aux créneaux, demandes, réservations ou événements du coach;
+- dernier message;
+- statut lu/non lu;
+- contexte lié;
+- accès au détail du créneau, de la demande, de la réservation ou de l’événement concerné;
+- réponse coach dans la discussion.
 
 #### E-COACH-008 — Statistiques Coach
 
@@ -318,18 +333,20 @@ Décision:
 
 #### E-P0-001 — Annulation / Modification Réservation
 
-Objectif: permettre au coach ou à l’élève d’annuler ou modifier une réservation confirmée en P0.
+Objectif: permettre au coach d’annuler ou modifier une réservation confirmée en P0, et permettre à l’élève d’annuler une réservation confirmée sans action de modification.
 
 Règles UX:
 - l’élève peut annuler jusqu’à l’heure du cours;
+- le coach peut annuler une réservation;
+- la modification P0 est réservée au coach;
+- l’élève ne voit pas d’action de modification, seulement l’annulation si elle est autorisée;
 - la partie qui n’a pas initié l’action reçoit une notification push et une notification in-app;
 - une annulation sur cours collectif peut libérer une place.
 
 ### Écrans Coach P1 Déjà Validés
 
 - Google Agenda.
-- Messagerie sur réservation.
-- Écran coach regroupant les messageries des créneaux/réservations/événements.
+- Messagerie élève et fonctionnalités de messagerie avancées hors onglet Messagerie coach P0.
 - Notifications push avancées hors événements P0.
 - Horizon de visibilité des disponibilités côté élève.
 
@@ -363,17 +380,6 @@ Options:
 - 3 mois;
 - non défini (`pas set`, toutes les disponibilités visibles).
 
-#### E-P1-005 — Messageries Coach
-
-Objectif: donner au coach un écran unique pour retrouver les conversations liées aux créneaux, réservations et événements.
-
-Contenu:
-- liste des threads par créneau/réservation/événement;
-- dernier message;
-- statut lu/non lu;
-- filtre ou recherche par élève;
-- accès au détail de la réservation concernée.
-
 ### Écrans V2 Validés
 
 #### E-V2-001 — Génération de Facture
@@ -399,7 +405,7 @@ Statut:
 - Élèves
 - Stats
 - Notifications
-- Messageries
+- Messagerie
 - Profil
 
 ## Points UX À Trancher

@@ -27,7 +27,7 @@ Contexte produit P0:
 | Decision | Contract UX |
 |---|---|
 | Single-coach | Pas de recherche marketplace, pas de choix de coach en P0. |
-| Padel-only | Vocabulaire, niveaux 1 a 9, lieux et types de cours restent padel. |
+| Padel-only | Vocabulaire, niveaux 1 a 10, lieux et types de cours restent padel. |
 | Coach prioritaire | Les surfaces coach optimisent planning, demandes, eleves et disponibilites. |
 | Eleve direct | Un eleve inscrit accede automatiquement a l'espace du coach unique. |
 | i18n FR/EN/ES | Tous les libelles front doivent etre externalises; pas de texte dur dans les composants. |
@@ -63,11 +63,12 @@ Navigation mobile eleve: `Accueil`, `Planning`, `Notifications`, `Compte`.
 | Gestion Tarifs | E-COACH-007 | Profil / Parametres | Tarifs individuels/collectifs par duree, activation/desactivation. |
 | Statistiques Coach | E-COACH-008 | Tab Stats | Cours, heures, `revenu estime`, eleves actifs; mois prioritaire. |
 | Notifications Coach | E-COACH-009 | Tab Notifications | Nouvelles demandes, annulations, modifications, liens vers details. |
+| Messagerie Coach | E-COACH-010 | Tab Messagerie | Discussions liees aux creneaux, demandes, reservations ou evenements; le coach peut lire et repondre. |
 | Annulation / Modification Reservation | E-P0-001 | Detail reservation | Annuler cote coach ou eleve; modifier uniquement cote coach; notifier l'autre partie. |
 
-Navigation mobile coach: `Planning`, `Disponibilites`, `Eleves`, `Stats`, `Notifications`, `Profil`.
+Navigation mobile coach: `Planning`, `Disponibilites`, `Eleves`, `Stats`, `Notifications`, `Messagerie`, `Profil`.
 
-[ASSUMPTION] `Messageries` est retire de la navigation coach P0 car la messagerie reservation est P1 dans le PRD. Elle ne doit pas apparaitre comme onglet actif du MVP.
+La messagerie coach liee aux creneaux, demandes, reservations ou evenements est P0. La messagerie eleve et les comportements avances de conversation restent P1.
 
 ## Voice and Tone
 
@@ -90,7 +91,7 @@ Les specs visuelles vivent dans `DESIGN.md.Components`.
 
 | Component | Use | Behavioral rules |
 |---|---|---|
-| Bottom tab bar | Mobile coach/eleve | 4 onglets eleve, 6 onglets coach maximum. Badge unread sur Notifications. Pas d'onglet P1 en MVP. |
+| Bottom tab bar | Mobile coach/eleve | 4 onglets eleve, 7 onglets coach maximum. Badge unread sur Notifications. Pas d'onglet P1 en MVP. |
 | Week/day switch | Plannings coach et eleve | Vue semaine par defaut. Le switch conserve le jour/semaine courant et ne recharge pas toute la navigation. |
 | Calendar slot | Planning coach/eleve | Tap ouvre detail. Etats: available, pending, booked, expired, cancelled. Sur eleve, seuls available et ses propres cours apparaissent. |
 | Pending request marker | Planning coach | Affiche `nouveau` jusqu'a action coach. Si 2 demandes sur creneau, afficher le compteur. |
@@ -99,10 +100,11 @@ Les specs visuelles vivent dans `DESIGN.md.Components`.
 | Availability editor | Gestion disponibilites | Date/recurrence, heure debut/fin, duree 1h/1h30, lieu, preview creneaux generes avant enregistrement. A la modification d'une recurrence, ouvrir une popup demandant si le changement s'applique a cette occurrence seule ou a toute la serie. |
 | Course creation form | Coach | Selection eleve(s), type individuel/collectif, date/heure, duree, lieu, tarif auto, recurrence hebdomadaire pour coach uniquement. |
 | Price card | Public + accueil eleve | Affiche libelle, prix, duree, type. Aucun CTA de paiement. |
-| Student row | Eleves coach | Nom, niveau padel 1 a 9, age/tranche, dernier cours ou prochaine reservation si disponible. Tap ouvre fiche. |
+| Student row | Eleves coach | Nom, niveau padel 1 a 10, age/tranche, dernier cours ou prochaine reservation si disponible. Tap ouvre fiche. |
 | Private note editor | Fiche eleve coach | Pas d'autosave. Bouton `Modifier`, puis `Enregistrer`. Note jamais exposee eleve. |
 | Pack tracker | Fiche eleve coach | Cours inclus, utilises, restants. Action coach pour marquer une session consommee. Eleve ne peut ni creer ni acheter. |
 | Notification row | Onglets Notifications | Etat lu/non lu, type evenement, horodatage, lien vers demande/reservation. Push refuse n'affecte pas l'in-app. |
+| Coach message thread | Onglet Messagerie coach | Liste et detail des discussions liees a un creneau, une demande, une reservation ou un evenement. Le coach peut repondre; la messagerie eleve et les comportements avances restent P1. |
 | Stat card | Stats coach | Mois prioritaire. `revenu estime` explicitement libelle et non lie a paiement. |
 | Empty state | Toute liste | Explique quoi faire ensuite avec une seule action primaire si action utile existe. |
 
@@ -184,7 +186,7 @@ Sources internes mentionnent une identite Roland-Garros premium et rejettent exp
 - **Lifted — tarifs avant agenda:** l'eleve connait le prix avant de demander.
 - **Rejected — marketplace coachs:** aucun browsing de coachs en P0.
 - **Rejected — paiement:** afficher un prix ne doit jamais suggerer transaction.
-- **Rejected — messagerie generale:** commentaire de demande/refus seulement, pas conversation.
+- **Rejected — messagerie generale:** pas de conversation hors creneau, demande, reservation ou evenement. La messagerie coach liee a ces objets est P0; la messagerie eleve et les comportements avances restent P1.
 - **Rejected — statistiques sportives eleve:** hors P0/P1 tant que la valeur n'est pas claire.
 
 ## Key Flows
@@ -245,7 +247,7 @@ Failure: une autre demande pending existait sur le meme creneau -> elle est refu
 1. Antoine ouvre Eleves.
 2. Il recherche `Lea`.
 3. Il ouvre la fiche eleve.
-4. Il consulte niveau padel 1 a 9, age, contact, historique des cours/demandes et pack individuel.
+4. Il consulte niveau padel 1 a 10, age, contact, historique des cours/demandes et pack individuel.
 5. Il tape `Modifier` sur la note privee.
 6. Il ajoute une note de preparation.
 7. Il tape `Enregistrer`.
@@ -293,5 +295,5 @@ Failure: aucune donnee -> empty state explique que les stats apparaitront apres 
 | Modification d'une recurrence coach | Popup demandant d'appliquer le changement a l'occurrence seule ou a toute la serie. |
 | Modification P0 d'une reservation | Modification reservee au coach; l'eleve ne modifie pas une reservation en P0. |
 | Validation d'une demande quand d'autres pending existent sur le meme creneau | Les autres demandes passent en `refused` avec la note par defaut `Creneau deja pris`. |
-| Liste fermee de niveaux padel | Niveaux 1 a 9 confirmes. |
+| Liste fermee de niveaux padel | Niveaux 1 a 10 confirmes. |
 | Police finale de marque | Utiliser la police de base via `var(--font-base)`, modifiable facilement cote code. |

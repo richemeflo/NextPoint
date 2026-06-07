@@ -41,7 +41,7 @@ Les décisions structurantes sur validation coach, limite de 2 demandes par cré
 - Invitation lien/code coach: future évolution.
 - Limite demandes: 10 demandes en attente (`pending`) par élève.
 - Limite demandes par créneau: 2 demandes en attente (`pending`) maximum.
-- Annulation et modification: P0.
+- Annulation coach/élève et modification coach-only: P0.
 - Notifications push coach sur nouvelle demande: P0.
 - Toute notification push crée aussi une notification in-app dans l’onglet Notifications: P0.
 - Notifications push demandeur sur validation/refus coach: P0.
@@ -107,7 +107,7 @@ Pour tenir un MVP strict et mobile-first:
 - récurrence P0 ponctuelle, quotidienne ou hebdomadaire;
 - cours récurrent hebdomadaire créé par le coach uniquement;
 - notification push coach P0 sur nouvelle demande;
-- annulation/modification en P0;
+- annulation coach/élève et modification coach-only en P0;
 - notification in-app miroir pour chaque notification push;
 - notifications avancées hors événements P0 en P1;
 - Google Agenda en P1;

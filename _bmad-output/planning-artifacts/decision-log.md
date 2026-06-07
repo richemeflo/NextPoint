@@ -24,12 +24,12 @@ Statut: décisions produit structurantes à jour
 - L’élève ne peut pas créer de demande récurrente.
 - Le coach peut créer un cours collectif en sélectionnant des élèves.
 - L’élève peut demander un cours collectif en sélectionnant des joueurs de l’application.
-- L’annulation de réservation est P0.
-- La modification de réservation est P0.
+- L’annulation de réservation est P0 pour le coach et l’élève.
+- La modification de réservation est P0 et réservée au coach.
 - L’élève peut annuler jusqu’à l’heure de début du cours.
 - Toute nouvelle demande déclenche une notification push coach en P0.
 - Validation/refus par le coach déclenche une notification push au demandeur en P0.
-- Annulation/modification déclenche une notification push à la partie qui n’a pas initié l’action en P0.
+- Annulation par le coach ou l’élève, et modification par le coach, déclenchent une notification push à la partie qui n’a pas initié l’action en P0.
 - Chaque notification push crée aussi une notification in-app visible dans l’onglet Notifications.
 - Coach et élève disposent d’un onglet Notifications.
 - Les statistiques coach sont P0 en version légère, avec `revenu estimé` comme libellé explicite.
@@ -46,7 +46,7 @@ Statut: décisions produit structurantes à jour
 - Une demande élève peut contenir un commentaire libre.
 - Un refus coach ne demande pas de confirmation et peut contenir un commentaire transmis à l’élève.
 - La page élève `Planning/Demandes` reste unique avec filtres.
-- Les filtres âge côté coach utilisent des tranches; le niveau est une liste fermée cible 1 à 9.
+- Les filtres âge côté coach utilisent des tranches; le niveau est une liste fermée cible 1 à 10.
 - La note privée se modifie via `Modifier` puis `Enregistrer`, sans autosave.
 - La gestion des tarifs est dans un écran dédié.
 - Les statistiques coach priorisent le mois, puis trimestre/année; semaine est secondaire.

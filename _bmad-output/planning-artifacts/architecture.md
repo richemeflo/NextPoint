@@ -27,7 +27,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 ### Requirements Overview
 
 **Functional Requirements:**
-Le PRD contient environ 110 exigences fonctionnelles, organisees autour de ces blocs: comptes/roles, profils coach/eleve, relation coach/eleve, disponibilites, reservations, tarifs, eleves/notes privees, mobile/webapp, statistiques coach et notifications in-app.
+Le PRD contient environ 112 exigences fonctionnelles, organisees autour de ces blocs: comptes/roles, profils coach/eleve, relation coach/eleve, disponibilites, reservations, tarifs, eleves/notes privees, mobile/webapp, statistiques coach, notifications in-app et messagerie coach.
 
 Le graphe fonctionnel du MVP converge vers quatre noyaux architecturaux:
 
@@ -38,7 +38,7 @@ Le graphe fonctionnel du MVP converge vers quatre noyaux architecturaux:
    Gere plages de disponibilites, generation de creneaux, demandes `pending`, confirmation/refus, annulation/modification, expiration 7 jours, cours individuels/collectifs et recurrence coach.
 
 3. **Communication & Notifications**
-   Gere notification push, notification in-app miroir, historique consultable, refus push systeme, liens vers evenements concernes et commentaires demande/refus.
+   Gere notification push, notification in-app miroir, historique consultable, refus push systeme, liens vers evenements concernes, commentaires demande/refus et messagerie coach liee aux creneaux, demandes, reservations ou evenements.
 
 4. **Experience System**
    Gere app mobile-first, webapp complementaire, i18n FR/EN/ES, design tokens, light/dark theme, planning semaine/jour et UX coherente coach/eleve.
@@ -62,7 +62,8 @@ Le MVP doit rester single-coach et padel-only, mais le modele ne doit pas etre c
 Dependances fortes identifiees:
 
 - Une action de reservation depend des permissions, du statut du creneau, du compteur de demandes `pending`, de la limite eleve, du tarif applicable et de la creation de notifications.
-- Une validation coach doit modifier la demande validee, bloquer le creneau, traiter les autres demandes du meme creneau et notifier les eleves concernes.
+- Le tarif applicable depend du type de cours, de la duree, des tarifs actifs et des criteres d'applicabilite definis par le coach, par exemple certains eleves, tarif etudiant, tarif senior, week-end ou jour ferie.
+- Une validation coach doit modifier la demande validee, bloquer le creneau, refuser automatiquement les autres demandes pending du meme creneau avec le message produit defini, et notifier les eleves concernes.
 - Une notification push n'est jamais suffisante seule: chaque evenement fonctionnel doit aussi creer une notification in-app.
 - La webapp et l'app mobile doivent consommer les memes regles serveur, pas reimplementer les regles metier cote client.
 - Les donnees privees coach, surtout les notes eleves, imposent une separation stricte des lectures selon role et relation.
@@ -72,7 +73,7 @@ Dependances fortes identifiees:
 - Controle d'acces strict par role et relation coach/eleve.
 - Transactions et contraintes serveur pour eviter les conflits de reservation.
 - Machine d'etat explicite pour creneaux et reservations: `available`, `pending`, `booked`, `confirmed`, `refused`, `expired`, `cancelled`.
-- Effets de bord fiables apres mutation: notifications push, notifications in-app, statut des demandes concurrentes, liberation ou blocage de creneau.
+- Effets de bord fiables apres mutation: notifications push, notifications in-app, statut des demandes concurrentes, liberation ou blocage de creneau, messages coach lies aux evenements de planning/reservation.
 - Expiration automatique apres 7 jours.
 - Synchronisation mobile/webapp.
 - Internationalisation FR/EN/ES des le depart.
@@ -208,7 +209,7 @@ Fast Refresh, serveur Expo, developpement iOS/Android/web depuis une base commun
 
 **Decision:** Hybrid Supabase communication model: direct Supabase client reads for simple RLS-protected queries, Edge Functions for all business-critical mutations.
 
-**API Style:** Use Supabase client queries for read models and Supabase Edge Functions as command endpoints for workflows such as `requestBooking`, `approveBooking`, `refuseBooking`, `cancelBooking`, `modifyBooking`, `consumeLessonPack`, and notification mirroring.
+**API Style:** Use Supabase client queries for read models and Supabase Edge Functions as command endpoints for workflows such as `requestBooking`, `approveBooking`, `refuseBooking`, `cancelBooking`, coach-only `modifyBooking`, `consumeLessonPack`, and notification mirroring.
 
 **Business Command Pattern:** Booking-related operations are commands, not generic CRUD. Each command validates permissions, checks current state, applies transactional database changes, creates required in-app notifications, and returns a typed response.
 
@@ -474,6 +475,7 @@ nextpoint/
 │       │   │   │   └── [studentId].tsx
 │       │   │   ├── stats.tsx
 │       │   │   ├── notifications.tsx
+│       │   │   ├── messaging.tsx
 │       │   │   └── profile.tsx
 │       │   ├── (student)/
 │       │   │   ├── _layout.tsx
@@ -492,6 +494,7 @@ nextpoint/
 │       │   │   ├── scheduling/
 │       │   │   ├── bookings/
 │       │   │   ├── notifications/
+│       │   │   ├── messaging/
 │       │   │   ├── students/
 │       │   │   ├── pricing/
 │       │   │   ├── lesson-packs/
@@ -530,7 +533,8 @@ nextpoint/
 │           │   │   ├── cancel-booking.ts
 │           │   │   └── modify-booking.ts
 │           │   ├── lesson-packs/
-│           │   └── notifications/
+│           │   ├── notifications/
+│           │   └── messaging/
 │           ├── domain/
 │           │   ├── booking-status.ts
 │           │   ├── slot-status.ts
@@ -615,6 +619,8 @@ nextpoint/
 **Reservations:** `features/bookings`, booking contracts, booking Edge Functions, booking SQL tests.
 
 **Notifications:** `features/notifications`, `app/(coach)/notifications.tsx`, `app/(student)/notifications.tsx`, notification contracts and DB tables.
+
+**Messagerie coach:** `features/messaging`, `app/(coach)/messaging.tsx`, messaging contracts and DB tables for discussions linked to slots, booking requests, reservations or events.
 
 **Tarifs:** `features/pricing`, coach profile/settings routes, pricing tables/migrations.
 

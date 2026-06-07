@@ -121,7 +121,7 @@ Orientation produit:
 - Messagerie liée à une réservation, prévue en P1.
 - Écran coach regroupant les messageries des créneaux/réservations/événements, prévu en P1.
 - Génération de facture, prévue en V2.
-- Annulation élève possible jusqu’à l’heure du cours en P1.
+- Annulation élève possible jusqu’à l’heure du cours en P0; modification de réservation réservée au coach en P0.
 - Notification élève paramétrable lorsqu’une place se libère sur un cours collectif en P1.
 - Synchronisation Google Agenda P1 côté coach et élève si connecté.
 - Masquage des tarifs par élève.
