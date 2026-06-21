@@ -1,6 +1,10 @@
+---
+baseline_commit: e3820efc56c1822d6ea3299451f517306b6e3c29
+---
+
 # Story 1.4: Créer l’authentification email/password et les sessions
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -20,16 +24,16 @@ so that je puisse accéder à mon espace NextPoint de manière sécurisée.
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 1.4 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer le flux auth/roles/routes selon la story (AC: tous)
-  - [ ] Utiliser Supabase Auth et les contrats/types existants, sans service-role cote client.
-  - [ ] Ajouter les guards Expo Router dans les groupes de routes concernes.
-  - [ ] Externaliser tous les libelles visibles FR/EN/ES.
-- [ ] Tester les acces autorises et refuses (AC: securite)
-  - [ ] Couvrir utilisateur non connecte, coach, eleve et mauvais role.
+- [x] Verifier les preconditions et dependances de Story 1.4 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer le flux auth/roles/routes selon la story (AC: tous)
+  - [x] Utiliser Supabase Auth et les contrats/types existants, sans service-role cote client.
+  - [x] Ajouter les guards Expo Router dans les groupes de routes concernes.
+  - [x] Externaliser tous les libelles visibles FR/EN/ES.
+- [x] Tester les acces autorises et refuses (AC: securite)
+  - [x] Couvrir utilisateur non connecte, coach, eleve et mauvais role.
 
 ## Interventions utilisateur requises
 
@@ -139,18 +143,81 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Codex GPT-5
 
 ### Debug Log References
+
+- 2026-06-21: Activation `bmad-dev-story` effectuee; workflow personnalise resolu sans etapes prepend/append.
+- 2026-06-21: Baseline git propre confirmee au commit `e3820efc56c1822d6ea3299451f517306b6e3c29`.
+- 2026-06-21: Preconditions confirmees: stories 1.1 a 1.3 en review, Supabase local initialise, variables publiques documentees, socle theme/i18n disponible.
+- 2026-06-21: Perimetre confirme avec l'architecture: Story 1.4 gere identite, session et acces connecte/non connecte; l'autorisation par role reste dans Story 1.5.
+- 2026-06-21: Aucune dependance bloquante manquante identifiee.
+- 2026-06-21: Integration Supabase locale validee avec une fixture temporaire: inscription avec session, deconnexion, reconnexion avec session, puis suppression de la fixture.
+- 2026-06-21: `npm run typecheck`, `npm run lint`, `npm test`, `npm run supabase:test:db` et `npx expo install --check` passent.
+- 2026-06-21: Expo Web compile et retourne HTTP 200 pour `/`, `/sign-in` et `/sign-up`; validation sur appareil physique non executee.
+- 2026-06-21: Audit npm: 11 vulnerabilites moderees transitives dans l'outillage Expo via `uuid`/`xcode`; la correction force Expo 46 et n'est pas appliquee.
 
 ### Completion Notes List
 
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+- Implementation demarree avec baseline git `e3820efc56c1822d6ea3299451f517306b6e3c29`.
+- Client Supabase universel ajoute avec stockage AsyncStorage sur mobile, persistance de session, refresh au premier plan et cle publique uniquement.
+- Provider auth ajoute pour restaurer la session et exposer inscription, connexion et deconnexion sans afficher les erreurs techniques Supabase.
+- Routes reorganisees en groupes `(auth)` et `(app)` proteges par `Stack.Protected`; une deconnexion retire automatiquement l'acces au groupe applicatif.
+- Formulaires React Hook Form + Zod ajoutes avec erreurs de champ et erreurs auth traduites en FR/EN/ES.
+- Contrats et tests couvrent donnees invalides, mapping d'erreurs, utilisateur non connecte et frontiere applicative partagee pour `coach` et `eleve`.
+- Le refus des routes d'un mauvais role n'est volontairement pas implemente dans cette story: la frontiere testee confirme que cette decision appartient a Story 1.5.
+- Les trois fichiers d'exemple utilisent `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; aucune cle secrete ou service-role n'est presente dans le client.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/1-4-creer-lauthentification-email-password-et-les-sessions.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `.env.example`
+- `env.example`
+- `apps/mobile/.env.example`
+- `apps/mobile/package.json`
+- `apps/mobile/tsconfig.json`
+- `apps/mobile/src/app/_layout.tsx`
+- `apps/mobile/src/app/(app)/_layout.tsx`
+- `apps/mobile/src/app/(app)/index.tsx`
+- `apps/mobile/src/app/(app)/explore.tsx`
+- `apps/mobile/src/app/(auth)/_layout.tsx`
+- `apps/mobile/src/app/(auth)/sign-in.tsx`
+- `apps/mobile/src/app/(auth)/sign-up.tsx`
+- `apps/mobile/src/components/external-link.tsx`
+- `apps/mobile/src/components/ui/button.tsx`
+- `apps/mobile/src/components/ui/text-field.tsx`
+- `apps/mobile/src/features/auth/access-policy.ts`
+- `apps/mobile/src/features/auth/access-policy.test.ts`
+- `apps/mobile/src/features/auth/auth-context.ts`
+- `apps/mobile/src/features/auth/auth-error.ts`
+- `apps/mobile/src/features/auth/auth-error.test.ts`
+- `apps/mobile/src/features/auth/auth-provider.tsx`
+- `apps/mobile/src/features/auth/auth-screen.tsx`
+- `apps/mobile/src/features/auth/auth-service.ts`
+- `apps/mobile/src/i18n/index.ts`
+- `apps/mobile/src/i18n/translations.ts`
+- `apps/mobile/src/lib/supabase/client.ts`
+- `package.json`
+- `package-lock.json`
+- `packages/shared/package.json`
+- `packages/shared/tsconfig.json`
+- `packages/shared/src/contracts/auth.ts`
+- `packages/shared/src/contracts/auth.test.ts`
+- `packages/shared/src/index.ts`
+- `scripts/verify-env-examples.mjs`
+- `tsconfig.tests.json`
+- Deplaces: `apps/mobile/src/app/index.tsx` et `apps/mobile/src/app/explore.tsx` vers `apps/mobile/src/app/(app)/`.
+- Supprime: `apps/mobile/src/types/expo-template-shims.d.ts`.
+
+### Change Log
+
+- 2026-06-21: Ajout du client Supabase public, de la persistance de session et du provider auth.
+- 2026-06-21: Ajout des formulaires inscription/connexion traduits et de la deconnexion.
+- 2026-06-21: Reorganisation Expo Router en groupes auth/app avec routes protegees.
+- 2026-06-21: Ajout des contrats Zod, tests auth/acces et validation d'integration Supabase locale.
 
 ## Completion Note
 

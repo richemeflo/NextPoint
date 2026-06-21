@@ -6,27 +6,34 @@ import { useTheme } from '@/hooks/use-theme';
 
 export type TextFieldProps = TextInputProps & {
   label: string;
+  error?: string;
 };
 
-export function TextField({ label, style, ...props }: TextFieldProps) {
+export function TextField({ label, error, style, ...props }: TextFieldProps) {
   const theme = useTheme();
 
   return (
     <View style={styles.wrapper}>
       <ThemedText type="smallBold">{label}</ThemedText>
       <TextInput
+        accessibilityHint={error}
         placeholderTextColor={theme.textMuted}
         style={[
           styles.input,
           {
             backgroundColor: theme.surface,
-            borderColor: theme.border,
+            borderColor: error ? theme.error : theme.border,
             color: theme.text,
           },
           style,
         ]}
         {...props}
       />
+      {error ? (
+        <ThemedText type="small" themeColor="error">
+          {error}
+        </ThemedText>
+      ) : null}
     </View>
   );
 }

@@ -17,8 +17,18 @@ export function getDeviceLocale(): SupportedLocale {
   return normalizeLocale(Intl.DateTimeFormat().resolvedOptions().locale);
 }
 
-export function translate(key: TranslationKey, locale: SupportedLocale = getDeviceLocale()) {
-  return dictionaries[locale][key] ?? dictionaries[defaultLocale][key];
+type TranslationParams = Record<string, string | number>;
+
+export function translate(
+  key: TranslationKey,
+  locale: SupportedLocale = getDeviceLocale(),
+  params: TranslationParams = {}
+) {
+  const template = dictionaries[locale][key] ?? dictionaries[defaultLocale][key];
+
+  return template.replace(/\{\{(\w+)\}\}/g, (match, name: string) =>
+    Object.hasOwn(params, name) ? String(params[name]) : match
+  );
 }
 
 export function useTranslation() {
@@ -27,7 +37,7 @@ export function useTranslation() {
   return useMemo(
     () => ({
       locale,
-      t: (key: TranslationKey) => translate(key, locale),
+      t: (key: TranslationKey, params?: TranslationParams) => translate(key, locale, params),
     }),
     [locale]
   );

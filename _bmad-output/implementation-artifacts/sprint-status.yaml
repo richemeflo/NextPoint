@@ -1,5 +1,5 @@
 # generated: 2026-06-21T12:16:42+02:00
-# last_updated: 2026-06-21T16:07:15+02:00
+# last_updated: 2026-06-21T17:53:34+02:00
 # project: NextPoint
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review in a fresh context.
 
 generated: 2026-06-21T12:16:42+02:00
-last_updated: 2026-06-21T16:07:15+02:00
+last_updated: 2026-06-21T17:53:34+02:00
 project: NextPoint
 project_key: NOKEY
 tracking_system: file-system
@@ -46,7 +46,7 @@ development_status:
   1-1-initialiser-lapplication-expo-mobile-web: review
   1-2-initialiser-supabase-migrations-types-et-ci-legere: review
   1-3-mettre-en-place-le-socle-ui-tokens-themes-et-i18n: review
-  1-4-creer-lauthentification-email-password-et-les-sessions: ready-for-dev
+  1-4-creer-lauthentification-email-password-et-les-sessions: review
   1-5-gerer-les-roles-routes-protegees-et-navigation-coach-eleve: ready-for-dev
   1-6-creer-et-modifier-le-profil-eleve: ready-for-dev
   1-7-creer-et-modifier-le-profil-coach: ready-for-dev

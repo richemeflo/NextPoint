@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -10,6 +11,7 @@ import { Feedback } from '@/components/ui/feedback';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { TextField } from '@/components/ui/text-field';
 import { BottomTabInset, MaxContentWidth, Radii, Spacing } from '@/constants/theme';
+import { useAuth } from '@/features/auth/auth-context';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/i18n';
 
@@ -22,6 +24,18 @@ const metrics = [
 export default function HomeScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
+  const { signOut, user } = useAuth();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState(false);
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+    setSignOutError(false);
+    const result = await signOut();
+
+    if (!result.ok) setSignOutError(true);
+    setIsSigningOut(false);
+  };
 
   return (
     <ThemedView style={styles.screen}>
@@ -61,6 +75,27 @@ export default function HomeScreen() {
               </Card>
             ))}
           </View>
+
+          <Card elevated style={styles.sessionCard}>
+            <Feedback
+              title={t('auth.sessionTitle')}
+              message={t('auth.sessionDescription', { email: user?.email ?? '' })}
+              tone="success"
+            />
+            {signOutError ? (
+              <Feedback
+                title={t('auth.error.title')}
+                message={t('auth.error.generic')}
+                tone="error"
+              />
+            ) : null}
+            <Button
+              disabled={isSigningOut}
+              label={isSigningOut ? t('auth.signingOut') : t('auth.signOutAction')}
+              onPress={() => void handleSignOut()}
+              variant="secondary"
+            />
+          </Card>
 
           <Card elevated style={styles.previewCard}>
             <View style={styles.previewHeader}>
@@ -137,6 +172,9 @@ const styles = StyleSheet.create({
   },
   previewCard: {
     gap: Spacing.four,
+  },
+  sessionCard: {
+    gap: Spacing.three,
   },
   previewHeader: {
     flexDirection: Platform.select({ web: 'row', default: 'column' }),

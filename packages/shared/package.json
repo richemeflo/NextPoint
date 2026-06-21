@@ -8,5 +8,8 @@
     ".": "./src/index.ts",
     "./contracts/*": "./src/contracts/*",
     "./types/database": "./src/types/database.types.ts"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
   }
 }

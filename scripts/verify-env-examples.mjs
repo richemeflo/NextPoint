@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 const files = ['.env.example', 'env.example', 'apps/mobile/.env.example'];
 const forbiddenPatterns = [
   /service_role/i,
+  /EXPO_PUBLIC_[A-Z0-9_]*(?:SERVICE_ROLE|SECRET)/,
   /SUPABASE_ACCESS_TOKEN=(?!replace_me_in_github_secrets)/,
   /SUPABASE_DB_PASSWORD=(?!replace_me_in_github_secrets)/,
   /eyJ[A-Za-z0-9_-]{20,}/,

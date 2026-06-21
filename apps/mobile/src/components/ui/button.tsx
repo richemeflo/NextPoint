@@ -18,18 +18,25 @@ export type ButtonProps = Omit<PressableProps, 'style'> & {
   style?: StyleProp<ViewStyle>;
 };
 
-export function Button({ label, variant = 'primary', style, ...props }: ButtonProps) {
+export function Button({
+  label,
+  variant = 'primary',
+  style,
+  disabled = false,
+  ...props
+}: ButtonProps) {
   const theme = useTheme();
   const isPrimary = variant === 'primary';
 
   return (
     <Pressable
+      disabled={disabled}
       style={({ pressed }) => [
         styles.button,
         {
           backgroundColor: isPrimary ? theme.primary : theme.surface,
           borderColor: isPrimary ? theme.primary : theme.border,
-          opacity: pressed ? 0.82 : 1,
+          opacity: disabled ? 0.55 : pressed ? 0.82 : 1,
         },
         style,
       ]}
