@@ -1,0 +1,145 @@
+export const supportedLocales = ['fr', 'en', 'es'] as const;
+
+export type SupportedLocale = (typeof supportedLocales)[number];
+
+export const defaultLocale: SupportedLocale = 'fr';
+
+export const dictionaries = {
+  fr: {
+    'nav.home': 'Accueil',
+    'nav.foundation': 'Fondations',
+    'common.docs': 'Docs',
+    'common.nextpoint': 'NextPoint',
+    'home.eyebrow': 'Socle mobile-first',
+    'home.title': 'Réserver, valider et suivre les cours de padel sans friction.',
+    'home.subtitle':
+      'Une base UI premium, chaude et traduisible pour construire les parcours coach et élève.',
+    'home.primaryAction': 'Demander un créneau',
+    'home.secondaryAction': 'Voir les fondations',
+    'home.previewTitle': 'Aperçu parcours P0',
+    'home.previewDescription':
+      'Les prochains écrans utiliseront les mêmes primitives pour les demandes, disponibilités et profils.',
+    'home.metricRequests': 'Demandes en attente',
+    'home.metricStudents': 'Élèves actifs',
+    'home.metricSlots': 'Créneaux cette semaine',
+    'home.formLabel': 'Recherche élève ou créneau',
+    'home.formPlaceholder': 'Nom, date ou note coach',
+    'home.feedbackTitle': 'Base prête pour les stories métier',
+    'home.feedbackMessage':
+      'Les textes visibles passent par i18n et les couleurs viennent des tokens NextPoint.',
+    'foundation.eyebrow': 'Design system P0',
+    'foundation.title': 'Tokens, thèmes et primitives réutilisables.',
+    'foundation.subtitle':
+      'La palette terre battue, ocre et vert profond est exposée en light et dark theme.',
+    'foundation.tokensTitle': 'Tokens actifs',
+    'foundation.themeTitle': 'Thème',
+    'foundation.i18nTitle': 'Internationalisation',
+    'foundation.i18nBody': 'Français, anglais et espagnol sont disponibles via le même helper.',
+    'foundation.primitiveTitle': 'Primitives UI',
+    'foundation.primitiveBody':
+      'Boutons, champs, cartes, statuts et feedback partagent les tokens du thème courant.',
+    'foundation.token.primary': 'Primaire',
+    'foundation.token.secondary': 'Secondaire',
+    'foundation.token.background': 'Fond',
+    'foundation.token.surface': 'Surface',
+    'foundation.token.darkBackground': 'Fond sombre',
+    'foundation.token.darkSurface': 'Surface sombre',
+    'status.pending': 'En attente',
+    'status.confirmed': 'Confirmé',
+    'status.refused': 'Refusé',
+    'theme.light': 'Clair',
+    'theme.dark': 'Sombre',
+  },
+  en: {
+    'nav.home': 'Home',
+    'nav.foundation': 'Foundations',
+    'common.docs': 'Docs',
+    'common.nextpoint': 'NextPoint',
+    'home.eyebrow': 'Mobile-first baseline',
+    'home.title': 'Book, approve, and track padel lessons without friction.',
+    'home.subtitle':
+      'A warm, premium, translatable UI base for coach and student journeys.',
+    'home.primaryAction': 'Request a slot',
+    'home.secondaryAction': 'View foundations',
+    'home.previewTitle': 'P0 journey preview',
+    'home.previewDescription':
+      'Upcoming screens will reuse these primitives for requests, availability, and profiles.',
+    'home.metricRequests': 'Pending requests',
+    'home.metricStudents': 'Active students',
+    'home.metricSlots': 'Slots this week',
+    'home.formLabel': 'Search student or slot',
+    'home.formPlaceholder': 'Name, date, or coach note',
+    'home.feedbackTitle': 'Ready for feature stories',
+    'home.feedbackMessage':
+      'Visible text uses i18n and colors come from NextPoint tokens.',
+    'foundation.eyebrow': 'P0 design system',
+    'foundation.title': 'Tokens, themes, and reusable primitives.',
+    'foundation.subtitle':
+      'The clay, ochre, and deep green palette is exposed in light and dark themes.',
+    'foundation.tokensTitle': 'Active tokens',
+    'foundation.themeTitle': 'Theme',
+    'foundation.i18nTitle': 'Internationalization',
+    'foundation.i18nBody': 'French, English, and Spanish are available through one helper.',
+    'foundation.primitiveTitle': 'UI primitives',
+    'foundation.primitiveBody':
+      'Buttons, fields, cards, statuses, and feedback share the current theme tokens.',
+    'foundation.token.primary': 'Primary',
+    'foundation.token.secondary': 'Secondary',
+    'foundation.token.background': 'Background',
+    'foundation.token.surface': 'Surface',
+    'foundation.token.darkBackground': 'Dark background',
+    'foundation.token.darkSurface': 'Dark surface',
+    'status.pending': 'Pending',
+    'status.confirmed': 'Confirmed',
+    'status.refused': 'Refused',
+    'theme.light': 'Light',
+    'theme.dark': 'Dark',
+  },
+  es: {
+    'nav.home': 'Inicio',
+    'nav.foundation': 'Bases',
+    'common.docs': 'Docs',
+    'common.nextpoint': 'NextPoint',
+    'home.eyebrow': 'Base mobile-first',
+    'home.title': 'Reservar, validar y seguir clases de pádel sin fricción.',
+    'home.subtitle':
+      'Una base UI premium, cálida y traducible para recorridos de coach y alumno.',
+    'home.primaryAction': 'Pedir un horario',
+    'home.secondaryAction': 'Ver bases',
+    'home.previewTitle': 'Vista previa P0',
+    'home.previewDescription':
+      'Las próximas pantallas reutilizarán estas primitivas para solicitudes, disponibilidad y perfiles.',
+    'home.metricRequests': 'Solicitudes pendientes',
+    'home.metricStudents': 'Alumnos activos',
+    'home.metricSlots': 'Horarios esta semana',
+    'home.formLabel': 'Buscar alumno u horario',
+    'home.formPlaceholder': 'Nombre, fecha o nota del coach',
+    'home.feedbackTitle': 'Base lista para historias de producto',
+    'home.feedbackMessage':
+      'Los textos visibles usan i18n y los colores vienen de los tokens NextPoint.',
+    'foundation.eyebrow': 'Sistema de diseño P0',
+    'foundation.title': 'Tokens, temas y primitivas reutilizables.',
+    'foundation.subtitle':
+      'La paleta tierra batida, ocre y verde profundo existe en tema claro y oscuro.',
+    'foundation.tokensTitle': 'Tokens activos',
+    'foundation.themeTitle': 'Tema',
+    'foundation.i18nTitle': 'Internacionalización',
+    'foundation.i18nBody': 'Francés, inglés y español están disponibles con el mismo helper.',
+    'foundation.primitiveTitle': 'Primitivas UI',
+    'foundation.primitiveBody':
+      'Botones, campos, tarjetas, estados y feedback comparten los tokens del tema actual.',
+    'foundation.token.primary': 'Primario',
+    'foundation.token.secondary': 'Secundario',
+    'foundation.token.background': 'Fondo',
+    'foundation.token.surface': 'Superficie',
+    'foundation.token.darkBackground': 'Fondo oscuro',
+    'foundation.token.darkSurface': 'Superficie oscura',
+    'status.pending': 'Pendiente',
+    'status.confirmed': 'Confirmado',
+    'status.refused': 'Rechazado',
+    'theme.light': 'Claro',
+    'theme.dark': 'Oscuro',
+  },
+} as const;
+
+export type TranslationKey = keyof typeof dictionaries.fr;

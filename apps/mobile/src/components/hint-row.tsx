@@ -7,11 +7,11 @@ import { ThemedView } from './themed-view';
 import { Spacing } from '@/constants/theme';
 
 type HintRowProps = {
-  title?: string;
-  hint?: ReactNode;
+  title: string;
+  hint: ReactNode;
 };
 
-export function HintRow({ title = 'Try editing', hint = 'app/index.tsx' }: HintRowProps) {
+export function HintRow({ title, hint }: HintRowProps) {
   return (
     <View style={styles.stepRow}>
       <ThemedText type="small">{title}</ThemedText>

@@ -1,98 +1,155 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Feedback } from '@/components/ui/feedback';
+import { StatusBadge } from '@/components/ui/status-badge';
+import { TextField } from '@/components/ui/text-field';
+import { BottomTabInset, MaxContentWidth, Radii, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+import { useTranslation } from '@/i18n';
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+const metrics = [
+  { value: '4', labelKey: 'home.metricRequests' },
+  { value: '18', labelKey: 'home.metricStudents' },
+  { value: '12', labelKey: 'home.metricSlots' },
+] as const;
 
 export default function HomeScreen() {
+  const { t } = useTranslation();
+  const theme = useTheme();
+
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+    <ThemedView style={styles.screen}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        style={styles.scroll}
+        showsVerticalScrollIndicator={false}>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.hero}>
+            <AnimatedIcon />
+            <View style={styles.heroCopy}>
+              <ThemedText type="smallBold" themeColor="primary">
+                {t('home.eyebrow')}
+              </ThemedText>
+              <ThemedText type="title" style={styles.title}>
+                {t('home.title')}
+              </ThemedText>
+              <ThemedText type="default" themeColor="textMuted" style={styles.subtitle}>
+                {t('home.subtitle')}
+              </ThemedText>
+            </View>
+            <View style={styles.actions}>
+              <Button label={t('home.primaryAction')} />
+              <Button label={t('home.secondaryAction')} variant="secondary" />
+            </View>
+          </View>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+          <View style={styles.metricGrid}>
+            {metrics.map((metric) => (
+              <Card key={metric.labelKey} style={styles.metricCard}>
+                <ThemedText type="subtitle" themeColor="primary">
+                  {metric.value}
+                </ThemedText>
+                <ThemedText type="small" themeColor="textMuted">
+                  {t(metric.labelKey)}
+                </ThemedText>
+              </Card>
+            ))}
+          </View>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+          <Card elevated style={styles.previewCard}>
+            <View style={styles.previewHeader}>
+              <View style={styles.previewCopy}>
+                <ThemedText type="smallBold" themeColor="secondary">
+                  {t('home.previewTitle')}
+                </ThemedText>
+                <ThemedText type="small" themeColor="textMuted">
+                  {t('home.previewDescription')}
+                </ThemedText>
+              </View>
+              <StatusBadge status="pending" />
+            </View>
+            <TextField label={t('home.formLabel')} placeholder={t('home.formPlaceholder')} />
+            <Feedback
+              title={t('home.feedbackTitle')}
+              message={t('home.feedbackMessage')}
+              tone="success"
+            />
+          </Card>
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
+          <View style={[styles.clayLine, { backgroundColor: theme.primary }]} />
+        </SafeAreaView>
+      </ScrollView>
     </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
+  },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    alignItems: 'center',
+    paddingBottom: BottomTabInset + Spacing.five,
   },
   safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
+    width: '100%',
     maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
     paddingHorizontal: Spacing.four,
+    paddingTop: Platform.select({ web: Spacing.seven, default: Spacing.four }),
+    gap: Spacing.five,
+  },
+  hero: {
     gap: Spacing.four,
   },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
+  heroCopy: {
     gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+  },
+  title: {
+    maxWidth: 760,
+  },
+  subtitle: {
+    maxWidth: 640,
+  },
+  actions: {
+    flexDirection: Platform.select({ web: 'row', default: 'column' }),
+    gap: Spacing.three,
+    alignItems: Platform.select({ web: 'flex-start', default: 'stretch' }),
+  },
+  metricGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.three,
+  },
+  metricCard: {
+    minWidth: 160,
+    flex: 1,
+    gap: Spacing.one,
+  },
+  previewCard: {
+    gap: Spacing.four,
+  },
+  previewHeader: {
+    flexDirection: Platform.select({ web: 'row', default: 'column' }),
+    justifyContent: 'space-between',
+    gap: Spacing.three,
+  },
+  previewCopy: {
+    flex: 1,
+    gap: Spacing.one,
+  },
+  clayLine: {
+    height: Spacing.one,
+    borderRadius: Radii.small,
+    opacity: 0.86,
   },
 });
