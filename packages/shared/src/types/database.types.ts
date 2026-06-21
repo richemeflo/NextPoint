@@ -67,6 +67,36 @@ export type Database = {
         }
         Relationships: []
       }
+      student_coach_relationships: {
+        Row: {
+          association_method: string
+          coach_id: string
+          created_at: string
+          id: string
+          status: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          association_method?: string
+          coach_id: string
+          created_at?: string
+          id?: string
+          status?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          association_method?: string
+          coach_id?: string
+          created_at?: string
+          id?: string
+          status?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       student_profiles: {
         Row: {
           age: number
@@ -126,7 +156,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      assign_student_to_single_coach: {
+        Args: { student_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_language: "fr" | "en" | "es"

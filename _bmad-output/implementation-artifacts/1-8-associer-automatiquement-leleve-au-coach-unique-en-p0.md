@@ -1,6 +1,10 @@
+---
+baseline_commit: 8b13f492a2c7d92c5f79ccbf25a2924915e051b0
+---
+
 # Story 1.8: Associer automatiquement l’élève au coach unique en P0
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -20,16 +24,16 @@ so that je puisse accéder à l’espace de réservation sans lien ni code d’i
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 1.8 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer le modele et l'ecran profil/association concernes (AC: tous)
-  - [ ] Utiliser React Hook Form + Zod pour validation si formulaire.
-  - [ ] Persister via Supabase avec RLS, mapping snake_case/camelCase type.
-  - [ ] Conserver le contexte P0 single-coach sans invitation marketplace.
-- [ ] Tester confidentialite et proprietaire du profil (AC: securite)
-  - [ ] Verifier que l'utilisateur non proprietaire ne peut pas modifier les donnees.
+- [x] Verifier les preconditions et dependances de Story 1.8 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer le modele et l'ecran profil/association concernes (AC: tous)
+  - [x] Utiliser React Hook Form + Zod pour validation si formulaire.
+  - [x] Persister via Supabase avec RLS, mapping snake_case/camelCase type.
+  - [x] Conserver le contexte P0 single-coach sans invitation marketplace.
+- [x] Tester confidentialite et proprietaire du profil (AC: securite)
+  - [x] Verifier que l'utilisateur non proprietaire ne peut pas modifier les donnees.
 
 ## Interventions utilisateur requises
 
@@ -139,18 +143,56 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Codex GPT-5
+
+### Implementation Plan
+
+- Ajouter une relation coach/eleve durable, idempotente et extensible sans exposer de mutation client.
+- Creer automatiquement la relation depuis les roles, y compris pour les eleves existants lorsque le coach P0 est cree.
+- Autoriser le coach a lire uniquement les profils de ses eleves actifs et couvrir les frontieres RLS en integration.
 
 ### Debug Log References
+
+- 2026-06-21: Activation `bmad-dev-story` effectuee; workflow personnalise resolu sans etapes prepend/append.
+- 2026-06-21: Baseline propre confirmee au commit `8b13f492a2c7d92c5f79ccbf25a2924915e051b0`.
+- 2026-06-21: Preconditions confirmees: role coach unique, profils coach/eleve, RLS et Supabase local disponibles.
+- 2026-06-21: Tests RED confirmes avant migration: table, trigger et schema REST absents.
+- 2026-06-21: Migration `0006_student_coach_relationships.sql` appliquee sans reset de la base locale et types Supabase regeneres.
+- 2026-06-21: Aucun ecran ni formulaire modifie; React Hook Form/Zod non applicables a cette association automatique.
+- 2026-06-21: `npm run typecheck`, `npm run lint`, `npm test`, `npm run supabase:test:db`, tous les scripts d'integration profils/roles et `npx expo install --check` passent.
 
 ### Completion Notes List
 
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+- Implementation demarree avec baseline git `8b13f492a2c7d92c5f79ccbf25a2924915e051b0`.
+- Table `student_coach_relationships` ajoutee avec identifiant stable, statut, methode d'association et timestamps.
+- Une contrainte garantit une seule relation active par eleve en P0; la paire coach/eleve reste unique.
+- Le trigger de roles associe automatiquement un nouvel eleve au coach unique et rattache les eleves existants si le coach est cree ensuite.
+- L'operation est idempotente et reutilise la relation existante sans doublon.
+- Les clients ne peuvent ni creer, ni modifier, ni supprimer une relation; les fonctions privilegiees ne sont pas executables directement.
+- Un eleve ne lit que sa relation et son profil; le coach lit uniquement ses relations actives et les profils correspondants.
+- Un service mobile type expose la relation courante et les eleves associes pour les futurs ecrans coach.
+- Aucun code ou lien d'invitation n'apparait dans le parcours P0; `association_method` reserve les evolutions `invitation` et `manual`.
+- Tests: 16 tests TypeScript, 54 assertions SQL et quatre scenarios d'integration Supabase sans regression.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/1-8-associer-automatiquement-leleve-au-coach-unique-en-p0.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `apps/mobile/src/features/students/student-coach-service.ts`
+- `package.json`
+- `packages/shared/src/types/database.types.ts`
+- `scripts/verify-student-coach-relationships.mjs`
+- `supabase/migrations/0006_student_coach_relationships.sql`
+- `supabase/tests/database/0003_student_profiles.sql`
+- `supabase/tests/database/0005_student_coach_relationships.sql`
+
+### Change Log
+
+- 2026-06-21: Ajout du modele relationnel coach/eleve P0 et de l'association automatique idempotente par trigger.
+- 2026-06-21: Ajout des politiques RLS participant et de la lecture des profils eleves par leur coach associe.
+- 2026-06-21: Ajout du service mobile de lecture et des tests SQL/integration de confidentialite et non-duplication.
 
 ## Completion Note
 

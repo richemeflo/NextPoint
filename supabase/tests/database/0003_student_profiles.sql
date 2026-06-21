@@ -31,8 +31,8 @@ select is(
     where schemaname = 'public'
       and tablename = 'student_profiles'
   ),
-  3,
-  'student_profiles has owner-only select, insert and update policies'
+  4,
+  'student_profiles has owner writes plus owner and associated-coach reads'
 );
 select ok(
   has_table_privilege('authenticated', 'public.student_profiles', 'select')
