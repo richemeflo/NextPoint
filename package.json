@@ -1,0 +1,15 @@
+{
+  "name": "nextpoint",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/mobile",
+    "packages/*"
+  ],
+  "scripts": {
+    "mobile": "npm --prefix apps/mobile run start",
+    "mobile:web": "npm --prefix apps/mobile run web",
+    "mobile:lint": "npm --prefix apps/mobile run lint",
+    "typecheck": "node apps/mobile/node_modules/typescript/bin/tsc --project apps/mobile/tsconfig.json --noEmit"
+  }
+}

@@ -1,0 +1,9 @@
+.env
+.*
+!.gitignore
+!**/.gitkeep
+node_modules/
+
+_bmad/
+AGENTS.md
+RTK.md
