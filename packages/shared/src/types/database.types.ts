@@ -67,6 +67,77 @@ export type Database = {
         }
         Relationships: []
       }
+      pricing_rate_students: {
+        Row: {
+          created_at: string
+          pricing_rate_id: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          pricing_rate_id: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          pricing_rate_id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pricing_rate_students_pricing_rate_id_fkey"
+            columns: ["pricing_rate_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_rates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pricing_rates: {
+        Row: {
+          amount_cents: number
+          applicability_contexts: string[]
+          coach_id: string
+          created_at: string
+          currency: string
+          deleted_at: string | null
+          duration_minutes: number
+          id: string
+          is_active: boolean
+          label: string
+          lesson_type: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          applicability_contexts?: string[]
+          coach_id: string
+          created_at?: string
+          currency?: string
+          deleted_at?: string | null
+          duration_minutes: number
+          id?: string
+          is_active?: boolean
+          label: string
+          lesson_type: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          applicability_contexts?: string[]
+          coach_id?: string
+          created_at?: string
+          currency?: string
+          deleted_at?: string | null
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean
+          label?: string
+          lesson_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       student_coach_relationships: {
         Row: {
           association_method: string
@@ -159,6 +230,40 @@ export type Database = {
       assign_student_to_single_coach: {
         Args: { student_user_id: string }
         Returns: undefined
+      }
+      delete_pricing_rate: { Args: { p_rate_id: string }; Returns: undefined }
+      save_pricing_rate: {
+        Args: {
+          p_amount_cents: number
+          p_applicability_contexts: string[]
+          p_currency: string
+          p_duration_minutes: number
+          p_is_active: boolean
+          p_label: string
+          p_lesson_type: string
+          p_rate_id: string
+          p_target_student_ids: string[]
+        }
+        Returns: {
+          amount_cents: number
+          applicability_contexts: string[]
+          coach_id: string
+          created_at: string
+          currency: string
+          deleted_at: string | null
+          duration_minutes: number
+          id: string
+          is_active: boolean
+          label: string
+          lesson_type: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "pricing_rates"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
     }
     Enums: {

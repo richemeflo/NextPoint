@@ -48,6 +48,7 @@ export const dictionaries = {
       'Le contenu métier de cette section sera ajouté par sa story dédiée.',
     'nav.coach.planning': 'Planning',
     'nav.coach.availability': 'Disponibilités',
+    'nav.coach.pricing': 'Tarifs',
     'nav.coach.students': 'Élèves',
     'nav.coach.stats': 'Stats',
     'nav.coach.notifications': 'Notifications',
@@ -120,6 +121,7 @@ export const dictionaries = {
     'coachProfile.pricingTitle': 'Tarifs',
     'coachProfile.pricingBody':
       'Configurez les tarifs individuels et collectifs présentés avant réservation.',
+    'coachProfile.openPricing': 'Gérer les tarifs',
     'coachProfile.notificationsTitle': 'Notifications push',
     'coachProfile.notificationsBody':
       'Choisissez les alertes reçues pour les demandes et changements de cours.',
@@ -127,6 +129,68 @@ export const dictionaries = {
     'studentHome.title': 'Votre espace de réservation',
     'studentHome.subtitle':
       'Consultez le profil de votre coach avant de préparer une demande de cours.',
+    'pricing.loading': 'Chargement des tarifs...',
+    'pricing.loadErrorTitle': 'Tarifs indisponibles',
+    'pricing.loadErrorBody':
+      'Impossible de charger les tarifs pour le moment. Réessayez après avoir relancé l’application.',
+    'pricing.publishedTitle': 'Tarifs du coach',
+    'pricing.publishedBody':
+      'Prix affichés à titre informatif avant toute demande de cours.',
+    'pricing.emptyPublishedTitle': 'Tarifs bientôt disponibles',
+    'pricing.emptyPublishedBody':
+      'Le coach n’a encore publié aucun tarif actif.',
+    'pricing.manageTitle': 'Gestion des tarifs',
+    'pricing.manageBody':
+      'Créez les tarifs individuels et collectifs proposés avant une demande.',
+    'pricing.createTitle': 'Nouveau tarif',
+    'pricing.editTitle': 'Modifier le tarif',
+    'pricing.catalogTitle': 'Catalogue coach',
+    'pricing.labelLabel': 'Libellé',
+    'pricing.labelPlaceholder': 'Ex. Cours individuel standard',
+    'pricing.amountLabel': 'Prix en euros',
+    'pricing.amountPlaceholder': 'Ex. 45,00',
+    'pricing.typeLabel': 'Type de cours',
+    'pricing.type.individual': 'Individuel',
+    'pricing.type.group': 'Collectif',
+    'pricing.durationLabel': 'Durée',
+    'pricing.duration.60': '1 heure',
+    'pricing.duration.90': '1 h 30',
+    'pricing.statusLabel': 'Publication',
+    'pricing.contextLabel': 'Critères d’applicabilité',
+    'pricing.context.student': 'Tarif étudiant',
+    'pricing.context.senior': 'Tarif senior',
+    'pricing.context.weekend': 'Week-end',
+    'pricing.context.public_holiday': 'Jour férié',
+    'pricing.studentsLabel': 'Élèves ciblés',
+    'pricing.noStudentsBody':
+      'Aucun élève associé n’est disponible pour un ciblage spécifique.',
+    'pricing.createAction': 'Créer le tarif',
+    'pricing.updateAction': 'Enregistrer les modifications',
+    'pricing.saving': 'Enregistrement...',
+    'pricing.cancelAction': 'Annuler',
+    'pricing.editAction': 'Modifier',
+    'pricing.deleteAction': 'Supprimer',
+    'pricing.confirmDeleteAction': 'Confirmer la suppression',
+    'pricing.deleteTitle': 'Supprimer ce tarif ?',
+    'pricing.deleteBody':
+      'Il ne sera plus proposé aux nouvelles demandes. Les futures références historiques resteront conservées.',
+    'pricing.saveSuccessTitle': 'Tarif enregistré',
+    'pricing.saveSuccessBody':
+      'Le catalogue et les surfaces élève utilisent maintenant la version à jour.',
+    'pricing.saveErrorTitle': 'Enregistrement impossible',
+    'pricing.saveErrorBody':
+      'Le tarif n’a pas été modifié. Vérifiez les informations puis réessayez.',
+    'pricing.emptyCoachTitle': 'Aucun tarif',
+    'pricing.emptyCoachBody':
+      'Créez un premier tarif individuel ou collectif.',
+    'pricing.validation.labelTooShort':
+      'Le libellé doit contenir au moins 2 caractères.',
+    'pricing.validation.labelTooLong':
+      'Le libellé ne peut pas dépasser 100 caractères.',
+    'pricing.validation.invalidAmount':
+      'Saisissez un prix positif avec au maximum deux décimales.',
+    'pricing.validation.invalidStudent':
+      'Un élève ciblé n’est pas valide.',
     'auth.signInTitle': 'Retrouvez votre espace.',
     'auth.signInSubtitle':
       'Connectez-vous avec votre email et votre mot de passe pour accéder à NextPoint.',
@@ -203,6 +267,8 @@ export const dictionaries = {
     'foundation.token.darkBackground': 'Fond sombre',
     'foundation.token.darkSurface': 'Surface sombre',
     'status.pending': 'En attente',
+    'status.active': 'Actif',
+    'status.inactive': 'Inactif',
     'status.confirmed': 'Confirmé',
     'status.refused': 'Refusé',
     'theme.light': 'Clair',
@@ -251,6 +317,7 @@ export const dictionaries = {
       'The business content for this section will be added by its dedicated story.',
     'nav.coach.planning': 'Schedule',
     'nav.coach.availability': 'Availability',
+    'nav.coach.pricing': 'Pricing',
     'nav.coach.students': 'Students',
     'nav.coach.stats': 'Stats',
     'nav.coach.notifications': 'Notifications',
@@ -323,6 +390,7 @@ export const dictionaries = {
     'coachProfile.pricingTitle': 'Pricing',
     'coachProfile.pricingBody':
       'Configure individual and group rates shown before booking.',
+    'coachProfile.openPricing': 'Manage pricing',
     'coachProfile.notificationsTitle': 'Push notifications',
     'coachProfile.notificationsBody':
       'Choose the alerts you receive for lesson requests and changes.',
@@ -330,6 +398,68 @@ export const dictionaries = {
     'studentHome.title': 'Your booking space',
     'studentHome.subtitle':
       'Review your coach profile before preparing a lesson request.',
+    'pricing.loading': 'Loading pricing...',
+    'pricing.loadErrorTitle': 'Pricing unavailable',
+    'pricing.loadErrorBody':
+      'Pricing cannot be loaded right now. Restart the application and try again.',
+    'pricing.publishedTitle': 'Coach pricing',
+    'pricing.publishedBody':
+      'Prices are shown for information before any lesson request.',
+    'pricing.emptyPublishedTitle': 'Pricing coming soon',
+    'pricing.emptyPublishedBody':
+      'The coach has not published any active rate yet.',
+    'pricing.manageTitle': 'Pricing management',
+    'pricing.manageBody':
+      'Create the individual and group rates shown before a request.',
+    'pricing.createTitle': 'New rate',
+    'pricing.editTitle': 'Edit rate',
+    'pricing.catalogTitle': 'Coach catalog',
+    'pricing.labelLabel': 'Label',
+    'pricing.labelPlaceholder': 'E.g. Standard individual lesson',
+    'pricing.amountLabel': 'Price in euros',
+    'pricing.amountPlaceholder': 'E.g. 45.00',
+    'pricing.typeLabel': 'Lesson type',
+    'pricing.type.individual': 'Individual',
+    'pricing.type.group': 'Group',
+    'pricing.durationLabel': 'Duration',
+    'pricing.duration.60': '1 hour',
+    'pricing.duration.90': '1 h 30',
+    'pricing.statusLabel': 'Publication',
+    'pricing.contextLabel': 'Applicability criteria',
+    'pricing.context.student': 'Student rate',
+    'pricing.context.senior': 'Senior rate',
+    'pricing.context.weekend': 'Weekend',
+    'pricing.context.public_holiday': 'Public holiday',
+    'pricing.studentsLabel': 'Targeted students',
+    'pricing.noStudentsBody':
+      'No associated student is available for specific targeting.',
+    'pricing.createAction': 'Create rate',
+    'pricing.updateAction': 'Save changes',
+    'pricing.saving': 'Saving...',
+    'pricing.cancelAction': 'Cancel',
+    'pricing.editAction': 'Edit',
+    'pricing.deleteAction': 'Delete',
+    'pricing.confirmDeleteAction': 'Confirm deletion',
+    'pricing.deleteTitle': 'Delete this rate?',
+    'pricing.deleteBody':
+      'It will no longer be offered for new requests. Future historical references will remain preserved.',
+    'pricing.saveSuccessTitle': 'Rate saved',
+    'pricing.saveSuccessBody':
+      'The catalog and student surfaces now use the updated version.',
+    'pricing.saveErrorTitle': 'Unable to save',
+    'pricing.saveErrorBody':
+      'The rate was not changed. Check the information and try again.',
+    'pricing.emptyCoachTitle': 'No pricing',
+    'pricing.emptyCoachBody':
+      'Create your first individual or group rate.',
+    'pricing.validation.labelTooShort':
+      'The label must contain at least 2 characters.',
+    'pricing.validation.labelTooLong':
+      'The label cannot exceed 100 characters.',
+    'pricing.validation.invalidAmount':
+      'Enter a positive price with no more than two decimals.',
+    'pricing.validation.invalidStudent':
+      'A targeted student is invalid.',
     'auth.signInTitle': 'Return to your space.',
     'auth.signInSubtitle':
       'Sign in with your email and password to access NextPoint.',
@@ -406,6 +536,8 @@ export const dictionaries = {
     'foundation.token.darkBackground': 'Dark background',
     'foundation.token.darkSurface': 'Dark surface',
     'status.pending': 'Pending',
+    'status.active': 'Active',
+    'status.inactive': 'Inactive',
     'status.confirmed': 'Confirmed',
     'status.refused': 'Refused',
     'theme.light': 'Light',
@@ -454,6 +586,7 @@ export const dictionaries = {
       'El contenido funcional de esta sección se añadirá en su historia específica.',
     'nav.coach.planning': 'Planificación',
     'nav.coach.availability': 'Disponibilidad',
+    'nav.coach.pricing': 'Tarifas',
     'nav.coach.students': 'Alumnos',
     'nav.coach.stats': 'Estadísticas',
     'nav.coach.notifications': 'Notificaciones',
@@ -526,6 +659,7 @@ export const dictionaries = {
     'coachProfile.pricingTitle': 'Tarifas',
     'coachProfile.pricingBody':
       'Configura las tarifas individuales y colectivas mostradas antes de reservar.',
+    'coachProfile.openPricing': 'Gestionar tarifas',
     'coachProfile.notificationsTitle': 'Notificaciones push',
     'coachProfile.notificationsBody':
       'Elige las alertas que recibes para solicitudes y cambios de clase.',
@@ -533,6 +667,68 @@ export const dictionaries = {
     'studentHome.title': 'Tu espacio de reserva',
     'studentHome.subtitle':
       'Consulta el perfil de tu coach antes de preparar una solicitud de clase.',
+    'pricing.loading': 'Cargando tarifas...',
+    'pricing.loadErrorTitle': 'Tarifas no disponibles',
+    'pricing.loadErrorBody':
+      'No se pueden cargar las tarifas en este momento. Reinicia la aplicación e inténtalo de nuevo.',
+    'pricing.publishedTitle': 'Tarifas del coach',
+    'pricing.publishedBody':
+      'Los precios se muestran como información antes de solicitar una clase.',
+    'pricing.emptyPublishedTitle': 'Tarifas próximamente',
+    'pricing.emptyPublishedBody':
+      'El coach aún no ha publicado ninguna tarifa activa.',
+    'pricing.manageTitle': 'Gestión de tarifas',
+    'pricing.manageBody':
+      'Crea las tarifas individuales y colectivas mostradas antes de una solicitud.',
+    'pricing.createTitle': 'Nueva tarifa',
+    'pricing.editTitle': 'Modificar tarifa',
+    'pricing.catalogTitle': 'Catálogo del coach',
+    'pricing.labelLabel': 'Nombre',
+    'pricing.labelPlaceholder': 'Ej. Clase individual estándar',
+    'pricing.amountLabel': 'Precio en euros',
+    'pricing.amountPlaceholder': 'Ej. 45,00',
+    'pricing.typeLabel': 'Tipo de clase',
+    'pricing.type.individual': 'Individual',
+    'pricing.type.group': 'Colectiva',
+    'pricing.durationLabel': 'Duración',
+    'pricing.duration.60': '1 hora',
+    'pricing.duration.90': '1 h 30',
+    'pricing.statusLabel': 'Publicación',
+    'pricing.contextLabel': 'Criterios de aplicación',
+    'pricing.context.student': 'Tarifa estudiante',
+    'pricing.context.senior': 'Tarifa senior',
+    'pricing.context.weekend': 'Fin de semana',
+    'pricing.context.public_holiday': 'Día festivo',
+    'pricing.studentsLabel': 'Alumnos seleccionados',
+    'pricing.noStudentsBody':
+      'No hay alumnos asociados disponibles para una selección específica.',
+    'pricing.createAction': 'Crear tarifa',
+    'pricing.updateAction': 'Guardar cambios',
+    'pricing.saving': 'Guardando...',
+    'pricing.cancelAction': 'Cancelar',
+    'pricing.editAction': 'Modificar',
+    'pricing.deleteAction': 'Eliminar',
+    'pricing.confirmDeleteAction': 'Confirmar eliminación',
+    'pricing.deleteTitle': '¿Eliminar esta tarifa?',
+    'pricing.deleteBody':
+      'Ya no se propondrá para nuevas solicitudes. Las futuras referencias históricas se conservarán.',
+    'pricing.saveSuccessTitle': 'Tarifa guardada',
+    'pricing.saveSuccessBody':
+      'El catálogo y los espacios alumno ya utilizan la versión actualizada.',
+    'pricing.saveErrorTitle': 'No se puede guardar',
+    'pricing.saveErrorBody':
+      'La tarifa no se ha modificado. Revisa la información e inténtalo de nuevo.',
+    'pricing.emptyCoachTitle': 'Sin tarifas',
+    'pricing.emptyCoachBody':
+      'Crea una primera tarifa individual o colectiva.',
+    'pricing.validation.labelTooShort':
+      'El nombre debe contener al menos 2 caracteres.',
+    'pricing.validation.labelTooLong':
+      'El nombre no puede superar los 100 caracteres.',
+    'pricing.validation.invalidAmount':
+      'Introduce un precio positivo con dos decimales como máximo.',
+    'pricing.validation.invalidStudent':
+      'Uno de los alumnos seleccionados no es válido.',
     'auth.signInTitle': 'Vuelve a tu espacio.',
     'auth.signInSubtitle':
       'Inicia sesión con tu email y contraseña para acceder a NextPoint.',
@@ -609,6 +805,8 @@ export const dictionaries = {
     'foundation.token.darkBackground': 'Fondo oscuro',
     'foundation.token.darkSurface': 'Superficie oscura',
     'status.pending': 'Pendiente',
+    'status.active': 'Activo',
+    'status.inactive': 'Inactivo',
     'status.confirmed': 'Confirmado',
     'status.refused': 'Rechazado',
     'theme.light': 'Claro',

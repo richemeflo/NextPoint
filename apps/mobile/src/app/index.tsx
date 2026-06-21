@@ -6,11 +6,11 @@ import { AnimatedIcon } from '@/components/animated-icon';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Feedback } from '@/components/ui/feedback';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/auth-context';
 import { PublicCoachCard } from '@/features/coaches/public-coach-card';
+import { PublishedPricingList } from '@/features/pricing/published-pricing-list';
 import { useTranslation } from '@/i18n';
 
 export default function PublicScreen() {
@@ -52,12 +52,7 @@ export default function PublicScreen() {
 
           <View style={styles.publicGrid}>
             <PublicCoachCard />
-            <Card elevated style={styles.publicCard}>
-              <ThemedText type="subtitle">{t('public.pricingTitle')}</ThemedText>
-              <ThemedText type="small" themeColor="textMuted">
-                {t('public.pricingBody')}
-              </ThemedText>
-            </Card>
+            <PublishedPricingList />
           </View>
 
           <Feedback
@@ -102,10 +97,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.three,
-  },
-  publicCard: {
-    minWidth: 260,
-    flex: 1,
-    gap: Spacing.two,
   },
 });

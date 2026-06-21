@@ -8,6 +8,8 @@
     "packages/shared/src/contracts/auth.test.ts",
     "packages/shared/src/contracts/coach-profile.ts",
     "packages/shared/src/contracts/coach-profile.test.ts",
+    "packages/shared/src/contracts/pricing-rate.ts",
+    "packages/shared/src/contracts/pricing-rate.test.ts",
     "packages/shared/src/contracts/student-profile.ts",
     "packages/shared/src/contracts/student-profile.test.ts",
     "packages/shared/src/domain/languages.ts",

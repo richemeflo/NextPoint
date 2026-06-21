@@ -19,6 +19,7 @@ type NavigationItem = {
 const coachItems: NavigationItem[] = [
   { href: '/coach', labelKey: 'nav.coach.planning' },
   { href: '/coach/availability', labelKey: 'nav.coach.availability' },
+  { href: '/coach/pricing' as Href, labelKey: 'nav.coach.pricing' },
   { href: '/coach/students', labelKey: 'nav.coach.students' },
   { href: '/coach/stats', labelKey: 'nav.coach.stats' },
   { href: '/coach/notifications', labelKey: 'nav.coach.notifications' },

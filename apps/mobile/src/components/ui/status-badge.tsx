@@ -5,9 +5,11 @@ import { Radii, Spacing, type ThemeColor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
 
-type Status = 'pending' | 'confirmed' | 'refused';
+type Status = 'active' | 'inactive' | 'pending' | 'confirmed' | 'refused';
 
 const statusTokens: Record<Status, { surface: ThemeColor; text: ThemeColor }> = {
+  active: { surface: 'successSurface', text: 'success' },
+  inactive: { surface: 'warningSurface', text: 'warning' },
   pending: { surface: 'warningSurface', text: 'warning' },
   confirmed: { surface: 'successSurface', text: 'success' },
   refused: { surface: 'errorSurface', text: 'error' },
