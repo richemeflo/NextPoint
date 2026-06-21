@@ -9,7 +9,7 @@ import { Spacing } from '@/constants/theme';
 import { getAuthRouteAccess } from '@/features/auth/access-policy';
 import { AuthProvider } from '@/features/auth/auth-provider';
 import { useAuth } from '@/features/auth/auth-context';
-import { StudentLocaleSync } from '@/features/students/student-locale-sync';
+import { ProfileLocaleSync } from '@/features/profiles/profile-locale-sync';
 import { useTheme } from '@/hooks/use-theme';
 import { I18nProvider, useTranslation } from '@/i18n';
 
@@ -82,7 +82,7 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <I18nProvider>
-        <StudentLocaleSync />
+        <ProfileLocaleSync />
         <ThemedRoot />
       </I18nProvider>
     </AuthProvider>

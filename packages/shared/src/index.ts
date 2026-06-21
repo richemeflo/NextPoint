@@ -1,5 +1,6 @@
 export { Constants } from './types/database.types';
 export { signInSchema, signUpSchema } from './contracts/auth';
+export { coachProfileSchema, toCoachProfileInput } from './contracts/coach-profile';
 export {
   studentProfileSchema,
   toStudentProfileInput,
@@ -7,6 +8,10 @@ export {
 export { appLanguages } from './domain/languages';
 export { appRoles, isAppRole } from './domain/roles';
 export type { SignInInput, SignUpInput } from './contracts/auth';
+export type {
+  CoachProfileFormInput,
+  CoachProfileInput,
+} from './contracts/coach-profile';
 export type {
   StudentProfileFormInput,
   StudentProfileInput,

@@ -21,8 +21,9 @@
     "supabase:types": "supabase gen types typescript --local > packages/shared/src/types/database.types.ts",
     "test": "npm run test:env && npm run test:auth",
     "test:env": "node scripts/verify-env-examples.mjs",
-    "test:auth": "tsx --test packages/shared/src/contracts/auth.test.ts packages/shared/src/contracts/student-profile.test.ts apps/mobile/src/features/auth/access-policy.test.ts apps/mobile/src/features/auth/auth-error.test.ts",
+    "test:auth": "tsx --test packages/shared/src/contracts/auth.test.ts packages/shared/src/contracts/coach-profile.test.ts packages/shared/src/contracts/student-profile.test.ts apps/mobile/src/features/auth/access-policy.test.ts apps/mobile/src/features/auth/auth-error.test.ts",
     "test:auth:roles": "node scripts/verify-auth-roles.mjs",
+    "test:coach-profiles": "node scripts/verify-coach-profiles.mjs",
     "test:student-profiles": "node scripts/verify-student-profiles.mjs",
     "test:typecheck": "node apps/mobile/node_modules/typescript/bin/tsc --project tsconfig.tests.json --noEmit",
     "typecheck": "npm run mobile:typecheck && npm run shared:typecheck && npm run test:typecheck"

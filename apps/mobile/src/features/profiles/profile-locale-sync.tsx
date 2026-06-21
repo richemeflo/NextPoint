@@ -1,20 +1,22 @@
 import { useEffect } from 'react';
 
-import { getStudentProfile } from './student-profile-service';
-
+import { getCoachProfile } from '@/features/coaches/coach-profile-service';
 import { useAuth } from '@/features/auth/auth-context';
+import { getStudentProfile } from '@/features/students/student-profile-service';
 import { useTranslation } from '@/i18n';
 
-export function StudentLocaleSync() {
+export function ProfileLocaleSync() {
   const { role, status, user } = useAuth();
   const { setLocale } = useTranslation();
 
   useEffect(() => {
-    if (status !== 'authenticated' || role !== 'eleve' || !user) return;
+    if (status !== 'authenticated' || !role || !user) return;
 
     let active = true;
+    const profileRequest =
+      role === 'coach' ? getCoachProfile(user.id) : getStudentProfile(user.id);
 
-    void getStudentProfile(user.id).then((result) => {
+    void profileRequest.then((result) => {
       if (active && result.ok && result.data) {
         setLocale(result.data.preferredLanguage);
       }

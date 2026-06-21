@@ -34,6 +34,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      coach_profiles: {
+        Row: {
+          bio: string
+          created_at: string
+          display_name: string
+          email: string
+          phone: string
+          preferred_language: Database["public"]["Enums"]["app_language"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bio: string
+          created_at?: string
+          display_name: string
+          email: string
+          phone: string
+          preferred_language?: Database["public"]["Enums"]["app_language"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bio?: string
+          created_at?: string
+          display_name?: string
+          email?: string
+          phone?: string
+          preferred_language?: Database["public"]["Enums"]["app_language"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       student_profiles: {
         Row: {
           age: number

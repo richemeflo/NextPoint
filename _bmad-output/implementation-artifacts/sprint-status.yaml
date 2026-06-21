@@ -1,5 +1,5 @@
 # generated: 2026-06-21T12:16:42+02:00
-# last_updated: 2026-06-21T18:43:12+02:00
+# last_updated: 2026-06-21T19:28:58+02:00
 # project: NextPoint
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review in a fresh context.
 
 generated: 2026-06-21T12:16:42+02:00
-last_updated: 2026-06-21T18:43:12+02:00
+last_updated: 2026-06-21T19:28:58+02:00
 project: NextPoint
 project_key: NOKEY
 tracking_system: file-system
@@ -49,7 +49,7 @@ development_status:
   1-4-creer-lauthentification-email-password-et-les-sessions: review
   1-5-gerer-les-roles-routes-protegees-et-navigation-coach-eleve: review
   1-6-creer-et-modifier-le-profil-eleve: review
-  1-7-creer-et-modifier-le-profil-coach: ready-for-dev
+  1-7-creer-et-modifier-le-profil-coach: review
   1-8-associer-automatiquement-leleve-au-coach-unique-en-p0: ready-for-dev
   epic-1-retrospective: optional
 

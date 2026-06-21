@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Feedback } from '@/components/ui/feedback';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/auth-context';
+import { PublicCoachCard } from '@/features/coaches/public-coach-card';
 import { useTranslation } from '@/i18n';
 
 export default function PublicScreen() {
@@ -50,12 +51,7 @@ export default function PublicScreen() {
           </View>
 
           <View style={styles.publicGrid}>
-            <Card elevated style={styles.publicCard}>
-              <ThemedText type="subtitle">{t('public.coachTitle')}</ThemedText>
-              <ThemedText type="small" themeColor="textMuted">
-                {t('public.coachBody')}
-              </ThemedText>
-            </Card>
+            <PublicCoachCard />
             <Card elevated style={styles.publicCard}>
               <ThemedText type="subtitle">{t('public.pricingTitle')}</ThemedText>
               <ThemedText type="small" themeColor="textMuted">

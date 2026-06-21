@@ -1,6 +1,10 @@
+---
+baseline_commit: cc6e87ce7bfea119fd25e567bc57c5ea753140ec
+---
+
 # Story 1.7: Créer et modifier le profil coach
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -20,16 +24,16 @@ so that les élèves voient les informations nécessaires avant de demander un c
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 1.7 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer le modele et l'ecran profil/association concernes (AC: tous)
-  - [ ] Utiliser React Hook Form + Zod pour validation si formulaire.
-  - [ ] Persister via Supabase avec RLS, mapping snake_case/camelCase type.
-  - [ ] Conserver le contexte P0 single-coach sans invitation marketplace.
-- [ ] Tester confidentialite et proprietaire du profil (AC: securite)
-  - [ ] Verifier que l'utilisateur non proprietaire ne peut pas modifier les donnees.
+- [x] Verifier les preconditions et dependances de Story 1.7 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer le modele et l'ecran profil/association concernes (AC: tous)
+  - [x] Utiliser React Hook Form + Zod pour validation si formulaire.
+  - [x] Persister via Supabase avec RLS, mapping snake_case/camelCase type.
+  - [x] Conserver le contexte P0 single-coach sans invitation marketplace.
+- [x] Tester confidentialite et proprietaire du profil (AC: securite)
+  - [x] Verifier que l'utilisateur non proprietaire ne peut pas modifier les donnees.
 
 ## Interventions utilisateur requises
 
@@ -139,18 +143,71 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Codex GPT-5
+
+### Implementation Plan
+
+- Ajouter un profil coach public unique, protege en ecriture par le role et la propriete Supabase.
+- Construire le formulaire coach React Hook Form/Zod, synchroniser la langue et exposer le profil aux surfaces publique et eleve.
+- Couvrir contraintes, persistance, lecture publique et refus cross-user par tests contrats, SQL et integration locale.
 
 ### Debug Log References
+
+- 2026-06-21: Activation `bmad-dev-story` effectuee; workflow personnalise resolu sans etapes prepend/append.
+- 2026-06-21: Story 1.6 en review mais non commitee; implementation 1.7 poursuivie par-dessus sans revert.
+- 2026-06-21: Preconditions confirmees: roles, RLS, formulaires profils, i18n global et page publique disponibles.
+- 2026-06-21: Champs coach retenus depuis le PRD: nom affiche, description courte, telephone, email et langue preferee.
+- 2026-06-21: Migration `0005_coach_profiles.sql` appliquee sans reset de la base locale et types Supabase regeneres.
+- 2026-06-21: `npm run typecheck`, `npm run lint`, `npm test`, `npm run supabase:test:db`, `npm run test:coach-profiles`, `npm run test:student-profiles`, `npm run test:auth:roles` et `npx expo install --check` passent.
+- 2026-06-21: Expo Web compile et `/`, `/eleve`, `/coach/profile` retournent HTTP 200.
+- 2026-06-21: Validation physique du formulaire coach non executee; Flo devra verifier saisie, scroll, changement de langue et affichage public sur telephone.
 
 ### Completion Notes List
 
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+- Implementation demarree sur la baseline committee Story 1.5 `cc6e87ce7bfea119fd25e567bc57c5ea753140ec`, avec Story 1.6 presente dans le worktree.
+- Table `coach_profiles` ajoutee avec nom affiche, bio, telephone, email, langue et timestamps.
+- Lecture publique autorisee; creation et modification reservees au coach proprietaire; suppression client interdite.
+- Contrat Zod partage et mapping explicite entre formulaire `camelCase` et colonnes Supabase `snake_case`.
+- Ecran Profil coach remplace par un formulaire responsive avec chargement, creation, modification et feedback FR/EN/ES.
+- Les parametres exposent disponibilites, tarifs et notifications; seuls les acces non implementes restent desactives.
+- Le profil coach est presente directement sur les surfaces publique et eleve sans code d'invitation ni marketplace.
+- La synchronisation de langue est generalisee aux profils coach et eleve.
+- Tests: 16 tests TypeScript, 36 assertions SQL et integrations locales couvrant persistance, lecture publique, single-coach et refus cross-user.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/1-7-creer-et-modifier-le-profil-coach.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `apps/mobile/src/app/_layout.tsx`
+- `apps/mobile/src/app/coach/profile.tsx`
+- `apps/mobile/src/app/eleve/account.tsx`
+- `apps/mobile/src/app/eleve/index.tsx`
+- `apps/mobile/src/app/index.tsx`
+- `apps/mobile/src/features/coaches/coach-profile-service.ts`
+- `apps/mobile/src/features/coaches/public-coach-card.tsx`
+- `apps/mobile/src/features/profiles/profile-locale-sync.tsx`
+- `apps/mobile/src/features/profiles/profile-option-selector.tsx`
+- `apps/mobile/src/features/students/profile-option-selector.tsx` (supprime)
+- `apps/mobile/src/features/students/student-locale-sync.tsx` (supprime)
+- `apps/mobile/src/i18n/translations.ts`
+- `package.json`
+- `packages/shared/src/contracts/coach-profile.test.ts`
+- `packages/shared/src/contracts/coach-profile.ts`
+- `packages/shared/src/index.ts`
+- `packages/shared/src/types/database.types.ts`
+- `scripts/verify-coach-profiles.mjs`
+- `supabase/migrations/0005_coach_profiles.sql`
+- `supabase/tests/database/0004_coach_profiles.sql`
+- `tsconfig.tests.json`
+
+### Change Log
+
+- 2026-06-21: Ajout du modele `coach_profiles`, contraintes, trigger `updated_at` et politiques RLS public/proprietaire.
+- 2026-06-21: Ajout du contrat Zod, du service Supabase et du formulaire coach responsive FR/EN/ES.
+- 2026-06-21: Publication du profil coach sur les accueils public et eleve dans le contexte single-coach.
+- 2026-06-21: Generalisation de la langue preferee et ajout des tests contrats, SQL et integration.
 
 ## Completion Note
 

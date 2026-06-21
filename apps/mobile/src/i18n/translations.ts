@@ -26,6 +26,11 @@ export const dictionaries = {
     'public.coachTitle': 'Votre coach de padel',
     'public.coachBody':
       'Une présentation courte du coach, de son approche et de son accompagnement sera publiée ici.',
+    'public.coachPendingName': 'Profil coach bientôt disponible',
+    'public.coachContactTitle': 'Contact',
+    'public.coachLoadErrorTitle': 'Profil coach indisponible',
+    'public.coachLoadErrorBody':
+      'Impossible de charger les informations du coach pour le moment.',
     'public.pricingTitle': 'Tarifs transparents',
     'public.pricingBody':
       'Les tarifs individuels et collectifs configurés par le coach seront visibles avant toute demande.',
@@ -85,6 +90,43 @@ export const dictionaries = {
     'profile.validation.invalidNumber': 'Saisissez un nombre valide.',
     'profile.validation.invalidLevel': 'Choisissez un niveau compris entre 1 et 10.',
     'profile.validation.invalidAge': 'Saisissez un âge compris entre 5 et 100 ans.',
+    'coachProfile.loading': 'Chargement de votre profil coach...',
+    'coachProfile.title': 'Mon profil coach',
+    'coachProfile.subtitle':
+      'Présentez votre accompagnement et les coordonnées utiles avant une demande de cours.',
+    'coachProfile.displayNameLabel': 'Nom affiché',
+    'coachProfile.displayNamePlaceholder': 'Votre nom ou nom professionnel',
+    'coachProfile.bioLabel': 'Présentation',
+    'coachProfile.bioPlaceholder':
+      'Décrivez brièvement votre approche, votre expérience et les joueurs que vous accompagnez.',
+    'coachProfile.validation.bioTooShort':
+      'La présentation doit contenir au moins 20 caractères.',
+    'coachProfile.validation.bioTooLong':
+      'La présentation ne peut pas dépasser 500 caractères.',
+    'coachProfile.loadErrorTitle': 'Profil indisponible',
+    'coachProfile.loadErrorBody':
+      'Impossible de charger votre profil coach. Relancez l’application puis réessayez.',
+    'coachProfile.saveSuccessTitle': 'Profil coach enregistré',
+    'coachProfile.saveSuccessBody':
+      'Les nouvelles informations sont maintenant visibles dans les espaces public et élève.',
+    'coachProfile.saveErrorTitle': 'Enregistrement impossible',
+    'coachProfile.saveErrorBody':
+      'Le profil n’a pas été modifié. Vérifiez votre connexion puis réessayez.',
+    'coachProfile.saveAction': 'Enregistrer le profil coach',
+    'coachProfile.availabilityTitle': 'Disponibilités',
+    'coachProfile.availabilityBody':
+      'Définissez les créneaux qui pourront être proposés aux élèves.',
+    'coachProfile.openAvailability': 'Gérer les disponibilités',
+    'coachProfile.pricingTitle': 'Tarifs',
+    'coachProfile.pricingBody':
+      'Configurez les tarifs individuels et collectifs présentés avant réservation.',
+    'coachProfile.notificationsTitle': 'Notifications push',
+    'coachProfile.notificationsBody':
+      'Choisissez les alertes reçues pour les demandes et changements de cours.',
+    'coachProfile.comingSoon': 'Bientôt disponible',
+    'studentHome.title': 'Votre espace de réservation',
+    'studentHome.subtitle':
+      'Consultez le profil de votre coach avant de préparer une demande de cours.',
     'auth.signInTitle': 'Retrouvez votre espace.',
     'auth.signInSubtitle':
       'Connectez-vous avec votre email et votre mot de passe pour accéder à NextPoint.',
@@ -187,6 +229,11 @@ export const dictionaries = {
     'public.coachTitle': 'Your padel coach',
     'public.coachBody':
       'A short presentation of the coach, their approach, and support will be published here.',
+    'public.coachPendingName': 'Coach profile coming soon',
+    'public.coachContactTitle': 'Contact',
+    'public.coachLoadErrorTitle': 'Coach profile unavailable',
+    'public.coachLoadErrorBody':
+      'The coach information cannot be loaded right now.',
     'public.pricingTitle': 'Transparent pricing',
     'public.pricingBody':
       'Individual and group rates configured by the coach will be visible before any request.',
@@ -246,6 +293,43 @@ export const dictionaries = {
     'profile.validation.invalidNumber': 'Enter a valid number.',
     'profile.validation.invalidLevel': 'Choose a level between 1 and 10.',
     'profile.validation.invalidAge': 'Enter an age between 5 and 100.',
+    'coachProfile.loading': 'Loading your coach profile...',
+    'coachProfile.title': 'My coach profile',
+    'coachProfile.subtitle':
+      'Present your coaching approach and useful contact details before a lesson request.',
+    'coachProfile.displayNameLabel': 'Display name',
+    'coachProfile.displayNamePlaceholder': 'Your name or professional name',
+    'coachProfile.bioLabel': 'Introduction',
+    'coachProfile.bioPlaceholder':
+      'Briefly describe your approach, experience, and the players you coach.',
+    'coachProfile.validation.bioTooShort':
+      'The introduction must contain at least 20 characters.',
+    'coachProfile.validation.bioTooLong':
+      'The introduction cannot exceed 500 characters.',
+    'coachProfile.loadErrorTitle': 'Profile unavailable',
+    'coachProfile.loadErrorBody':
+      'Your coach profile cannot be loaded. Restart the application and try again.',
+    'coachProfile.saveSuccessTitle': 'Coach profile saved',
+    'coachProfile.saveSuccessBody':
+      'The new information is now visible in the public and student spaces.',
+    'coachProfile.saveErrorTitle': 'Unable to save',
+    'coachProfile.saveErrorBody':
+      'The profile was not changed. Check your connection and try again.',
+    'coachProfile.saveAction': 'Save coach profile',
+    'coachProfile.availabilityTitle': 'Availability',
+    'coachProfile.availabilityBody':
+      'Define the time slots that can be offered to students.',
+    'coachProfile.openAvailability': 'Manage availability',
+    'coachProfile.pricingTitle': 'Pricing',
+    'coachProfile.pricingBody':
+      'Configure individual and group rates shown before booking.',
+    'coachProfile.notificationsTitle': 'Push notifications',
+    'coachProfile.notificationsBody':
+      'Choose the alerts you receive for lesson requests and changes.',
+    'coachProfile.comingSoon': 'Coming soon',
+    'studentHome.title': 'Your booking space',
+    'studentHome.subtitle':
+      'Review your coach profile before preparing a lesson request.',
     'auth.signInTitle': 'Return to your space.',
     'auth.signInSubtitle':
       'Sign in with your email and password to access NextPoint.',
@@ -348,6 +432,11 @@ export const dictionaries = {
     'public.coachTitle': 'Tu coach de pádel',
     'public.coachBody':
       'Aquí se publicará una breve presentación del coach, su enfoque y su acompañamiento.',
+    'public.coachPendingName': 'Perfil del coach próximamente',
+    'public.coachContactTitle': 'Contacto',
+    'public.coachLoadErrorTitle': 'Perfil del coach no disponible',
+    'public.coachLoadErrorBody':
+      'No se puede cargar la información del coach en este momento.',
     'public.pricingTitle': 'Tarifas transparentes',
     'public.pricingBody':
       'Las tarifas individuales y colectivas configuradas por el coach serán visibles antes de solicitar.',
@@ -407,6 +496,43 @@ export const dictionaries = {
     'profile.validation.invalidNumber': 'Introduce un número válido.',
     'profile.validation.invalidLevel': 'Elige un nivel entre 1 y 10.',
     'profile.validation.invalidAge': 'Introduce una edad entre 5 y 100 años.',
+    'coachProfile.loading': 'Cargando tu perfil de coach...',
+    'coachProfile.title': 'Mi perfil de coach',
+    'coachProfile.subtitle':
+      'Presenta tu forma de acompañar y los datos de contacto útiles antes de una solicitud.',
+    'coachProfile.displayNameLabel': 'Nombre visible',
+    'coachProfile.displayNamePlaceholder': 'Tu nombre o nombre profesional',
+    'coachProfile.bioLabel': 'Presentación',
+    'coachProfile.bioPlaceholder':
+      'Describe brevemente tu enfoque, tu experiencia y los jugadores que acompañas.',
+    'coachProfile.validation.bioTooShort':
+      'La presentación debe contener al menos 20 caracteres.',
+    'coachProfile.validation.bioTooLong':
+      'La presentación no puede superar los 500 caracteres.',
+    'coachProfile.loadErrorTitle': 'Perfil no disponible',
+    'coachProfile.loadErrorBody':
+      'No se puede cargar tu perfil de coach. Reinicia la aplicación e inténtalo de nuevo.',
+    'coachProfile.saveSuccessTitle': 'Perfil de coach guardado',
+    'coachProfile.saveSuccessBody':
+      'La nueva información ya está visible en los espacios público y alumno.',
+    'coachProfile.saveErrorTitle': 'No se puede guardar',
+    'coachProfile.saveErrorBody':
+      'El perfil no se ha modificado. Comprueba tu conexión e inténtalo de nuevo.',
+    'coachProfile.saveAction': 'Guardar el perfil de coach',
+    'coachProfile.availabilityTitle': 'Disponibilidad',
+    'coachProfile.availabilityBody':
+      'Define los horarios que se podrán proponer a los alumnos.',
+    'coachProfile.openAvailability': 'Gestionar disponibilidad',
+    'coachProfile.pricingTitle': 'Tarifas',
+    'coachProfile.pricingBody':
+      'Configura las tarifas individuales y colectivas mostradas antes de reservar.',
+    'coachProfile.notificationsTitle': 'Notificaciones push',
+    'coachProfile.notificationsBody':
+      'Elige las alertas que recibes para solicitudes y cambios de clase.',
+    'coachProfile.comingSoon': 'Próximamente',
+    'studentHome.title': 'Tu espacio de reserva',
+    'studentHome.subtitle':
+      'Consulta el perfil de tu coach antes de preparar una solicitud de clase.',
     'auth.signInTitle': 'Vuelve a tu espacio.',
     'auth.signInSubtitle':
       'Inicia sesión con tu email y contraseña para acceder a NextPoint.',

@@ -22,7 +22,7 @@ import { Feedback } from '@/components/ui/feedback';
 import { TextField } from '@/components/ui/text-field';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/auth-context';
-import { ProfileOptionSelector } from '@/features/students/profile-option-selector';
+import { ProfileOptionSelector } from '@/features/profiles/profile-option-selector';
 import {
   getStudentProfile,
   saveStudentProfile,
