@@ -1,6 +1,10 @@
+---
+baseline_commit: 3e1f228172a2c1d9f5af3fdbba425fa4afa81895
+---
+
 # Story 1.2: Initialiser Supabase, migrations, types et CI légère
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -20,40 +24,40 @@ so that les stories metier puissent s'appuyer sur une base backend testable et r
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions issues de Story 1.1 (AC: 1)
-  - [ ] Confirmer que `apps/mobile`, `packages/shared`, `supabase`, `package.json`, `pnpm-workspace.yaml` ou le workspace equivalent existent reellement.
-  - [ ] Si Story 1.1 n'est pas implementee, s'arreter et implementer Story 1.1 d'abord; ne pas creer un deuxieme socle concurrent.
-  - [ ] Identifier le package manager reel depuis le lockfile (`pnpm-lock.yaml`, `package-lock.json`, `yarn.lock`) et aligner les scripts/CI dessus.
-- [ ] Initialiser ou completer Supabase local (AC: 1, 3)
-  - [ ] Installer la CLI Supabase comme dependance dev du workspace si elle n'existe pas: `npm install --save-dev supabase` ou equivalent package manager detecte.
-  - [ ] Executer `npx supabase init` seulement si `supabase/config.toml` n'existe pas deja.
-  - [ ] Garantir la presence de `supabase/migrations/`, `supabase/functions/` et `supabase/tests/`.
-  - [ ] Creer une migration initiale minimale, par exemple `supabase/migrations/0001_initial_schema.sql`, qui s'applique sur base vierge sans inventer le modele metier complet.
-  - [ ] Ajouter une structure de tests database minimale compatible Supabase CLI, par exemple `supabase/tests/database/`, avec un test smoke pgTAP si le CLI local le permet.
-- [ ] Documenter les variables d'environnement sans secrets (AC: 2)
-  - [ ] Creer ou mettre a jour `.env.example` a la racine avec les variables communes.
-  - [ ] Creer ou mettre a jour `apps/mobile/.env.example` avec uniquement les variables publiques Expo, prefixees `EXPO_PUBLIC_`.
-  - [ ] Documenter clairement les variables reservees serveur, qui ne doivent jamais etre exposees a l'app mobile/web.
-  - [ ] Ne jamais recopier `.env`, cle service-role, token Supabase personnel, mot de passe DB ou secret GitHub dans un fichier suivi par git.
-- [ ] Generer ou simuler les types Supabase (AC: 4)
-  - [ ] Ajouter un script `supabase:types` qui cible la sortie convenue, par exemple `packages/shared/src/types/database.types.ts` ou `apps/mobile/src/types/supabase.ts`.
-  - [ ] Si la stack locale tourne, executer `npx supabase gen types typescript --local > <fichier-types>`.
-  - [ ] Si Docker/Supabase local n'est pas disponible, creer un fichier de types placeholder explicite et documenter la commande exacte de regeneration.
-  - [ ] Exporter ou rendre consommable le fichier de types depuis l'app et/ou `packages/shared`.
-- [ ] Ajouter une CI legere GitHub Actions (AC: 5)
-  - [ ] Creer `.github/workflows/ci.yml`.
-  - [ ] Utiliser Node 20.x sauf contrainte explicite du template Expo genere.
-  - [ ] Installer les dependances avec la commande stricte du package manager detecte (`npm ci`, `pnpm install --frozen-lockfile`, ou equivalent).
-  - [ ] Lancer les scripts disponibles sans inventer de faux succes: `lint`, `typecheck`, `test` si presents; sinon ajouter des scripts no-op seulement s'ils sont clairement documentes comme temporaires et remplacables.
-  - [ ] Si des tests Supabase database existent et Docker est disponible en CI, lancer `supabase db start` puis `supabase test db`; sinon documenter pourquoi le check Supabase est limite au lint/typecheck pour cette story.
-- [ ] Mettre a jour la documentation developpeur (AC: 2, 3, 4, 5)
-  - [ ] Ajouter au README ou `docs/development.md` les commandes Supabase locales: init, start, stop, db reset, test db, generation de types.
-  - [ ] Documenter la difference entre variables publiques client, variables serveur et secrets GitHub Actions.
-  - [ ] Documenter le workflow CI et les commandes a lancer avant PR.
-- [ ] Valider et consigner (AC: 1, 3, 4, 5)
-  - [ ] Lancer les commandes possibles localement et noter les resultats dans le Dev Agent Record.
-  - [ ] Confirmer que `git diff` ne contient aucun secret.
-  - [ ] Noter explicitement toute verification non faite faute de Docker, Supabase local, lockfile ou dependance issue de Story 1.1.
+- [x] Verifier les preconditions issues de Story 1.1 (AC: 1)
+  - [x] Confirmer que `apps/mobile`, `packages/shared`, `supabase`, `package.json`, `pnpm-workspace.yaml` ou le workspace equivalent existent reellement.
+  - [x] Si Story 1.1 n'est pas implementee, s'arreter et implementer Story 1.1 d'abord; ne pas creer un deuxieme socle concurrent.
+  - [x] Identifier le package manager reel depuis le lockfile (`pnpm-lock.yaml`, `package-lock.json`, `yarn.lock`) et aligner les scripts/CI dessus.
+- [x] Initialiser ou completer Supabase local (AC: 1, 3)
+  - [x] Installer la CLI Supabase comme dependance dev du workspace si elle n'existe pas: `npm install --save-dev supabase` ou equivalent package manager detecte.
+  - [x] Executer `npx supabase init` seulement si `supabase/config.toml` n'existe pas deja.
+  - [x] Garantir la presence de `supabase/migrations/`, `supabase/functions/` et `supabase/tests/`.
+  - [x] Creer une migration initiale minimale, par exemple `supabase/migrations/0001_initial_schema.sql`, qui s'applique sur base vierge sans inventer le modele metier complet.
+  - [x] Ajouter une structure de tests database minimale compatible Supabase CLI, par exemple `supabase/tests/database/`, avec un test smoke pgTAP si le CLI local le permet.
+- [x] Documenter les variables d'environnement sans secrets (AC: 2)
+  - [x] Creer ou mettre a jour `.env.example` a la racine avec les variables communes.
+  - [x] Creer ou mettre a jour `apps/mobile/.env.example` avec uniquement les variables publiques Expo, prefixees `EXPO_PUBLIC_`.
+  - [x] Documenter clairement les variables reservees serveur, qui ne doivent jamais etre exposees a l'app mobile/web.
+  - [x] Ne jamais recopier `.env`, cle service-role, token Supabase personnel, mot de passe DB ou secret GitHub dans un fichier suivi par git.
+- [x] Generer ou simuler les types Supabase (AC: 4)
+  - [x] Ajouter un script `supabase:types` qui cible la sortie convenue, par exemple `packages/shared/src/types/database.types.ts` ou `apps/mobile/src/types/supabase.ts`.
+  - [x] Si la stack locale tourne, executer `npx supabase gen types typescript --local > <fichier-types>`.
+  - [x] Si Docker/Supabase local n'est pas disponible, creer un fichier de types placeholder explicite et documenter la commande exacte de regeneration.
+  - [x] Exporter ou rendre consommable le fichier de types depuis l'app et/ou `packages/shared`.
+- [x] Ajouter une CI legere GitHub Actions (AC: 5)
+  - [x] Creer `.github/workflows/ci.yml`.
+  - [x] Utiliser Node 20.x sauf contrainte explicite du template Expo genere.
+  - [x] Installer les dependances avec la commande stricte du package manager detecte (`npm ci`, `pnpm install --frozen-lockfile`, ou equivalent).
+  - [x] Lancer les scripts disponibles sans inventer de faux succes: `lint`, `typecheck`, `test` si presents; sinon ajouter des scripts no-op seulement s'ils sont clairement documentes comme temporaires et remplacables.
+  - [x] Si des tests Supabase database existent et Docker est disponible en CI, lancer `supabase db start` puis `supabase test db`; sinon documenter pourquoi le check Supabase est limite au lint/typecheck pour cette story.
+- [x] Mettre a jour la documentation developpeur (AC: 2, 3, 4, 5)
+  - [x] Ajouter au README ou `docs/development.md` les commandes Supabase locales: init, start, stop, db reset, test db, generation de types.
+  - [x] Documenter la difference entre variables publiques client, variables serveur et secrets GitHub Actions.
+  - [x] Documenter le workflow CI et les commandes a lancer avant PR.
+- [x] Valider et consigner (AC: 1, 3, 4, 5)
+  - [x] Lancer les commandes possibles localement et noter les resultats dans le Dev Agent Record.
+  - [x] Confirmer que `git diff` ne contient aucun secret.
+  - [x] Noter explicitement toute verification non faite faute de Docker, Supabase local, lockfile ou dependance issue de Story 1.1.
 
 ## Interventions utilisateur requises
 
@@ -299,18 +303,66 @@ Les 5 derniers commits sont documentaires: `Creation d'epics`, `creation epic et
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+GPT-5 Codex
 
 ### Debug Log References
+
+- 2026-06-21: Activation bmad-dev-story effectuee; workflow personnalise resolu sans etapes prepend/append.
+- 2026-06-21: Preconditions Story 1.1 confirmees: `apps/mobile`, `packages/shared`, `supabase`, `package.json` existent.
+- 2026-06-21: Package manager detecte: npm, car seul `package-lock.json` existe.
+- 2026-06-21: `npm install --save-dev supabase` installe Supabase CLI `2.107.0`.
+- 2026-06-21: `npx supabase init` execute car `supabase/config.toml` etait absent; `project_id` normalise en `nextpoint`.
+- 2026-06-21: `npm ci --no-audit` valide l'installation stricte en local; `npm ci` avait d'abord depasse le timeout WSL de 4 minutes, puis a passe avec un timeout plus long.
+- 2026-06-21: Docker Desktop active par Flo; Docker visible depuis WSL (`Docker version 28.3.2`).
+- 2026-06-21: `supabase start`, `supabase db reset`, `supabase test db` et `npm run supabase:types` valides localement. Le premier `supabase test db` a echoue sur un conflit de telemetry CLI car lance en parallele avec la generation de types; relance seul: PASS.
+- 2026-06-21: Sequence CI Supabase validee: `npm run supabase:db:start && npm run supabase:db:reset && npm run supabase:test:db && npm run supabase:stop`.
+- 2026-06-21: TypeScript 6: `baseUrl` retire de `tsconfig.base.json`; les cibles `paths` utilisent des chemins relatifs `./...`.
+- 2026-06-21: Scan motifs sensibles effectue en excluant caches generes/ignores (`node_modules`, `.git`, `.venv`, `.agents`, `supabase/.temp`, assets). Resultats restants: placeholders `.env.example`, documentation, patterns du script de verification et commentaire Supabase `service_role`; aucun secret reel detecte.
 
 ### Completion Notes List
 
 - Story creee par le workflow bmad-create-story le 2026-06-21.
 - Analyse de contexte terminee: epic 1, Story 1.2, architecture Supabase/CI, Story 1.1, sprint status, git recent et documentation officielle Supabase/GitHub.
+- Implementation demarree avec baseline git `3e1f228172a2c1d9f5af3fdbba425fa4afa81895`.
+- Preconditions Story 1.1 confirmees et npm retenu comme package manager unique.
+- Supabase local initialise avec config, migration baseline, seed no-op, smoke test pgTAP et scripts npm.
+- Types Supabase generes depuis la base locale vers `packages/shared/src/types/database.types.ts` et exportes par `@nextpoint/shared`.
+- CI GitHub Actions ajoutee avec Node 20.x, `npm ci`, lint, typecheck, test env et smoke test database Supabase.
+- Documentation README mise a jour pour variables publiques/serveur, commandes Supabase, generation de types et workflow CI.
+- Validations passees: `npm ci --no-audit`, `npm run lint`, `npm run typecheck`, `npm test`, `npx supabase db reset`, `npx supabase test db`, `npm run supabase:types`, sequence CI Supabase locale.
+- Limite restante: aucune validation bloquante non faite. Les cles affichees par `supabase start/status` sont des valeurs locales generees par Supabase CLI et ne sont pas commitees.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/1-2-initialiser-supabase-migrations-types-et-ci-legere.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `.env.example`
+- `.github/workflows/ci.yml`
+- `.gitignore`
+- `README.md`
+- `apps/mobile/.env.example`
+- `apps/mobile/src/components/animated-icon.tsx`
+- `apps/mobile/src/components/external-link.tsx`
+- `apps/mobile/src/types/expo-template-shims.d.ts`
+- `package-lock.json`
+- `package.json`
+- `packages/shared/package.json`
+- `packages/shared/src/index.ts`
+- `packages/shared/src/types/database.types.ts`
+- `packages/shared/tsconfig.json`
+- `scripts/verify-env-examples.mjs`
+- `supabase/.gitignore`
+- `supabase/config.toml`
+- `supabase/migrations/.gitkeep` (deleted)
+- `supabase/migrations/0001_initial_schema.sql`
+- `supabase/seed.sql`
+- `supabase/tests/.gitkeep` (deleted)
+- `supabase/tests/database/0001_smoke.sql`
+- `tsconfig.base.json`
+
+### Change Log
+
+- 2026-06-21: Supabase CLI/config/migration/tests/types/CI initialises, validations locales et Supabase passees, story prete pour review.
 
 ## Completion Note
 

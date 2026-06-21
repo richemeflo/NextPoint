@@ -1,6 +1,9 @@
 .env
 .*
 !.gitignore
+!.github/
+!.github/**
+!**/.env.example
 !**/.gitkeep
 node_modules/
 

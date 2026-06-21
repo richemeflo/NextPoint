@@ -8,10 +8,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "baseUrl": ".",
     "paths": {
       "@nextpoint/shared/*": [
-        "packages/shared/src/*"
+        "./packages/shared/src/*"
       ]
     }
   }

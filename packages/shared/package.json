@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "types": "./src/index.ts",
   "exports": {
-    "./contracts/*": "./src/contracts/*"
+    ".": "./src/index.ts",
+    "./contracts/*": "./src/contracts/*",
+    "./types/database": "./src/types/database.types.ts"
   }
 }

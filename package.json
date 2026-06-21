@@ -7,9 +7,22 @@
     "packages/*"
   ],
   "scripts": {
+    "lint": "npm run mobile:lint",
     "mobile": "npm --prefix apps/mobile run start",
     "mobile:web": "npm --prefix apps/mobile run web",
     "mobile:lint": "npm --prefix apps/mobile run lint",
-    "typecheck": "node apps/mobile/node_modules/typescript/bin/tsc --project apps/mobile/tsconfig.json --noEmit"
+    "mobile:typecheck": "node apps/mobile/node_modules/typescript/bin/tsc --project apps/mobile/tsconfig.json --noEmit",
+    "shared:typecheck": "node apps/mobile/node_modules/typescript/bin/tsc --project packages/shared/tsconfig.json --noEmit",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:db:start": "supabase db start",
+    "supabase:db:reset": "supabase db reset",
+    "supabase:test:db": "supabase test db",
+    "supabase:types": "supabase gen types typescript --local > packages/shared/src/types/database.types.ts",
+    "test": "node scripts/verify-env-examples.mjs",
+    "typecheck": "npm run mobile:typecheck && npm run shared:typecheck"
+  },
+  "devDependencies": {
+    "supabase": "^2.107.0"
   }
 }

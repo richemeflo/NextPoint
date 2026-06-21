@@ -30,6 +30,8 @@ Depuis la racine du depot:
 npm install
 ```
 
+Le depot utilise npm comme package manager de reference parce que `package-lock.json` est le seul lockfile present.
+
 ### Lancer l'application Expo
 
 Depuis la racine:
@@ -50,12 +52,60 @@ npm run web
 
 Le script racine `npm run typecheck` lance le TypeScript check de l'application Expo.
 
+### Supabase local
+
+La CLI Supabase est installee comme dependance dev du workspace. Depuis la racine:
+
+```bash
+npm run supabase:start
+npm run supabase:db:start
+npm run supabase:db:reset
+npm run supabase:test:db
+npm run supabase:stop
+```
+
+Ces commandes demandent Docker. `supabase:db:start` demarre seulement Postgres pour les tests database; `supabase:start` demarre toute la stack locale.
+
+La migration initiale `supabase/migrations/0001_initial_schema.sql` ne cree pas de modele metier. Elle pose seulement le baseline technique; les tables, policies RLS et tests metier seront ajoutes par les stories suivantes.
+
+### Types Supabase
+
+Le fichier `packages/shared/src/types/database.types.ts` contient un placeholder compatible avec la forme generee par Supabase. Quand Supabase local tourne:
+
+```bash
+npm run supabase:types
+```
+
+La commande regenere les types depuis la base locale avec `supabase gen types typescript --local`.
+
+### Variables d'environnement
+
+- `.env.example`: variables communes documentees pour le depot.
+- `apps/mobile/.env.example`: variables publiques Expo uniquement.
+- `EXPO_PUBLIC_SUPABASE_URL` et `EXPO_PUBLIC_SUPABASE_ANON_KEY`: variables publiques client, utilisables par l'app Expo.
+- `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF`, `SUPABASE_DB_PASSWORD`: variables serveur/CI uniquement. Les vraies valeurs restent dans l'environnement local ou les secrets GitHub Actions, jamais dans l'app cliente ni dans le depot.
+
+### CI
+
+La CI legere GitHub Actions est definie dans `.github/workflows/ci.yml`. Elle utilise Node 20.x, installe avec `npm ci`, puis lance:
+
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run supabase:db:start
+npm run supabase:db:reset
+npm run supabase:test:db
+```
+
+Le test Node verifie que les fichiers d'exemple d'environnement contiennent uniquement des placeholders. Le test database Supabase execute le smoke test pgTAP dans `supabase/tests/database/`.
+
 ### Structure du depot
 
 - `apps/mobile`: application Expo React Native TypeScript, mobile-first avec support web.
 - `packages/shared`: futur package partage; les contrats vivront dans `packages/shared/src/contracts`.
-- `supabase`: emplacements prepares pour migrations, fonctions et tests. Supabase n'est pas implemente dans cette story.
-- `env.example`: exemple de variables publiques Expo/Supabase avec placeholders uniquement.
+- `supabase`: configuration locale, migration baseline, fonctions et tests database prepares.
+- `.env.example` et `env.example`: exemples de variables avec placeholders uniquement.
 
 ### Expo Router
 
