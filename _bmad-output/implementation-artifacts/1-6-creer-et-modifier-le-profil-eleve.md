@@ -1,6 +1,10 @@
+---
+baseline_commit: cc6e87ce7bfea119fd25e567bc57c5ea753140ec
+---
+
 # Story 1.6: Créer et modifier le profil élève
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -20,16 +24,16 @@ so that le coach dispose des informations nécessaires pour organiser mes cours.
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 1.6 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer le modele et l'ecran profil/association concernes (AC: tous)
-  - [ ] Utiliser React Hook Form + Zod pour validation si formulaire.
-  - [ ] Persister via Supabase avec RLS, mapping snake_case/camelCase type.
-  - [ ] Conserver le contexte P0 single-coach sans invitation marketplace.
-- [ ] Tester confidentialite et proprietaire du profil (AC: securite)
-  - [ ] Verifier que l'utilisateur non proprietaire ne peut pas modifier les donnees.
+- [x] Verifier les preconditions et dependances de Story 1.6 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer le modele et l'ecran profil/association concernes (AC: tous)
+  - [x] Utiliser React Hook Form + Zod pour validation si formulaire.
+  - [x] Persister via Supabase avec RLS, mapping snake_case/camelCase type.
+  - [x] Conserver le contexte P0 single-coach sans invitation marketplace.
+- [x] Tester confidentialite et proprietaire du profil (AC: securite)
+  - [x] Verifier que l'utilisateur non proprietaire ne peut pas modifier les donnees.
 
 ## Interventions utilisateur requises
 
@@ -139,18 +143,62 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Codex GPT-5
 
 ### Debug Log References
+
+- 2026-06-21: Activation `bmad-dev-story` effectuee; workflow personnalise resolu sans etapes prepend/append.
+- 2026-06-21: Baseline propre confirmee au commit Story 1.5 `cc6e87ce7bfea119fd25e567bc57c5ea753140ec`.
+- 2026-06-21: Preconditions confirmees: auth, roles, guards, Supabase local, types generes et composants formulaire disponibles.
+- 2026-06-21: Perimetre confirme: profil proprietaire dans Story 1.6; association automatique au coach unique conservee pour Story 1.8.
+- 2026-06-21: Migration `0004_student_profiles.sql` appliquee avec `supabase migration up` sans reset de la base locale.
+- 2026-06-21: `npm run typecheck`, `npm run lint`, `npm test`, `npm run supabase:test:db`, `npm run test:student-profiles` et `npx expo install --check` passent.
+- 2026-06-21: Expo Web compile et `/eleve/account` retourne HTTP 200.
+- 2026-06-21: Validation physique du nouveau formulaire non executee; Flo devra verifier saisie, clavier, scroll et persistance sur telephone.
 
 ### Completion Notes List
 
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+- Implementation demarree avec baseline git `cc6e87ce7bfea119fd25e567bc57c5ea753140ec`.
+- Table `student_profiles` ajoutee avec contraintes nom, telephone, email, niveau 1-10, age 5-100 et langue FR/EN/ES.
+- RLS proprietaire ajoutee: un eleve peut lire, creer et modifier uniquement son profil; lecture anonyme et suppression interdites.
+- Contrat Zod partage et mapping explicite formulaire `camelCase` vers colonnes Supabase `snake_case`.
+- Ecran Compte eleve remplace par un formulaire responsive React Hook Form avec niveaux et langues sous forme de controles de selection.
+- Chargement, creation, modification, rechargement persistant et feedback d'erreur/succes externalises en FR/EN/ES.
+- La langue preferee pilote maintenant le provider i18n global immediatement apres chargement/sauvegarde et est restauree depuis Supabase a la connexion.
+- Tests: 13 tests TypeScript, 25 assertions SQL et integration locale avec deux eleves couvrant persistance et refus cross-user.
+- L'association automatique au coach n'est pas creee ici et reste reservee a Story 1.8.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/1-6-creer-et-modifier-le-profil-eleve.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `apps/mobile/src/app/eleve/account.tsx`
+- `apps/mobile/src/components/ui/text-field.tsx`
+- `apps/mobile/src/features/students/profile-option-selector.tsx`
+- `apps/mobile/src/features/students/student-locale-sync.tsx`
+- `apps/mobile/src/features/students/student-profile-service.ts`
+- `apps/mobile/src/i18n/index.tsx`
+- `apps/mobile/src/i18n/translations.ts`
+- `package.json`
+- `packages/shared/src/contracts/student-profile.ts`
+- `packages/shared/src/contracts/student-profile.test.ts`
+- `packages/shared/src/domain/languages.ts`
+- `packages/shared/src/index.ts`
+- `packages/shared/src/types/database.types.ts`
+- `scripts/verify-student-profiles.mjs`
+- `supabase/migrations/0004_student_profiles.sql`
+- `supabase/tests/database/0003_student_profiles.sql`
+- `tsconfig.tests.json`
+
+### Change Log
+
+- 2026-06-21: Ajout du modele `student_profiles`, contraintes, trigger `updated_at` et politiques RLS proprietaire.
+- 2026-06-21: Ajout du contrat Zod, du mapping type et du service Supabase de profil eleve.
+- 2026-06-21: Remplacement de l'etat vide Compte par le formulaire eleve responsive FR/EN/ES.
+- 2026-06-21: Ajout des tests SQL, contrats et integration de persistance/confidentialite.
+- 2026-06-21: Synchronisation de la langue preferee du profil avec l'i18n global.
 
 ## Completion Note
 

@@ -1,4 +1,11 @@
-import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
+import {
+  StyleSheet,
+  TextInput,
+  View,
+  type StyleProp,
+  type TextInputProps,
+  type ViewStyle,
+} from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Fonts, Radii, Spacing } from '@/constants/theme';
@@ -7,13 +14,20 @@ import { useTheme } from '@/hooks/use-theme';
 export type TextFieldProps = TextInputProps & {
   label: string;
   error?: string;
+  containerStyle?: StyleProp<ViewStyle>;
 };
 
-export function TextField({ label, error, style, ...props }: TextFieldProps) {
+export function TextField({
+  label,
+  error,
+  containerStyle,
+  style,
+  ...props
+}: TextFieldProps) {
   const theme = useTheme();
 
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, containerStyle]}>
       <ThemedText type="smallBold">{label}</ThemedText>
       <TextInput
         accessibilityHint={error}

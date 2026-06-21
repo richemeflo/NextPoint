@@ -1,4 +1,11 @@
-import { useMemo } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  type PropsWithChildren,
+} from 'react';
 
 import {
   defaultLocale,
@@ -18,6 +25,13 @@ export function getDeviceLocale(): SupportedLocale {
 }
 
 type TranslationParams = Record<string, string | number>;
+type TranslationContextValue = {
+  locale: SupportedLocale;
+  setLocale: (locale: SupportedLocale) => void;
+  t: (key: TranslationKey, params?: TranslationParams) => string;
+};
+
+const TranslationContext = createContext<TranslationContextValue | null>(null);
 
 export function translate(
   key: TranslationKey,
@@ -31,16 +45,32 @@ export function translate(
   );
 }
 
-export function useTranslation() {
-  const locale = getDeviceLocale();
+export function I18nProvider({ children }: PropsWithChildren) {
+  const [locale, setCurrentLocale] = useState<SupportedLocale>(getDeviceLocale);
+  const setLocale = useCallback((nextLocale: SupportedLocale) => {
+    setCurrentLocale(nextLocale);
+  }, []);
 
-  return useMemo(
+  const value = useMemo(
     () => ({
       locale,
+      setLocale,
       t: (key: TranslationKey, params?: TranslationParams) => translate(key, locale, params),
     }),
-    [locale]
+    [locale, setLocale]
   );
+
+  return <TranslationContext.Provider value={value}>{children}</TranslationContext.Provider>;
+}
+
+export function useTranslation() {
+  const context = useContext(TranslationContext);
+
+  if (!context) {
+    throw new Error('useTranslation must be used inside I18nProvider');
+  }
+
+  return context;
 }
 
 export type { SupportedLocale, TranslationKey };

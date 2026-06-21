@@ -1,7 +1,17 @@
 export { Constants } from './types/database.types';
 export { signInSchema, signUpSchema } from './contracts/auth';
+export {
+  studentProfileSchema,
+  toStudentProfileInput,
+} from './contracts/student-profile';
+export { appLanguages } from './domain/languages';
 export { appRoles, isAppRole } from './domain/roles';
 export type { SignInInput, SignUpInput } from './contracts/auth';
+export type {
+  StudentProfileFormInput,
+  StudentProfileInput,
+} from './contracts/student-profile';
+export type { AppLanguage } from './domain/languages';
 export type { AppRole } from './domain/roles';
 export type {
   CompositeTypes,

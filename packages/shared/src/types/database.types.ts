@@ -34,6 +34,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      student_profiles: {
+        Row: {
+          age: number
+          created_at: string
+          email: string
+          full_name: string
+          padel_level: number
+          phone: string
+          preferred_language: Database["public"]["Enums"]["app_language"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          age: number
+          created_at?: string
+          email: string
+          full_name: string
+          padel_level: number
+          phone: string
+          preferred_language?: Database["public"]["Enums"]["app_language"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          age?: number
+          created_at?: string
+          email?: string
+          full_name?: string
+          padel_level?: number
+          phone?: string
+          preferred_language?: Database["public"]["Enums"]["app_language"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -60,6 +96,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      app_language: "fr" | "en" | "es"
       app_role: "coach" | "eleve"
     }
     CompositeTypes: {
@@ -191,6 +228,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      app_language: ["fr", "en", "es"],
       app_role: ["coach", "eleve"],
     },
   },

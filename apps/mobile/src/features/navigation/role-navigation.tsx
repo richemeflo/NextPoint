@@ -76,14 +76,14 @@ export function RoleNavigation({ role }: { role: AppRole }) {
             return (
               <Link asChild href={item.href} key={String(href)}>
                 <Pressable
-                  style={[
+                  style={StyleSheet.flatten([
                     styles.navigationItem,
                     {
                       backgroundColor: selected
                         ? theme.backgroundSelected
                         : theme.surface,
                     },
-                  ]}>
+                  ])}>
                   <ThemedText
                     numberOfLines={1}
                     type="smallBold"

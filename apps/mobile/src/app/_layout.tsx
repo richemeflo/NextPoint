@@ -9,8 +9,9 @@ import { Spacing } from '@/constants/theme';
 import { getAuthRouteAccess } from '@/features/auth/access-policy';
 import { AuthProvider } from '@/features/auth/auth-provider';
 import { useAuth } from '@/features/auth/auth-context';
+import { StudentLocaleSync } from '@/features/students/student-locale-sync';
 import { useTheme } from '@/hooks/use-theme';
-import { useTranslation } from '@/i18n';
+import { I18nProvider, useTranslation } from '@/i18n';
 
 function SessionLoadingScreen() {
   const theme = useTheme();
@@ -80,7 +81,10 @@ function ThemedRoot() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <ThemedRoot />
+      <I18nProvider>
+        <StudentLocaleSync />
+        <ThemedRoot />
+      </I18nProvider>
     </AuthProvider>
   );
 }
