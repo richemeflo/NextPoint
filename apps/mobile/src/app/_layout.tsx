@@ -4,6 +4,7 @@ import { ActivityIndicator, StyleSheet, useColorScheme, View } from 'react-nativ
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { Button } from '@/components/ui/button';
 import { Spacing } from '@/constants/theme';
 import { getAuthRouteAccess } from '@/features/auth/access-policy';
 import { AuthProvider } from '@/features/auth/auth-provider';
@@ -28,20 +29,39 @@ function SessionLoadingScreen() {
 }
 
 function RootNavigator() {
-  const { status } = useAuth();
-  const access = getAuthRouteAccess(status);
+  const { role, signOut, status } = useAuth();
+  const { t } = useTranslation();
+  const access = getAuthRouteAccess(status, role);
 
   if (access.isLoading) {
     return <SessionLoadingScreen />;
   }
 
+  if (access.hasAccessError) {
+    return (
+      <ThemedView style={styles.loadingScreen}>
+        <View style={styles.accessError}>
+          <ThemedText type="subtitle">{t('access.errorTitle')}</ThemedText>
+          <ThemedText type="small" themeColor="textMuted">
+            {t('access.errorBody')}
+          </ThemedText>
+          <Button label={t('auth.signOutAction')} onPress={() => void signOut()} />
+        </View>
+      </ThemedView>
+    );
+  }
+
   return (
     <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
       <Stack.Protected guard={access.allowAuthRoutes}>
         <Stack.Screen name="(auth)" />
       </Stack.Protected>
-      <Stack.Protected guard={access.allowAppRoutes}>
-        <Stack.Screen name="(app)" />
+      <Stack.Protected guard={access.allowCoachRoutes}>
+        <Stack.Screen name="coach" />
+      </Stack.Protected>
+      <Stack.Protected guard={access.allowEleveRoutes}>
+        <Stack.Screen name="eleve" />
       </Stack.Protected>
     </Stack>
   );
@@ -73,6 +93,12 @@ const styles = StyleSheet.create({
   },
   loadingContent: {
     alignItems: 'center',
+    gap: Spacing.three,
+  },
+  accessError: {
+    width: '100%',
+    maxWidth: 520,
+    padding: Spacing.four,
     gap: Spacing.three,
   },
 });

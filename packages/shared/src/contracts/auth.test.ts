@@ -23,6 +23,7 @@ test('signUpSchema requires a strong matching password', () => {
       email: 'coach@example.com',
       password: 'short',
       confirmPassword: 'short',
+      role: 'coach',
     }).success,
     false
   );
@@ -31,6 +32,7 @@ test('signUpSchema requires a strong matching password', () => {
       email: 'coach@example.com',
       password: 'password',
       confirmPassword: 'different',
+      role: 'coach',
     }).success,
     false
   );
@@ -39,7 +41,20 @@ test('signUpSchema requires a strong matching password', () => {
       email: 'coach@example.com',
       password: 'password',
       confirmPassword: 'password',
+      role: 'coach',
     }).success,
     true
+  );
+});
+
+test('signUpSchema only accepts trusted application roles', () => {
+  assert.equal(
+    signUpSchema.safeParse({
+      email: 'user@example.com',
+      password: 'password',
+      confirmPassword: 'password',
+      role: 'admin',
+    }).success,
+    false
   );
 });

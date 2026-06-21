@@ -1,3 +1,4 @@
+import type { AppRole } from '@nextpoint/shared';
 import type { Session } from '@supabase/supabase-js';
 
 import { mapSupabaseAuthError, type AuthFailureCode } from './auth-error';
@@ -28,13 +29,20 @@ export async function signInWithPassword(email: string, password: string): Promi
   }
 }
 
-export async function signUpWithPassword(email: string, password: string): Promise<AuthResult> {
+export async function signUpWithPassword(
+  email: string,
+  password: string,
+  role: AppRole
+): Promise<AuthResult> {
   if (!supabase) return { ok: false, code: 'configuration_error' };
 
   try {
     const { data, error } = await supabase.auth.signUp({
       email: normalizeEmail(email),
       password,
+      options: {
+        data: { role },
+      },
     });
 
     if (error) return { ok: false, code: mapSupabaseAuthError(error) };

@@ -6,6 +6,7 @@
   "include": [
     "packages/shared/src/contracts/auth.ts",
     "packages/shared/src/contracts/auth.test.ts",
+    "packages/shared/src/domain/roles.ts",
     "apps/mobile/src/features/auth/access-policy.ts",
     "apps/mobile/src/features/auth/access-policy.test.ts",
     "apps/mobile/src/features/auth/auth-error.ts",

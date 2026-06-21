@@ -1,19 +1,29 @@
+import type { AppRole } from '@nextpoint/shared';
+
 export type AuthStatus =
   | 'loading'
   | 'authenticated'
   | 'unauthenticated'
-  | 'configuration-error';
+  | 'configuration-error'
+  | 'access-error';
 
 export type AuthRouteAccess = {
   allowAuthRoutes: boolean;
-  allowAppRoutes: boolean;
+  allowCoachRoutes: boolean;
+  allowEleveRoutes: boolean;
   isLoading: boolean;
+  hasAccessError: boolean;
 };
 
-export function getAuthRouteAccess(status: AuthStatus): AuthRouteAccess {
+export function getAuthRouteAccess(
+  status: AuthStatus,
+  role: AppRole | null
+): AuthRouteAccess {
   return {
     allowAuthRoutes: status === 'unauthenticated' || status === 'configuration-error',
-    allowAppRoutes: status === 'authenticated',
+    allowCoachRoutes: status === 'authenticated' && role === 'coach',
+    allowEleveRoutes: status === 'authenticated' && role === 'eleve',
     isLoading: status === 'loading',
+    hasAccessError: status === 'access-error',
   };
 }

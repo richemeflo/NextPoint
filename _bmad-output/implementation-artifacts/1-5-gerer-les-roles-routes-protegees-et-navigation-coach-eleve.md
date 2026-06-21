@@ -1,6 +1,10 @@
+---
+baseline_commit: b3c847b37e5c7a4d2fb5d806bed934e2431b356e
+---
+
 # Story 1.5: Gérer les rôles, routes protégées et navigation coach/élève
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -21,16 +25,16 @@ so that les parcours coach et élève restent clairs et protégés.
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 1.5 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer le flux auth/roles/routes selon la story (AC: tous)
-  - [ ] Utiliser Supabase Auth et les contrats/types existants, sans service-role cote client.
-  - [ ] Ajouter les guards Expo Router dans les groupes de routes concernes.
-  - [ ] Externaliser tous les libelles visibles FR/EN/ES.
-- [ ] Tester les acces autorises et refuses (AC: securite)
-  - [ ] Couvrir utilisateur non connecte, coach, eleve et mauvais role.
+- [x] Verifier les preconditions et dependances de Story 1.5 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer le flux auth/roles/routes selon la story (AC: tous)
+  - [x] Utiliser Supabase Auth et les contrats/types existants, sans service-role cote client.
+  - [x] Ajouter les guards Expo Router dans les groupes de routes concernes.
+  - [x] Externaliser tous les libelles visibles FR/EN/ES.
+- [x] Tester les acces autorises et refuses (AC: securite)
+  - [x] Couvrir utilisateur non connecte, coach, eleve et mauvais role.
 
 ## Interventions utilisateur requises
 
@@ -140,18 +144,82 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Codex GPT-5
 
 ### Debug Log References
+
+- 2026-06-21: Activation `bmad-dev-story` effectuee; workflow personnalise resolu sans etapes prepend/append.
+- 2026-06-21: Story 1.4 confirmee en review et validee sur telephone physique par Flo.
+- 2026-06-21: Worktree contenant les changements non commites de Story 1.4; implementation 1.5 poursuivie par-dessus sans revert.
+- 2026-06-21: Perimetre confirme: role source de verite en base, guards distincts coach/eleve, page publique sans disponibilites.
+- 2026-06-21: Story 1.4 commitee en parallele par Flo au commit `b3c847b37e5c7a4d2fb5d806bed934e2431b356e`; baseline 1.5 alignee sur ce commit.
+- 2026-06-21: Migrations appliquees avec `supabase migration up` sans reset afin de conserver les comptes locaux; les comptes existants sans role sont repris comme `eleve`.
+- 2026-06-21: `npm run typecheck`, `npm run lint`, `npm test`, `npm run supabase:test:db`, `npm run test:auth:roles` et `npx expo install --check` passent.
+- 2026-06-21: Les 14 routes publiques/auth/coach/eleve compilent sur Expo Web et retournent HTTP 200.
+- 2026-06-21: Validation physique de la nouvelle navigation 1.5 non executee; la validation telephone confirmee par Flo concernait Story 1.4.
 
 ### Completion Notes List
 
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+- Implementation finalisee sur la baseline Story 1.4 `b3c847b37e5c7a4d2fb5d806bed934e2431b356e`.
+- Role `coach`/`eleve` stocke dans `user_roles`, cree par trigger Auth, lisible uniquement par son proprietaire et non modifiable par le client.
+- Contrainte P0 single-coach ajoutee en base; le role serveur reste lisible par execution de confiance sans exposer de cle privilegiee au client.
+- Formulaire d'inscription enrichi d'un controle segmente de role; la session charge le role via RLS avant d'ouvrir une route privee.
+- Guards Expo Router distincts pour `/coach/*` et `/eleve/*`; un mauvais role est redirige vers la page publique puis vers son propre espace.
+- Navigation coach expose Planning, Disponibilites, Eleves, Stats, Notifications, Messagerie et Profil; navigation eleve expose Accueil, Planning/Demandes, Notifications et Compte.
+- Page publique ajoutee avec presentation coach, tarifs en attente de configuration et bouton principal `S'inscrire`, sans disponibilites.
+- Tests: 10 tests TypeScript, 13 assertions SQL et integration locale couvrant trigger, RLS propre utilisateur, refus cross-user, refus de mutation et coach unique.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/1-5-gerer-les-roles-routes-protegees-et-navigation-coach-eleve.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `apps/mobile/src/app/_layout.tsx`
+- `apps/mobile/src/app/index.tsx`
+- `apps/mobile/src/app/coach/_layout.tsx`
+- `apps/mobile/src/app/coach/index.tsx`
+- `apps/mobile/src/app/coach/availability.tsx`
+- `apps/mobile/src/app/coach/students.tsx`
+- `apps/mobile/src/app/coach/stats.tsx`
+- `apps/mobile/src/app/coach/notifications.tsx`
+- `apps/mobile/src/app/coach/messaging.tsx`
+- `apps/mobile/src/app/coach/profile.tsx`
+- `apps/mobile/src/app/eleve/_layout.tsx`
+- `apps/mobile/src/app/eleve/index.tsx`
+- `apps/mobile/src/app/eleve/planning.tsx`
+- `apps/mobile/src/app/eleve/notifications.tsx`
+- `apps/mobile/src/app/eleve/account.tsx`
+- `apps/mobile/src/features/auth/access-policy.ts`
+- `apps/mobile/src/features/auth/access-policy.test.ts`
+- `apps/mobile/src/features/auth/auth-context.ts`
+- `apps/mobile/src/features/auth/auth-provider.tsx`
+- `apps/mobile/src/features/auth/auth-screen.tsx`
+- `apps/mobile/src/features/auth/auth-service.ts`
+- `apps/mobile/src/features/auth/role-service.ts`
+- `apps/mobile/src/features/navigation/role-navigation.tsx`
+- `apps/mobile/src/features/navigation/role-screen.tsx`
+- `apps/mobile/src/i18n/translations.ts`
+- `package.json`
+- `packages/shared/src/contracts/auth.ts`
+- `packages/shared/src/contracts/auth.test.ts`
+- `packages/shared/src/domain/roles.ts`
+- `packages/shared/src/index.ts`
+- `packages/shared/src/types/database.types.ts`
+- `scripts/verify-auth-roles.mjs`
+- `supabase/migrations/0002_user_roles.sql`
+- `supabase/migrations/0003_user_roles_service_access.sql`
+- `supabase/tests/database/0002_user_roles.sql`
+- `tsconfig.tests.json`
+- Supprimes: `apps/mobile/src/app/(app)/_layout.tsx`, `apps/mobile/src/app/(app)/index.tsx`, `apps/mobile/src/app/(app)/explore.tsx`.
+- Supprimes: `apps/mobile/src/components/app-tabs.tsx`, `apps/mobile/src/components/app-tabs.web.tsx`.
+
+### Change Log
+
+- 2026-06-21: Ajout du modele de roles, du trigger Auth, des grants et des politiques RLS.
+- 2026-06-21: Ajout de la selection de role a l'inscription et du chargement de role dans la session.
+- 2026-06-21: Ajout de la page publique et des espaces/navigations proteges coach et eleve.
+- 2026-06-21: Ajout des tests SQL, unitaires et integration locale de securite des roles.
 
 ## Completion Note
 

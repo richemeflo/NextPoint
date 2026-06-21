@@ -22,6 +22,7 @@
     "test": "npm run test:env && npm run test:auth",
     "test:env": "node scripts/verify-env-examples.mjs",
     "test:auth": "tsx --test packages/shared/src/contracts/auth.test.ts apps/mobile/src/features/auth/access-policy.test.ts apps/mobile/src/features/auth/auth-error.test.ts",
+    "test:auth:roles": "node scripts/verify-auth-roles.mjs",
     "test:typecheck": "node apps/mobile/node_modules/typescript/bin/tsc --project tsconfig.tests.json --noEmit",
     "typecheck": "npm run mobile:typecheck && npm run shared:typecheck && npm run test:typecheck"
   },

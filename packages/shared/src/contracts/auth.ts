@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { appRoles } from '../domain/roles';
+
 const requiredString = z.string().trim().min(1, 'required');
 const email = requiredString.pipe(z.email('invalid_email'));
 
@@ -13,6 +15,7 @@ export const signUpSchema = z
     email,
     password: z.string().min(8, 'password_too_short'),
     confirmPassword: z.string().min(1, 'required'),
+    role: z.enum(appRoles),
   })
   .refine(({ password, confirmPassword }) => password === confirmPassword, {
     message: 'password_mismatch',

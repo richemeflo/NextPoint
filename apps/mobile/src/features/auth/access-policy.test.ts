@@ -4,30 +4,41 @@ import test from 'node:test';
 import { getAuthRouteAccess } from './access-policy';
 
 test('an unauthenticated user can only access auth routes', () => {
-  assert.deepEqual(getAuthRouteAccess('unauthenticated'), {
+  assert.deepEqual(getAuthRouteAccess('unauthenticated', null), {
     allowAuthRoutes: true,
-    allowAppRoutes: false,
+    allowCoachRoutes: false,
+    allowEleveRoutes: false,
     isLoading: false,
+    hasAccessError: false,
   });
 });
 
-test('an authenticated coach or eleve can access the shared app boundary', () => {
-  for (const role of ['coach', 'eleve']) {
-    assert.deepEqual(
-      { role, ...getAuthRouteAccess('authenticated') },
-      {
-        role,
-        allowAuthRoutes: false,
-        allowAppRoutes: true,
-        isLoading: false,
-      }
-    );
-  }
+test('an authenticated coach can only access coach routes', () => {
+  assert.deepEqual(getAuthRouteAccess('authenticated', 'coach'), {
+    allowAuthRoutes: false,
+    allowCoachRoutes: true,
+    allowEleveRoutes: false,
+    isLoading: false,
+    hasAccessError: false,
+  });
 });
 
-test('role-specific rejection remains outside the shared auth boundary', () => {
-  const access = getAuthRouteAccess('authenticated');
+test('an authenticated eleve can only access eleve routes', () => {
+  assert.deepEqual(getAuthRouteAccess('authenticated', 'eleve'), {
+    allowAuthRoutes: false,
+    allowCoachRoutes: false,
+    allowEleveRoutes: true,
+    isLoading: false,
+    hasAccessError: false,
+  });
+});
 
-  assert.equal(access.allowAppRoutes, true);
-  assert.equal(access.allowAuthRoutes, false);
+test('a missing trusted role blocks every private route', () => {
+  assert.deepEqual(getAuthRouteAccess('access-error', null), {
+    allowAuthRoutes: false,
+    allowCoachRoutes: false,
+    allowEleveRoutes: false,
+    isLoading: false,
+    hasAccessError: true,
+  });
 });

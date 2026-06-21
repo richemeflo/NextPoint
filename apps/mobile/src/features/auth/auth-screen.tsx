@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   signInSchema,
   signUpSchema,
+  type AppRole,
   type SignInInput,
   type SignUpInput,
 } from '@nextpoint/shared';
@@ -11,6 +12,7 @@ import { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   View,
@@ -27,7 +29,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Feedback } from '@/components/ui/feedback';
 import { TextField } from '@/components/ui/text-field';
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { MaxContentWidth, Radii, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
 
 type AuthMode = 'sign-in' | 'sign-up';
@@ -68,6 +71,52 @@ function AuthFeedback({ code }: { code: AuthFailureCode | null }) {
       message={t(authErrorKeys[code])}
       tone="error"
     />
+  );
+}
+
+function RoleSelector({
+  value,
+  onChange,
+}: {
+  value: AppRole;
+  onChange: (role: AppRole) => void;
+}) {
+  const theme = useTheme();
+  const { t } = useTranslation();
+  const options: { role: AppRole; label: string }[] = [
+    { role: 'eleve', label: t('auth.roleEleve') },
+    { role: 'coach', label: t('auth.roleCoach') },
+  ];
+
+  return (
+    <View style={styles.roleField}>
+      <ThemedText type="smallBold">{t('auth.roleLabel')}</ThemedText>
+      <View
+        accessibilityRole="radiogroup"
+        style={[styles.roleSelector, { borderColor: theme.border }]}>
+        {options.map((option) => {
+          const selected = value === option.role;
+
+          return (
+            <Pressable
+              accessibilityRole="radio"
+              accessibilityState={{ checked: selected }}
+              key={option.role}
+              onPress={() => onChange(option.role)}
+              style={[
+                styles.roleOption,
+                { backgroundColor: selected ? theme.backgroundSelected : theme.surface },
+              ]}>
+              <ThemedText
+                type="smallBold"
+                themeColor={selected ? 'primary' : 'textMuted'}>
+                {option.label}
+              </ThemedText>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
   );
 }
 
@@ -163,13 +212,13 @@ function SignUpForm() {
     formState: { isSubmitting },
   } = useForm<SignUpInput>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { email: '', password: '', confirmPassword: '' },
+    defaultValues: { email: '', password: '', confirmPassword: '', role: 'eleve' },
   });
 
-  const onSubmit = handleSubmit(async ({ email, password }) => {
+  const onSubmit = handleSubmit(async ({ email, password, role }) => {
     setAuthError(null);
     setConfirmationRequired(false);
-    const result = await signUp(email, password);
+    const result = await signUp(email, password, role);
 
     if (!result.ok) {
       setAuthError(result.code);
@@ -181,6 +230,13 @@ function SignUpForm() {
 
   return (
     <View style={styles.form}>
+      <Controller
+        control={control}
+        name="role"
+        render={({ field: { onChange, value } }) => (
+          <RoleSelector onChange={onChange} value={value} />
+        )}
+      />
       <Controller
         control={control}
         name="email"
@@ -332,5 +388,22 @@ const styles = StyleSheet.create({
   },
   form: {
     gap: Spacing.three,
+  },
+  roleField: {
+    gap: Spacing.two,
+  },
+  roleSelector: {
+    borderWidth: 1,
+    borderRadius: Radii.medium,
+    flexDirection: 'row',
+    padding: Spacing.one,
+  },
+  roleOption: {
+    minHeight: 44,
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.two,
+    borderRadius: Radii.small,
   },
 });
