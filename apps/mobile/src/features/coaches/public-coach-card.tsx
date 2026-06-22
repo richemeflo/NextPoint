@@ -77,8 +77,7 @@ export function PublicCoachCard() {
 
 const styles = StyleSheet.create({
   card: {
-    flex: 1,
-    minWidth: 260,
+    width: '100%',
     gap: Spacing.three,
   },
   copy: {

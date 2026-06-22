@@ -1,10 +1,14 @@
 begin;
 
-select plan(12);
+select plan(15);
 
 select ok(
   to_regtype('public.app_language') is not null,
   'app_language enum exists'
+);
+select ok(
+  to_regtype('public.student_sex') is not null,
+  'student_sex enum exists'
 );
 select has_table('public', 'student_profiles', 'student_profiles table exists');
 select col_is_pk(
@@ -63,6 +67,23 @@ select col_has_check(
   'student_profiles',
   'age',
   'age is constrained'
+);
+select has_column(
+  'public',
+  'student_profiles',
+  'sex',
+  'student profile stores a controlled sex value'
+);
+select is(
+  (
+    select column_default
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'student_profiles'
+      and column_name = 'sex'
+  ),
+  '''not_specified''::student_sex',
+  'existing and new profiles default to not_specified'
 );
 
 select * from finish();

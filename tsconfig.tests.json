@@ -17,6 +17,8 @@
     "apps/mobile/src/features/auth/access-policy.ts",
     "apps/mobile/src/features/auth/access-policy.test.ts",
     "apps/mobile/src/features/auth/auth-error.ts",
-    "apps/mobile/src/features/auth/auth-error.test.ts"
+    "apps/mobile/src/features/auth/auth-error.test.ts",
+    "apps/mobile/src/features/students/student-list-filters.ts",
+    "apps/mobile/src/features/students/student-list-filters.test.ts"
   ]
 }

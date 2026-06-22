@@ -1,6 +1,10 @@
+---
+baseline_commit: e27b1cdb14583f25ffb8ae13368fe0e15b60998c
+---
+
 # Story 2.2: Consulter et filtrer la liste des élèves
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -20,16 +24,16 @@ so that je puisse retrouver rapidement le bon élève avant un cours ou une acti
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 2.2 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer liste/fiche eleve selon la story (AC: tous)
-  - [ ] Filtrer par relation coach/eleve via RLS et queries typees.
-  - [ ] Gerer recherche, filtres niveau/age et etats vides mobile-first.
-  - [ ] Ne jamais exposer note privee cote eleve.
-- [ ] Tester visibilite et filtrage (AC: securite/UX)
-  - [ ] Couvrir coach proprietaire, eleve concerne et utilisateur non autorise.
+- [x] Verifier les preconditions et dependances de Story 2.2 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer liste/fiche eleve selon la story (AC: tous)
+  - [x] Filtrer par relation coach/eleve via RLS et queries typees.
+  - [x] Gerer recherche, filtres niveau/age et etats vides mobile-first.
+  - [x] Ne jamais exposer note privee cote eleve.
+- [x] Tester visibilite et filtrage (AC: securite/UX)
+  - [x] Couvrir coach proprietaire, eleve concerne et utilisateur non autorise.
 
 ## Interventions utilisateur requises
 
@@ -150,18 +154,77 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Codex GPT-5
+
+### Implementation Plan
+
+- Reutiliser la relation active et la RLS Story 1.8 comme unique source d'autorisation de la liste.
+- Isoler recherche, niveau et tranches d'age dans une logique pure testable.
+- Remplacer l'ecran vide coach par une liste mobile-first dense, sans read model de note privee.
 
 ### Debug Log References
+
+- 2026-06-21: Activation `bmad-dev-story` effectuee; workflow personnalise resolu sans etapes prepend/append.
+- 2026-06-21: Baseline HEAD `e27b1cdb14583f25ffb8ae13368fe0e15b60998c`; changements Story 2.1 indexes mais non commites conserves sans revert.
+- 2026-06-21: Preconditions confirmees: profils eleves, relation coach/eleve active, politique RLS coach associe et route protegee disponibles.
+- 2026-06-21: Tranches retenues pour couvrir 5-100 sans chevauchement: 5-6 a 17-18, puis 19-29, dizaines 30-99 et 100.
+- 2026-06-21: Tests RED confirmes avant implementation du module de filtrage.
+- 2026-06-21: Aucun changement de schema requis; les politiques RLS existantes couvrent la lecture coach associee.
+- 2026-06-21: `npm run typecheck`, `npm run lint`, `npm test`, `npm run supabase:test:db` et les six integrations Supabase passent.
+- 2026-06-21: Expo Web exporte 19 routes statiques, dont `/coach/students`.
+- 2026-06-21: Validation physique non executee; Flo devra verifier le scroll horizontal des filtres, le clavier de recherche et la lisibilite des lignes sur telephone.
+- 2026-06-22: Extension approuvee avec sexe controle et slider d'age a deux poignees.
+- 2026-06-22: Migration `0008` appliquee sans reset; les profils existants recoivent `not_specified`.
+- 2026-06-22: Typecheck, lint, 25 tests TypeScript, 77 assertions SQL, six integrations Supabase et export Web passent.
 
 ### Completion Notes List
 
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+- Implementation demarree sur le worktree contenant Story 2.1, sans modifier ni annuler ses changements.
+- L'ecran coach Eleves charge uniquement les profils lies par une relation active visible via RLS.
+- Recherche par nom insensible a la casse et aux accents.
+- Filtre niveau ferme de 1 a 10, filtre sexe et plage d'age 5-100 avec reinitialisation globale.
+- Etats distincts pour chargement, erreur, aucune association et aucun resultat filtre.
+- Les lignes affichent nom, niveau, age, telephone et email; aucun champ de note privee n'est lu ni expose.
+- Le service trie les profils autorises par nom avant affichage.
+- Le test d'integration rend une relation inactive et confirme que le coach ne voit plus ce profil.
+- Un eleve ne peut lire que son propre profil et ne peut pas lister ses pairs.
+- Tests: 25 tests TypeScript, 74 assertions SQL et six scenarios d'integration Supabase sans regression.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/2-2-consulter-et-filtrer-la-liste-des-eleves.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `apps/mobile/src/app/coach/students.tsx`
+- `apps/mobile/src/features/students/student-coach-service.ts`
+- `apps/mobile/src/features/students/student-age-range-slider.tsx`
+- `apps/mobile/src/features/students/student-filter-selector.tsx`
+- `apps/mobile/src/features/students/student-list-filters.test.ts`
+- `apps/mobile/src/features/students/student-list-filters.ts`
+- `apps/mobile/src/app/eleve/account.tsx`
+- `apps/mobile/src/features/students/student-profile-service.ts`
+- `apps/mobile/src/i18n/translations.ts`
+- `apps/mobile/package.json`
+- `package-lock.json`
+- `package.json`
+- `packages/shared/src/contracts/student-profile.test.ts`
+- `packages/shared/src/contracts/student-profile.ts`
+- `packages/shared/src/index.ts`
+- `packages/shared/src/types/database.types.ts`
+- `scripts/verify-student-list-access.mjs`
+- `scripts/verify-student-profiles.mjs`
+- `supabase/migrations/0008_student_profile_sex.sql`
+- `supabase/tests/database/0003_student_profiles.sql`
+- `tsconfig.tests.json`
+
+### Change Log
+
+- 2026-06-21: Remplacement de l'ecran vide Eleves par la liste coach RLS avec etats de chargement et etats vides.
+- 2026-06-21: Ajout de la recherche normalisee et des filtres niveau 1-10 et tranches d'age.
+- 2026-06-21: Ajout des traductions FR/EN/ES et des tests unitaires/integration de visibilite.
+- 2026-06-22: Ajout du sexe au profil eleve et au filtre prive de la liste coach.
+- 2026-06-22: Remplacement des tranches d'age par un slider min/max inclusif de 5 a 100 ans.
 
 ## Completion Note
 

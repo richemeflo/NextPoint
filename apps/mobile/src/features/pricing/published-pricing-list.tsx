@@ -26,8 +26,12 @@ function PricingRow({ rate }: { rate: PricingRate }) {
   return (
     <Card style={styles.rate}>
       <View style={styles.rateHeader}>
-        <ThemedText type="smallBold">{rate.label}</ThemedText>
-        <ThemedText type="subtitle">{price}</ThemedText>
+        <ThemedText style={styles.rateLabel} type="smallBold">
+          {rate.label}
+        </ThemedText>
+        <ThemedText type="default" themeColor="primary">
+          {price}
+        </ThemedText>
       </View>
       <ThemedText type="small" themeColor="textMuted">
         {t(`pricing.type.${rate.lessonType}` as TranslationKey)} ·{' '}
@@ -116,8 +120,7 @@ export function PublishedPricingList() {
 
 const styles = StyleSheet.create({
   section: {
-    flex: 1,
-    minWidth: 260,
+    width: '100%',
     gap: Spacing.three,
   },
   heading: {
@@ -130,12 +133,25 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: Spacing.two,
   },
   rate: {
+    minWidth: 240,
+    flexBasis: 280,
+    flexGrow: 1,
     gap: Spacing.one,
   },
   rateHeader: {
-    gap: Spacing.one,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.two,
+  },
+  rateLabel: {
+    minWidth: 140,
+    flex: 1,
   },
 });

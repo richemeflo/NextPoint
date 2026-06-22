@@ -1,4 +1,4 @@
-import type { Tables } from '@nextpoint/shared';
+import type { StudentSex, Tables } from '@nextpoint/shared';
 
 import { supabase } from '@/lib/supabase/client';
 
@@ -21,6 +21,7 @@ export type AssociatedStudent = {
   phone: string;
   padelLevel: number;
   age: number;
+  sex: StudentSex;
 };
 
 type AssociationResult =
@@ -50,6 +51,7 @@ function mapStudent(row: StudentProfileRow): AssociatedStudent {
     phone: row.phone,
     padelLevel: row.padel_level,
     age: row.age,
+    sex: row.sex,
   };
 }
 
@@ -88,7 +90,8 @@ export async function getAssociatedStudents(
   const profiles = await supabase
     .from('student_profiles')
     .select('*')
-    .in('user_id', studentIds);
+    .in('user_id', studentIds)
+    .order('full_name');
 
   if (profiles.error) return { ok: false };
   return { ok: true, data: profiles.data.map(mapStudent) };

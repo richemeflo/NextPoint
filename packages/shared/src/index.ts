@@ -10,6 +10,7 @@ export {
   toPricingRateInput,
 } from './contracts/pricing-rate';
 export {
+  studentSexes,
   studentProfileSchema,
   toStudentProfileInput,
 } from './contracts/student-profile';
@@ -30,6 +31,7 @@ export type {
   PricingSelectionContext,
 } from './contracts/pricing-rate';
 export type {
+  StudentSex,
   StudentProfileFormInput,
   StudentProfileInput,
 } from './contracts/student-profile';

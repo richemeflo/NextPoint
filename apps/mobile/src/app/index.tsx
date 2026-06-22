@@ -94,8 +94,6 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
   },
   publicGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: Spacing.three,
   },
 });

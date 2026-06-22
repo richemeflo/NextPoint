@@ -378,6 +378,10 @@ export default function CoachPricingScreen() {
                     style: 'currency',
                     currency: rate.currency,
                   }).format(rate.amountCents / 100);
+                  const contextLabels = rate.applicabilityContexts.map(
+                    (context) =>
+                      t(`pricing.context.${context}` as TranslationKey)
+                  );
 
                   return (
                     <Card key={rate.id} style={styles.rateCard}>
@@ -393,6 +397,11 @@ export default function CoachPricingScreen() {
                         {t(
                           `pricing.duration.${rate.durationMinutes}` as TranslationKey
                         )}
+                      </ThemedText>
+                      <ThemedText type="small" themeColor="textMuted">
+                        {contextLabels.length > 0
+                          ? contextLabels.join(' · ')
+                          : t('pricing.noContext')}
                       </ThemedText>
                       <View style={styles.actions}>
                         <Button

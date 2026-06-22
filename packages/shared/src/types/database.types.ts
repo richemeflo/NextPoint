@@ -177,6 +177,7 @@ export type Database = {
           padel_level: number
           phone: string
           preferred_language: Database["public"]["Enums"]["app_language"]
+          sex: Database["public"]["Enums"]["student_sex"]
           updated_at: string
           user_id: string
         }
@@ -188,6 +189,7 @@ export type Database = {
           padel_level: number
           phone: string
           preferred_language?: Database["public"]["Enums"]["app_language"]
+          sex?: Database["public"]["Enums"]["student_sex"]
           updated_at?: string
           user_id: string
         }
@@ -199,6 +201,7 @@ export type Database = {
           padel_level?: number
           phone?: string
           preferred_language?: Database["public"]["Enums"]["app_language"]
+          sex?: Database["public"]["Enums"]["student_sex"]
           updated_at?: string
           user_id?: string
         }
@@ -269,6 +272,7 @@ export type Database = {
     Enums: {
       app_language: "fr" | "en" | "es"
       app_role: "coach" | "eleve"
+      student_sex: "female" | "male" | "other" | "not_specified"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -401,6 +405,7 @@ export const Constants = {
     Enums: {
       app_language: ["fr", "en", "es"],
       app_role: ["coach", "eleve"],
+      student_sex: ["female", "male", "other", "not_specified"],
     },
   },
 } as const

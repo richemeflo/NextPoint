@@ -12,6 +12,7 @@ const validProfile = {
   email: 'camille@example.com',
   padelLevel: '6',
   age: '29',
+  sex: 'female' as const,
   preferredLanguage: 'fr' as const,
 };
 
@@ -36,6 +37,10 @@ test('studentProfileSchema rejects invalid level, age, phone and email', () => {
     studentProfileSchema.safeParse({ ...validProfile, email: 'invalid' }).success,
     false
   );
+  assert.equal(
+    studentProfileSchema.safeParse({ ...validProfile, sex: 'invalid' }).success,
+    false
+  );
 });
 
 test('toStudentProfileInput maps form strings to the typed domain input', () => {
@@ -45,6 +50,7 @@ test('toStudentProfileInput maps form strings to the typed domain input', () => 
     email: 'camille@example.com',
     padelLevel: 6,
     age: 29,
+    sex: 'female',
     preferredLanguage: 'fr',
   });
 });

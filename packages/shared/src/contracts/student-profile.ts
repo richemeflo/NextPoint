@@ -4,6 +4,15 @@ import { appLanguages } from '../domain/languages';
 
 const numericString = z.string().trim().regex(/^\d+$/, 'invalid_number');
 
+export const studentSexes = [
+  'female',
+  'male',
+  'other',
+  'not_specified',
+] as const;
+
+export type StudentSex = (typeof studentSexes)[number];
+
 export const studentProfileSchema = z.object({
   fullName: z.string().trim().min(2, 'name_too_short').max(100, 'name_too_long'),
   phone: z
@@ -19,6 +28,7 @@ export const studentProfileSchema = z.object({
     (value) => Number(value) >= 5 && Number(value) <= 100,
     'invalid_age'
   ),
+  sex: z.enum(studentSexes),
   preferredLanguage: z.enum(appLanguages),
 });
 
@@ -30,6 +40,7 @@ export type StudentProfileInput = {
   email: string;
   padelLevel: number;
   age: number;
+  sex: StudentSex;
   preferredLanguage: StudentProfileFormInput['preferredLanguage'];
 };
 
@@ -42,6 +53,7 @@ export function toStudentProfileInput(
     email: form.email.trim().toLowerCase(),
     padelLevel: Number(form.padelLevel),
     age: Number(form.age),
+    sex: form.sex,
     preferredLanguage: form.preferredLanguage,
   };
 }

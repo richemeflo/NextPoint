@@ -1,5 +1,5 @@
 # generated: 2026-06-21T12:16:42+02:00
-# last_updated: 2026-06-21T22:58:20+02:00
+# last_updated: 2026-06-21T23:12:37+02:00
 # project: NextPoint
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review in a fresh context.
 
 generated: 2026-06-21T12:16:42+02:00
-last_updated: 2026-06-21T22:58:20+02:00
+last_updated: 2026-06-21T23:12:37+02:00
 project: NextPoint
 project_key: NOKEY
 tracking_system: file-system
@@ -55,7 +55,7 @@ development_status:
 
   epic-2: in-progress
   2-1-gerer-les-tarifs-coach-visibles-par-les-eleves: review
-  2-2-consulter-et-filtrer-la-liste-des-eleves: ready-for-dev
+  2-2-consulter-et-filtrer-la-liste-des-eleves: review
   2-3-creer-une-fiche-eleve-manuellement: ready-for-dev
   2-4-consulter-la-fiche-eleve-avec-historique: ready-for-dev
   2-5-ajouter-et-modifier-une-note-privee-coach: ready-for-dev
