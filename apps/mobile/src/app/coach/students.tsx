@@ -21,6 +21,7 @@ import {
   StudentAgeRangeSlider,
 } from '@/features/students/student-age-range-slider';
 import { StudentFilterSelector } from '@/features/students/student-filter-selector';
+import { ManualStudentForm } from '@/features/students/manual-student-form';
 import {
   getAssociatedStudents,
   type AssociatedStudent,
@@ -67,6 +68,10 @@ export default function CoachStudentsScreen() {
   const theme = useTheme();
   const [students, setStudents] = useState<AssociatedStudent[]>([]);
   const [filters, setFilters] = useState<StudentListFilters>(emptyFilters);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [createdStudentName, setCreatedStudentName] = useState<string | null>(
+    null
+  );
   const [isAgeSliderActive, setIsAgeSliderActive] = useState(false);
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>(
     'loading'
@@ -142,7 +147,44 @@ export default function CoachStudentsScreen() {
             <ThemedText type="default" themeColor="textMuted">
               {t('students.subtitle')}
             </ThemedText>
+            {!isCreateOpen ? (
+              <View style={styles.headingAction}>
+                <Button
+                  label={t('students.createAction')}
+                  onPress={() => {
+                    setCreatedStudentName(null);
+                    setIsCreateOpen(true);
+                  }}
+                />
+              </View>
+            ) : null}
           </View>
+
+          {isCreateOpen ? (
+            <Card elevated>
+              <ManualStudentForm
+                onCancel={() => setIsCreateOpen(false)}
+                onCreated={(student) => {
+                  setStudents((current) =>
+                    [...current, student].sort((left, right) =>
+                      left.fullName.localeCompare(right.fullName)
+                    )
+                  );
+                  setCreatedStudentName(student.fullName);
+                  setIsCreateOpen(false);
+                }}
+              />
+            </Card>
+          ) : null}
+          {createdStudentName ? (
+            <Feedback
+              message={t('students.createSuccessBody', {
+                name: createdStudentName,
+              })}
+              title={t('students.createSuccessTitle')}
+              tone="success"
+            />
+          ) : null}
 
           {loadState === 'error' ? (
             <Feedback
@@ -255,6 +297,10 @@ const styles = StyleSheet.create({
   heading: {
     maxWidth: 720,
     gap: Spacing.two,
+  },
+  headingAction: {
+    alignItems: 'flex-start',
+    paddingTop: Spacing.one,
   },
   filters: {
     gap: Spacing.four,

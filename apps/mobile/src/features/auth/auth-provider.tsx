@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type PropsWithChildren } from 'react';
-import type { AppRole } from '@nextpoint/shared';
+import type { AppRole, StudentAccountStatus } from '@nextpoint/shared';
 import type { Session } from '@supabase/supabase-js';
 
 import { AuthContext } from './auth-context';
@@ -9,13 +9,15 @@ import {
   signUpWithPassword,
 } from './auth-service';
 import type { AuthStatus } from './access-policy';
-import { getCurrentUserRole } from './role-service';
+import { getCurrentUserAccess } from './role-service';
 
 import { supabase } from '@/lib/supabase/client';
 
 export function AuthProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
+  const [accountStatus, setAccountStatus] =
+    useState<StudentAccountStatus | null>(null);
   const [status, setStatus] = useState<AuthStatus>(
     supabase ? 'loading' : 'configuration-error'
   );
@@ -30,6 +32,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
       setSession(nextSession);
       setRole(null);
+      setAccountStatus(null);
 
       if (!nextSession) {
         setStatus('unauthenticated');
@@ -37,12 +40,18 @@ export function AuthProvider({ children }: PropsWithChildren) {
       }
 
       setStatus('loading');
-      const nextRole = await getCurrentUserRole(nextSession.user.id);
+      const access = await getCurrentUserAccess(nextSession.user.id);
 
       if (!active) return;
 
-      setRole(nextRole);
-      setStatus(nextRole ? 'authenticated' : 'access-error');
+      setRole(access?.role ?? null);
+      setAccountStatus(access?.accountStatus ?? null);
+      setStatus(
+        access &&
+          (access.role === 'coach' || access.accountStatus === 'active')
+          ? 'authenticated'
+          : 'access-error'
+      );
     };
 
     void supabase.auth.getSession().then(({ data, error }) => {
@@ -66,12 +75,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
       session,
       user: session?.user ?? null,
       role,
+      accountStatus,
       status,
       signIn: signInWithPassword,
       signUp: signUpWithPassword,
       signOut: signOutSession,
     }),
-    [role, session, status]
+    [accountStatus, role, session, status]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

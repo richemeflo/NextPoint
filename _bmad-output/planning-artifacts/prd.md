@@ -103,7 +103,7 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - H20 — Une demande expire automatiquement après 7 jours si le coach ne répond pas.
 - H21 — Un élève peut avoir plusieurs demandes en parallèle, avec une limite P0 de 10 demandes en attente (`pending`) auprès du coach.
 - H21b — Un même créneau peut avoir au maximum 2 demandes en attente (`pending`) avant décision coach.
-- H22 — En P1/futur, le coach pourra donner un lien d’invitation ou un code pour que l’élève l’ajoute dans l’application.
+- H22 — En P0, une fiche élève créée par le coach provisionne un compte élève `pending_activation`. Le coach peut générer ou régénérer un lien d’activation valable 24 heures jusqu’à activation; ce lien permet à l’élève de définir son mot de passe.
 - H23 — Le libellé affiché côté élève après envoi d’une demande est `demande envoyée`.
 - H24 — Un élève peut demander un cours collectif en sélectionnant des joueurs de l’application.
 - H25 — Le coach peut créer un cours collectif en sélectionnant les élèves concernés.
@@ -158,6 +158,7 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - Historique élève visible par le coach sur la fiche élève.
 - Pack de cours individuels rattaché à un élève pour suivi simple des crédits/consommations.
 - Création de fiche élève par le coach sans inscription élève.
+- Provisionnement du compte élève non activé et activation par lien de 24 heures permettant de définir le mot de passe.
 - Plages de disponibilité générant des créneaux.
 - Disponibilités récurrentes.
 - Lieu/club simple sur disponibilité/réservation, avec `Les Bruyères Centre Sportif` comme valeur initiale.
@@ -271,7 +272,9 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - FR-011 — Le profil coach doit exposer les informations nécessaires à la réservation.
 - FR-012 — En P0, le coach n’a pas besoin de partager un lien/code pour associer un élève.
 - FR-013 — Le coach doit pouvoir voir les élèves associés à son profil.
-- FR-014 — Le coach doit pouvoir créer une fiche élève sans que l’élève ait déjà créé son compte.
+- FR-014 — Le coach doit pouvoir créer une fiche et provisionner un compte élève non activé.
+- FR-014a — La création doit être refusée si l’email normalisé ou le téléphone normalisé existe déjà pour un élève.
+- FR-014b — Le compte élève doit avoir un état parmi `pending_activation`, `active`, `suspended`, `deleted`.
 
 ### 8.3 Profil Élève
 
@@ -288,7 +291,12 @@ Ces hypothèses cadrent le MVP. Si elles changent, le PRD doit être mis à jour
 - FR-031 — Le coach doit voir uniquement ses élèves associés.
 - FR-032 — L’élève doit être associé à un seul coach en P0.
 - FR-033 — La relation doit permettre au coach de consulter les réservations et notes liées à l’élève.
-- FR-034 — Le mécanisme de lien/code d’invitation coach est réservé à une évolution future.
+- FR-034 — Le coach doit pouvoir générer et régénérer un lien d’activation valable 24 heures tant que le compte est `pending_activation`.
+- FR-034a — Un nouveau lien doit invalider immédiatement le précédent et chaque lien ne doit être utilisable qu’une fois.
+- FR-034b — Le lien doit ouvrir une page NextPoint permettant à l’élève de définir et confirmer son mot de passe.
+- FR-034c — La définition réussie du mot de passe doit faire passer le compte à `active`.
+- FR-034d — Aucun lien ne doit être générable pour un compte `active`, `suspended` ou `deleted`.
+- FR-034e — Les comptes non actifs ne doivent pas accéder aux surfaces privées élève.
 
 ### 8.5 Disponibilités
 
@@ -742,6 +750,17 @@ Tokens de design: `_bmad-output/planning-artifacts/design-tokens.md`.
 - email;
 - niveau;
 - âge.
+- état de compte: `pending_activation`, `active`, `suspended`, `deleted`.
+
+### `StudentActivationToken`
+
+- élève lié;
+- hash du jeton opaque;
+- coach créateur;
+- date de création;
+- date d’expiration à 24 heures;
+- date de consommation;
+- date de révocation.
 
 ### `CoachStudentRelation`
 
@@ -881,6 +900,8 @@ Tokens de design: `_bmad-output/planning-artifacts/design-tokens.md`.
 | Voir les tarifs coach | Oui | Oui |
 | Voir la liste élèves du coach | Oui | Non |
 | Créer une fiche élève manuelle | Oui | Non |
+| Générer un lien d’activation pour un compte non activé | Oui | Non |
+| Définir le mot de passe via un lien d’activation valide | Non | Oui |
 | Créer une note privée | Oui | Non |
 | Voir une note privée coach | Oui, propriétaire uniquement | Non |
 | Voir l’historique d’un élève | Oui | Non |
@@ -928,7 +949,7 @@ Toutes les décisions bloquantes identifiées pour le PRD sont tranchées.
 Pour garder le MVP livrable:
 
 - associer directement tous les élèves au coach unique en P0;
-- garder le lien/code d’invitation coach pour une évolution future;
+- provisionner en P0 les comptes élèves créés par le coach et permettre leur activation par lien de 24 heures;
 - faire valider chaque demande par le coach;
 - autoriser jusqu’à 2 demandes en attente par créneau, puis bloquer à la confirmation;
 - faire expirer une demande après 7 jours;

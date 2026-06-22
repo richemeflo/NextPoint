@@ -1,4 +1,9 @@
-import type { StudentSex, Tables } from '@nextpoint/shared';
+import type {
+  ManualStudentProfileInput,
+  StudentAccountStatus,
+  StudentSex,
+  Tables,
+} from '@nextpoint/shared';
 
 import { supabase } from '@/lib/supabase/client';
 
@@ -22,6 +27,7 @@ export type AssociatedStudent = {
   padelLevel: number;
   age: number;
   sex: StudentSex;
+  accountStatus: StudentAccountStatus;
 };
 
 type AssociationResult =
@@ -31,6 +37,10 @@ type AssociationResult =
 type AssociatedStudentsResult =
   | { ok: true; data: AssociatedStudent[] }
   | { ok: false };
+
+type AssociatedStudentResult =
+  | { ok: true; data: AssociatedStudent }
+  | { ok: false; code?: string };
 
 function mapAssociation(row: RelationshipRow): StudentCoachAssociation {
   return {
@@ -52,6 +62,7 @@ function mapStudent(row: StudentProfileRow): AssociatedStudent {
     padelLevel: row.padel_level,
     age: row.age,
     sex: row.sex,
+    accountStatus: row.account_status,
   };
 }
 
@@ -95,4 +106,21 @@ export async function getAssociatedStudents(
 
   if (profiles.error) return { ok: false };
   return { ok: true, data: profiles.data.map(mapStudent) };
+}
+
+export async function createManualStudent(
+  profile: ManualStudentProfileInput
+): Promise<AssociatedStudentResult> {
+  if (!supabase) return { ok: false };
+
+  const { data, error } = await supabase.functions.invoke(
+    'create-manual-student',
+    { body: profile }
+  );
+
+  if (error || !data?.ok || !data.data) {
+    return { ok: false, code: data?.error?.code };
+  }
+
+  return { ok: true, data: mapStudent(data.data) };
 }

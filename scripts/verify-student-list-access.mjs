@@ -105,7 +105,10 @@ try {
     const profile = await student.client.from('student_profiles').insert({
       user_id: student.userId,
       full_name: fullName,
-      phone: '+33 6 12 34 56 78',
+      phone:
+        student.userId === associated.userId
+          ? '+33 6 12 34 56 78'
+          : '+33 6 12 34 56 79',
       email: student.email,
       padel_level: level,
       age,

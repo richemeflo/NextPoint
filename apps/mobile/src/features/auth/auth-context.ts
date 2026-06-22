@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { AppRole } from '@nextpoint/shared';
+import type { AppRole, StudentAccountStatus } from '@nextpoint/shared';
 import type { Session, User } from '@supabase/supabase-js';
 
 import type { AuthStatus } from './access-policy';
@@ -9,6 +9,7 @@ export type AuthContextValue = {
   session: Session | null;
   user: User | null;
   role: AppRole | null;
+  accountStatus: StudentAccountStatus | null;
   status: AuthStatus;
   signIn: (email: string, password: string) => Promise<AuthResult>;
   signUp: (email: string, password: string, role: AppRole) => Promise<AuthResult>;

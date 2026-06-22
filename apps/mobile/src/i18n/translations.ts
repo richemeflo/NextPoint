@@ -201,6 +201,22 @@ export const dictionaries = {
     'students.title': 'Élèves',
     'students.subtitle':
       'Retrouvez uniquement les élèves actuellement associés à votre espace coach.',
+    'students.createAction': 'Créer une fiche élève',
+    'students.createTitle': 'Nouvelle fiche élève',
+    'students.createBody':
+      'Ajoutez un élève et préparez son compte non activé. Son accès sera finalisé avec un lien valable 24 heures.',
+    'students.createSubmitAction': 'Créer la fiche',
+    'students.createCancelAction': 'Annuler',
+    'students.creating': 'Création...',
+    'students.createSuccessTitle': 'Fiche élève créée',
+    'students.createSuccessBody':
+      '{{name}} est maintenant associé à votre espace coach.',
+    'students.createErrorTitle': 'Création impossible',
+    'students.createErrorBody':
+      'Aucune fiche n’a été créée. Vérifiez les informations puis réessayez.',
+    'students.createDuplicateTitle': 'Élève déjà existant',
+    'students.createDuplicateBody':
+      'Un élève utilise déjà cet email ou ce téléphone. Ouvrez sa fiche existante.',
     'students.loadErrorTitle': 'Liste indisponible',
     'students.loadErrorBody':
       'Impossible de charger les élèves pour le moment. Relancez l’application puis réessayez.',
@@ -250,6 +266,23 @@ export const dictionaries = {
     'auth.confirmationTitle': 'Vérifiez votre email',
     'auth.confirmationMessage':
       'Votre compte est créé. Ouvrez le message reçu pour confirmer votre adresse avant de vous connecter.',
+    'activation.title': 'Activez votre compte élève',
+    'activation.subtitle':
+      'Définissez votre mot de passe pour accéder à l’espace préparé par votre coach.',
+    'activation.passwordLabel': 'Nouveau mot de passe',
+    'activation.confirmPasswordLabel': 'Confirmer le nouveau mot de passe',
+    'activation.submitAction': 'Activer mon compte',
+    'activation.activating': 'Activation...',
+    'activation.successTitle': 'Compte activé',
+    'activation.successBody':
+      'Votre mot de passe est enregistré. Vous pouvez maintenant vous connecter.',
+    'activation.signInAction': 'Se connecter',
+    'activation.invalidTitle': 'Lien invalide',
+    'activation.invalidBody':
+      'Ce lien a expiré, a déjà été utilisé ou a été remplacé. Demandez un nouveau lien à votre coach.',
+    'activation.errorTitle': 'Activation impossible',
+    'activation.errorBody':
+      'Le compte n’a pas été activé. Vérifiez votre connexion puis réessayez.',
     'auth.validation.required': 'Ce champ est requis.',
     'auth.validation.invalidEmail': 'Saisissez une adresse email valide.',
     'auth.validation.passwordTooShort': 'Le mot de passe doit contenir au moins 8 caractères.',
@@ -259,7 +292,8 @@ export const dictionaries = {
     'auth.error.configuration':
       'La connexion Supabase n’est pas configurée. Ajoutez les variables publiques Expo prévues.',
     'auth.error.invalidCredentials': 'Email ou mot de passe incorrect.',
-    'auth.error.emailInUse': 'Un compte utilise déjà cette adresse email.',
+    'auth.error.emailInUse':
+      'Un compte utilise déjà cette adresse email. Si votre coach l’a créé, utilisez son lien d’activation.',
     'auth.error.weakPassword': 'Choisissez un mot de passe plus robuste.',
     'auth.error.emailNotConfirmed': 'Confirmez votre adresse email avant de vous connecter.',
     'auth.error.rateLimited': 'Trop de tentatives. Réessayez dans quelques minutes.',
@@ -507,6 +541,22 @@ export const dictionaries = {
     'students.title': 'Students',
     'students.subtitle':
       'Find only the students currently associated with your coach space.',
+    'students.createAction': 'Create a student record',
+    'students.createTitle': 'New student record',
+    'students.createBody':
+      'Add a student and prepare an inactive account. Access will be completed through a 24-hour link.',
+    'students.createSubmitAction': 'Create record',
+    'students.createCancelAction': 'Cancel',
+    'students.creating': 'Creating...',
+    'students.createSuccessTitle': 'Student record created',
+    'students.createSuccessBody':
+      '{{name}} is now associated with your coach space.',
+    'students.createErrorTitle': 'Unable to create',
+    'students.createErrorBody':
+      'No record was created. Check the information and try again.',
+    'students.createDuplicateTitle': 'Student already exists',
+    'students.createDuplicateBody':
+      'A student already uses this email or phone number. Open the existing record.',
     'students.loadErrorTitle': 'List unavailable',
     'students.loadErrorBody':
       'Students cannot be loaded right now. Restart the application and try again.',
@@ -556,6 +606,23 @@ export const dictionaries = {
     'auth.confirmationTitle': 'Check your email',
     'auth.confirmationMessage':
       'Your account was created. Open the message you received to confirm your address before signing in.',
+    'activation.title': 'Activate your student account',
+    'activation.subtitle':
+      'Set your password to access the space prepared by your coach.',
+    'activation.passwordLabel': 'New password',
+    'activation.confirmPasswordLabel': 'Confirm new password',
+    'activation.submitAction': 'Activate my account',
+    'activation.activating': 'Activating...',
+    'activation.successTitle': 'Account activated',
+    'activation.successBody':
+      'Your password is saved. You can now sign in.',
+    'activation.signInAction': 'Sign in',
+    'activation.invalidTitle': 'Invalid link',
+    'activation.invalidBody':
+      'This link expired, was already used, or was replaced. Ask your coach for a new link.',
+    'activation.errorTitle': 'Unable to activate',
+    'activation.errorBody':
+      'The account was not activated. Check your connection and try again.',
     'auth.validation.required': 'This field is required.',
     'auth.validation.invalidEmail': 'Enter a valid email address.',
     'auth.validation.passwordTooShort': 'The password must contain at least 8 characters.',
@@ -565,7 +632,8 @@ export const dictionaries = {
     'auth.error.configuration':
       'Supabase is not configured. Add the expected public Expo variables.',
     'auth.error.invalidCredentials': 'Incorrect email or password.',
-    'auth.error.emailInUse': 'An account already uses this email address.',
+    'auth.error.emailInUse':
+      'An account already uses this email address. If your coach created it, use the activation link.',
     'auth.error.weakPassword': 'Choose a stronger password.',
     'auth.error.emailNotConfirmed': 'Confirm your email address before signing in.',
     'auth.error.rateLimited': 'Too many attempts. Try again in a few minutes.',
@@ -813,6 +881,22 @@ export const dictionaries = {
     'students.title': 'Alumnos',
     'students.subtitle':
       'Encuentra únicamente los alumnos asociados actualmente a tu espacio de coach.',
+    'students.createAction': 'Crear ficha de alumno',
+    'students.createTitle': 'Nueva ficha de alumno',
+    'students.createBody':
+      'Añade un alumno y prepara su cuenta sin activar. El acceso se completará con un enlace válido durante 24 horas.',
+    'students.createSubmitAction': 'Crear ficha',
+    'students.createCancelAction': 'Cancelar',
+    'students.creating': 'Creando...',
+    'students.createSuccessTitle': 'Ficha de alumno creada',
+    'students.createSuccessBody':
+      '{{name}} ya está asociado a tu espacio de coach.',
+    'students.createErrorTitle': 'No se puede crear',
+    'students.createErrorBody':
+      'No se ha creado ninguna ficha. Revisa la información e inténtalo de nuevo.',
+    'students.createDuplicateTitle': 'El alumno ya existe',
+    'students.createDuplicateBody':
+      'Un alumno ya utiliza este email o teléfono. Abre la ficha existente.',
     'students.loadErrorTitle': 'Lista no disponible',
     'students.loadErrorBody':
       'No se pueden cargar los alumnos en este momento. Reinicia la aplicación e inténtalo de nuevo.',
@@ -862,6 +946,23 @@ export const dictionaries = {
     'auth.confirmationTitle': 'Revisa tu email',
     'auth.confirmationMessage':
       'Tu cuenta ha sido creada. Abre el mensaje recibido para confirmar tu dirección antes de iniciar sesión.',
+    'activation.title': 'Activa tu cuenta de alumno',
+    'activation.subtitle':
+      'Define tu contraseña para acceder al espacio preparado por tu coach.',
+    'activation.passwordLabel': 'Nueva contraseña',
+    'activation.confirmPasswordLabel': 'Confirmar nueva contraseña',
+    'activation.submitAction': 'Activar mi cuenta',
+    'activation.activating': 'Activando...',
+    'activation.successTitle': 'Cuenta activada',
+    'activation.successBody':
+      'Tu contraseña está guardada. Ya puedes iniciar sesión.',
+    'activation.signInAction': 'Iniciar sesión',
+    'activation.invalidTitle': 'Enlace no válido',
+    'activation.invalidBody':
+      'Este enlace ha caducado, ya se utilizó o fue reemplazado. Pide uno nuevo a tu coach.',
+    'activation.errorTitle': 'No se puede activar',
+    'activation.errorBody':
+      'La cuenta no se ha activado. Comprueba tu conexión e inténtalo de nuevo.',
     'auth.validation.required': 'Este campo es obligatorio.',
     'auth.validation.invalidEmail': 'Introduce una dirección de email válida.',
     'auth.validation.passwordTooShort': 'La contraseña debe tener al menos 8 caracteres.',
@@ -871,7 +972,8 @@ export const dictionaries = {
     'auth.error.configuration':
       'Supabase no está configurado. Añade las variables públicas de Expo previstas.',
     'auth.error.invalidCredentials': 'Email o contraseña incorrectos.',
-    'auth.error.emailInUse': 'Ya existe una cuenta con esta dirección de email.',
+    'auth.error.emailInUse':
+      'Ya existe una cuenta con este email. Si tu coach la creó, utiliza el enlace de activación.',
     'auth.error.weakPassword': 'Elige una contraseña más segura.',
     'auth.error.emailNotConfirmed': 'Confirma tu dirección de email antes de iniciar sesión.',
     'auth.error.rateLimited': 'Demasiados intentos. Inténtalo de nuevo en unos minutos.',

@@ -96,6 +96,7 @@ Orientation produit:
 - Gestion des tarifs par le coach.
 - Liste des élèves côté coach.
 - Création manuelle d’une fiche élève par le coach.
+- Provisionnement d’un compte élève non activé et lien de 24 heures pour définir son mot de passe.
 - Notes/remarques privées uniques du coach sur ses élèves.
 - Historique élève visible par le coach sur la fiche élève.
 - Pack de cours individuels donné par le coach à un élève pour suivre les cours inclus, utilisés et restants.
@@ -188,10 +189,10 @@ Orientation produit:
 - Le produit démarre avec une logique coach individuel plutôt qu’une logique club.
 - Le MVP démarre avec un seul coach désigné.
 - En P0, l’association élève/coach est directe: tous les élèves de l’application sont visibles par le coach unique.
-- En évolution future, le coach donnera probablement un lien d’invitation ou un code pour que l’élève l’ajoute dans l’application.
+- En P0, le coach génère le lien d’activation du compte qu’il a provisionné; ce lien ne sert pas à choisir ou ajouter un coach.
 - Le téléphone est le support de décision prioritaire pour l’UX.
 - Le MVP peut fonctionner sans paiement intégré.
-- Le MVP peut fonctionner sans marketplace publique ni invitation, car il n’y a qu’un coach.
+- Le MVP reste sans marketplace; le lien d’activation sert uniquement à récupérer le compte élève déjà associé au coach unique.
 - La disponibilité exacte du coach est la source de vérité pour les réservations.
 - La priorité produit est l’expérience coach, la rapidité de réservation et la simplicité de gestion planning.
 

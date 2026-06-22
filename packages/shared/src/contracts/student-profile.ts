@@ -34,6 +34,19 @@ export const studentProfileSchema = z.object({
 
 export type StudentProfileFormInput = z.infer<typeof studentProfileSchema>;
 
+export const manualStudentProfileSchema = studentProfileSchema.pick({
+  fullName: true,
+  phone: true,
+  email: true,
+  padelLevel: true,
+  age: true,
+  sex: true,
+});
+
+export type ManualStudentProfileFormInput = z.infer<
+  typeof manualStudentProfileSchema
+>;
+
 export type StudentProfileInput = {
   fullName: string;
   phone: string;
@@ -43,6 +56,11 @@ export type StudentProfileInput = {
   sex: StudentSex;
   preferredLanguage: StudentProfileFormInput['preferredLanguage'];
 };
+
+export type ManualStudentProfileInput = Omit<
+  StudentProfileInput,
+  'preferredLanguage'
+>;
 
 export function toStudentProfileInput(
   form: StudentProfileFormInput
@@ -55,5 +73,18 @@ export function toStudentProfileInput(
     age: Number(form.age),
     sex: form.sex,
     preferredLanguage: form.preferredLanguage,
+  };
+}
+
+export function toManualStudentProfileInput(
+  form: ManualStudentProfileFormInput
+): ManualStudentProfileInput {
+  return {
+    fullName: form.fullName.trim(),
+    phone: form.phone.trim(),
+    email: form.email.trim().toLowerCase(),
+    padelLevel: Number(form.padelLevel),
+    age: Number(form.age),
+    sex: form.sex,
   };
 }

@@ -41,6 +41,7 @@ Contexte produit P0:
 |---|---|---|---|
 | Page publique avant inscription | E-STUDENT-001 | URL publique | Presenter le coach, afficher les tarifs, pousser `S'inscrire`; aucune disponibilite visible. |
 | Inscription / Connexion | E-STUDENT-002 | Page publique / session expiree | Creer ou retrouver un compte, collecter profil minimal. |
+| Activation Compte Eleve | E-STUDENT-002b | Lien transmis par le coach | Definir le mot de passe d'un compte provisionne; gerer expiration et jeton invalide. |
 | Accueil Eleve / Disponibilites Coach | E-STUDENT-003 | App open eleve | Voir tarifs puis agenda hebdomadaire des creneaux demandables et cours propres. |
 | Detail Creneau / Demande | E-STUDENT-004 | Tap creneau | Verifier date, heure, duree, lieu, tarif, type individuel/collectif, commentaire libre, envoi. |
 | Planning Eleve / Demandes | E-STUDENT-005 | Tab Planning | Suivre demandes et reservations avec filtres, sans separer demandes/planning. |
@@ -58,7 +59,7 @@ Navigation mobile eleve: `Accueil`, `Planning`, `Notifications`, `Compte`.
 | Gestion Disponibilites | E-COACH-003 | Tab Disponibilites / CTA planning | Creer plages, duree, lieu, recurrence; visualiser creneaux generes; modifier une occurrence ou une serie via confirmation. |
 | Creation Cours Individuel | E-COACH-003b | Disponibilites / Planning | Creer cours individuel, option recurrence hebdomadaire. |
 | Eleves / Recherche | E-COACH-004 | Tab Eleves | Rechercher, filtrer, creer fiche eleve manuelle. |
-| Fiche Eleve | E-COACH-005 | Liste eleves | Profil, note privee unique, historique, packs, actions contact. |
+| Fiche Eleve | E-COACH-005 | Liste eleves | Profil, etat du compte, generation conditionnelle du lien d'activation, note privee, historique, packs, actions contact. |
 | Profil Coach / Parametres | E-COACH-006 | Tab Profil | Compte, langue, notifications, acces tarifs/disponibilites. |
 | Gestion Tarifs | E-COACH-007 | Profil / Parametres | Tarifs individuels/collectifs par duree, activation/desactivation. |
 | Statistiques Coach | E-COACH-008 | Tab Stats | Cours, heures, `revenu estime`, eleves actifs; mois prioritaire. |
@@ -102,6 +103,7 @@ Les specs visuelles vivent dans `DESIGN.md.Components`.
 | Price card | Public + accueil eleve | Affiche libelle, prix, duree, type. Aucun CTA de paiement. |
 | Student row | Eleves coach | Nom, niveau padel 1 a 10, age/tranche, dernier cours ou prochaine reservation si disponible. Tap ouvre fiche. |
 | Private note editor | Fiche eleve coach | Pas d'autosave. Bouton `Modifier`, puis `Enregistrer`. Note jamais exposee eleve. |
+| Student activation action | Fiche eleve coach | Visible en haut a droite uniquement pour `pending_activation`; regeneration invalide l'ancien lien; afficher copie/partage et expiration. |
 | Pack tracker | Fiche eleve coach | Cours inclus, utilises, restants. Action coach pour marquer une session consommee. Eleve ne peut ni creer ni acheter. |
 | Notification row | Onglets Notifications | Etat lu/non lu, type evenement, horodatage, lien vers demande/reservation. Push refuse n'affecte pas l'in-app. |
 | Coach message thread | Onglet Messagerie coach | Liste et detail des discussions liees a un creneau, une demande, une reservation ou un evenement. Le coach peut repondre; la messagerie eleve et les comportements avances restent P1. |

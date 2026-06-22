@@ -85,7 +85,6 @@ select is(
   '''not_specified''::student_sex',
   'existing and new profiles default to not_specified'
 );
-
 select * from finish();
 
 rollback;

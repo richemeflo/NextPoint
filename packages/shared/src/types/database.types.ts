@@ -138,6 +138,39 @@ export type Database = {
         }
         Relationships: []
       }
+      student_activation_tokens: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          revoked_at: string | null
+          student_id: string
+          token_hash: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          created_by: string
+          expires_at: string
+          id?: string
+          revoked_at?: string | null
+          student_id: string
+          token_hash: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          revoked_at?: string | null
+          student_id?: string
+          token_hash?: string
+        }
+        Relationships: []
+      }
       student_coach_relationships: {
         Row: {
           association_method: string
@@ -170,6 +203,7 @@ export type Database = {
       }
       student_profiles: {
         Row: {
+          account_status: Database["public"]["Enums"]["student_account_status"]
           age: number
           created_at: string
           email: string
@@ -182,6 +216,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          account_status?: Database["public"]["Enums"]["student_account_status"]
           age: number
           created_at?: string
           email: string
@@ -194,6 +229,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          account_status?: Database["public"]["Enums"]["student_account_status"]
           age?: number
           created_at?: string
           email?: string
@@ -234,7 +270,91 @@ export type Database = {
         Args: { student_user_id: string }
         Returns: undefined
       }
+      claim_student_activation_token: {
+        Args: { p_token_hash: string }
+        Returns: {
+          consumed_at: string | null
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          revoked_at: string | null
+          student_id: string
+          token_hash: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "student_activation_tokens"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      complete_manual_student_provisioning: {
+        Args: {
+          p_age: number
+          p_coach_id: string
+          p_email: string
+          p_full_name: string
+          p_padel_level: number
+          p_phone: string
+          p_sex: Database["public"]["Enums"]["student_sex"]
+          p_student_id: string
+        }
+        Returns: {
+          account_status: Database["public"]["Enums"]["student_account_status"]
+          age: number
+          created_at: string
+          email: string
+          full_name: string
+          padel_level: number
+          phone: string
+          preferred_language: Database["public"]["Enums"]["app_language"]
+          sex: Database["public"]["Enums"]["student_sex"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "student_profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      create_student_activation_token: {
+        Args: {
+          p_coach_id: string
+          p_expires_at: string
+          p_student_id: string
+          p_token_hash: string
+        }
+        Returns: {
+          consumed_at: string | null
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          revoked_at: string | null
+          student_id: string
+          token_hash: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "student_activation_tokens"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       delete_pricing_rate: { Args: { p_rate_id: string }; Returns: undefined }
+      finalize_student_activation: {
+        Args: { p_student_id: string; p_token_id: string }
+        Returns: undefined
+      }
+      normalize_student_email: { Args: { value: string }; Returns: string }
+      normalize_student_phone: { Args: { value: string }; Returns: string }
+      rollback_student_activation_claim: {
+        Args: { p_token_id: string }
+        Returns: undefined
+      }
       save_pricing_rate: {
         Args: {
           p_amount_cents: number
@@ -272,6 +392,11 @@ export type Database = {
     Enums: {
       app_language: "fr" | "en" | "es"
       app_role: "coach" | "eleve"
+      student_account_status:
+        | "pending_activation"
+        | "active"
+        | "suspended"
+        | "deleted"
       student_sex: "female" | "male" | "other" | "not_specified"
     }
     CompositeTypes: {
@@ -405,6 +530,12 @@ export const Constants = {
     Enums: {
       app_language: ["fr", "en", "es"],
       app_role: ["coach", "eleve"],
+      student_account_status: [
+        "pending_activation",
+        "active",
+        "suspended",
+        "deleted",
+      ],
       student_sex: ["female", "male", "other", "not_specified"],
     },
   },

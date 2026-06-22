@@ -17,6 +17,12 @@ so that je puisse préparer les cours et comprendre l’activité passée.
 3. Given une fiche élève sans historique When le coach l’ouvre Then un état vide clair est affiché And la fiche reste utilisable pour les autres actions disponibles.
 4. Given un élève connecté When il tente d’accéder à la fiche coach détaillée contenant historique coach et note privée Then l’accès est refusé And la note privée n’est jamais exposée.
 5. Given le MVP P0 When la fiche élève est affichée Then aucun suivi de progression sportive n’est inclus And l’historique reste centré sur demandes, cours, annulations, modifications et packs.
+6. Given une fiche élève When le coach l’ouvre Then l’état du compte est affiché avec un badge traduit.
+7. Given un compte `pending_activation` When le coach ouvre la fiche Then un bouton en haut à droite permet de générer ou régénérer un lien d’activation de 24 heures.
+8. Given un lien généré When la commande réussit Then le coach peut le copier ou le partager And sa date d’expiration est visible.
+9. Given un nouveau lien généré When un lien précédent existe Then l’ancien lien devient immédiatement invalide.
+10. Given un compte `active`, `suspended` ou `deleted` When la fiche est ouverte Then le bouton n’est pas affiché And la commande serveur refuse la génération.
+11. Given un utilisateur non autorisé When il tente de générer un lien Then l’accès est refusé And aucun jeton ou lien n’est retourné.
 
 ## Tasks / Subtasks
 

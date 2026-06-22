@@ -1,5 +1,10 @@
 export { Constants } from './types/database.types';
 export { signInSchema, signUpSchema } from './contracts/auth';
+export {
+  activateStudentAccountSchema,
+  isStudentAccountStatus,
+  studentAccountStatuses,
+} from './contracts/student-account';
 export { coachProfileSchema, toCoachProfileInput } from './contracts/coach-profile';
 export {
   pricingApplicabilityContexts,
@@ -10,13 +15,19 @@ export {
   toPricingRateInput,
 } from './contracts/pricing-rate';
 export {
+  manualStudentProfileSchema,
   studentSexes,
   studentProfileSchema,
+  toManualStudentProfileInput,
   toStudentProfileInput,
 } from './contracts/student-profile';
 export { appLanguages } from './domain/languages';
 export { appRoles, isAppRole } from './domain/roles';
 export type { SignInInput, SignUpInput } from './contracts/auth';
+export type {
+  ActivateStudentAccountInput,
+  StudentAccountStatus,
+} from './contracts/student-account';
 export type {
   CoachProfileFormInput,
   CoachProfileInput,
@@ -31,6 +42,8 @@ export type {
   PricingSelectionContext,
 } from './contracts/pricing-rate';
 export type {
+  ManualStudentProfileFormInput,
+  ManualStudentProfileInput,
   StudentSex,
   StudentProfileFormInput,
   StudentProfileInput,

@@ -32,7 +32,7 @@ Le PRD contient environ 112 exigences fonctionnelles, organisees autour de ces b
 Le graphe fonctionnel du MVP converge vers quatre noyaux architecturaux:
 
 1. **Identity & Access**
-   Gere comptes, roles `coach`/`eleve`, relation coach/eleve single-coach, fiches eleves manuelles et protection des donnees privees.
+   Gere comptes, roles `coach`/`eleve`, relation coach/eleve single-coach, provisionnement des comptes eleves, activation par jeton et protection des donnees privees.
 
 2. **Scheduling & Booking**
    Gere plages de disponibilites, generation de creneaux, demandes `pending`, confirmation/refus, annulation/modification, expiration 7 jours, cours individuels/collectifs et recurrence coach.
@@ -199,11 +199,15 @@ Fast Refresh, serveur Expo, developpement iOS/Android/web depuis une base commun
 
 **Authorization Pattern:** Application roles are `coach` and `eleve`, backed by database tables and/or trusted auth metadata. RLS policies enforce read/write access by role and coach/student relation.
 
-**Sensitive Operations:** Reservation mutations are not client-side CRUD. Booking request, coach validation, refusal, cancellation, modification, expiration handling, lesson-pack consumption, and notification mirroring must run through server-side transactional logic.
+**Sensitive Operations:** Reservation mutations are not client-side CRUD. Booking request, coach validation, refusal, cancellation, modification, expiration handling, lesson-pack consumption, notification mirroring, provisionnement Auth eleve, generation/revocation de lien et activation de compte doivent passer par des commandes serveur de confiance.
 
 **Private Data:** Coach private notes are protected by RLS and never exposed to student queries. Tests must cover this explicitly.
 
 **API Security:** The client uses only public anon credentials. Service-role access is restricted to Supabase Edge Functions or trusted backend execution. Rate limiting is required for auth-sensitive and booking-sensitive actions before production.
+
+**Student Account Lifecycle:** L'etat metier du compte eleve est distinct du statut de la relation coach/eleve. Les valeurs sont `pending_activation`, `active`, `suspended`, `deleted`. Les routes privees eleve exigent `active`.
+
+**Activation Tokens:** Les liens utilisent un jeton opaque aleatoire dont seul le hash est stocke. Le jeton est a usage unique, expire apres 24 heures et toute regeneration revoque les jetons precedents. L'API Admin Supabase Auth reste confinee aux Edge Functions.
 
 ### API & Communication Patterns
 
@@ -212,6 +216,8 @@ Fast Refresh, serveur Expo, developpement iOS/Android/web depuis une base commun
 **API Style:** Use Supabase client queries for read models and Supabase Edge Functions as command endpoints for workflows such as `requestBooking`, `approveBooking`, `refuseBooking`, `cancelBooking`, coach-only `modifyBooking`, `consumeLessonPack`, and notification mirroring.
 
 **Business Command Pattern:** Booking-related operations are commands, not generic CRUD. Each command validates permissions, checks current state, applies transactional database changes, creates required in-app notifications, and returns a typed response.
+
+**Student Account Commands:** `create-manual-student`, `generate-student-activation-link` et `activate-student-account` suivent le meme pattern de commande. Elles normalisent les erreurs, auditent les changements d'etat et compensent toute creation Auth partielle.
 
 **Realtime Strategy:** Use Supabase Realtime selectively for coach planning updates, notification badges, and booking state updates where live feedback materially improves UX. Avoid broad realtime subscriptions in P0; prefer TanStack Query invalidation/refetch for ordinary screens.
 
@@ -397,6 +403,8 @@ type CommandFailure = {
 - Use design tokens for colors and theme values.
 - Externalize user-facing text for FR/EN/ES.
 - Add tests for RLS/private notes and booking conflict behavior when touching those areas.
+- Never call Supabase Auth Admin APIs from client code; student provisioning and activation are server-only.
+- Store activation token hashes only; enforce one-time use, 24-hour expiry, and revocation on regeneration.
 
 **Pattern Enforcement:**
 
