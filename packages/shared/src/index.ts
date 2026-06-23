@@ -11,6 +11,10 @@ export {
   studentHistoryEventStatuses,
   studentHistoryEventTypes,
 } from './contracts/student-history';
+export {
+  studentPrivateNoteSchema,
+  toStudentPrivateNoteInput,
+} from './contracts/student-private-note';
 export { coachProfileSchema, toCoachProfileInput } from './contracts/coach-profile';
 export {
   pricingApplicabilityContexts,
@@ -38,6 +42,10 @@ export type {
   StudentHistoryEventStatus,
   StudentHistoryEventType,
 } from './contracts/student-history';
+export type {
+  StudentPrivateNoteFormInput,
+  StudentPrivateNoteInput,
+} from './contracts/student-private-note';
 export type {
   CoachProfileFormInput,
   CoachProfileInput,
