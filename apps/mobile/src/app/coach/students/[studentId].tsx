@@ -32,6 +32,7 @@ import {
   type AssociatedStudentDetail,
   type StudentHistoryEvent,
 } from '@/features/students/student-coach-service';
+import { StudentPrivateNoteCard } from '@/features/students/student-private-note-card';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
 
@@ -356,6 +357,8 @@ export default function CoachStudentDetailScreen() {
               </Pressable>
             </View>
           </Card>
+
+          <StudentPrivateNoteCard studentId={student.userId} />
 
           <View style={styles.historySection}>
             <View style={styles.sectionHeading}>

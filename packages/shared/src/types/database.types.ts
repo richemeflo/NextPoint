@@ -240,6 +240,33 @@ export type Database = {
         }
         Relationships: []
       }
+      student_private_notes: {
+        Row: {
+          coach_id: string
+          content: string
+          created_at: string
+          id: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          coach_id: string
+          content: string
+          created_at?: string
+          id?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       student_profiles: {
         Row: {
           account_status: Database["public"]["Enums"]["student_account_status"]
@@ -423,6 +450,23 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "pricing_rates"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      save_student_private_note: {
+        Args: { p_content: string; p_student_id: string }
+        Returns: {
+          coach_id: string
+          content: string
+          created_at: string
+          id: string
+          student_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "student_private_notes"
           isOneToOne: true
           isSetofReturn: false
         }

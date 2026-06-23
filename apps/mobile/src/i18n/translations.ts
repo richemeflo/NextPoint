@@ -280,6 +280,33 @@ export const dictionaries = {
     'studentDetail.activationErrorTitle': 'Lien indisponible',
     'studentDetail.activationErrorBody':
       'Le lien n’a pas pu être généré ou partagé. Vérifiez l’état du compte puis réessayez.',
+    'studentPrivateNote.loading': 'Chargement de la note privée...',
+    'studentPrivateNote.title': 'Note privée coach',
+    'studentPrivateNote.privateHint':
+      'Visible uniquement dans votre espace coach.',
+    'studentPrivateNote.addAction': 'Ajouter une note',
+    'studentPrivateNote.editAction': 'Modifier',
+    'studentPrivateNote.fieldLabel': 'Note privée',
+    'studentPrivateNote.placeholder':
+      'Ajoutez un rappel utile pour préparer les prochains cours.',
+    'studentPrivateNote.characterCount': '{{count}} / 2000 caractères',
+    'studentPrivateNote.saveAction': 'Enregistrer',
+    'studentPrivateNote.saving': 'Enregistrement...',
+    'studentPrivateNote.cancelAction': 'Annuler',
+    'studentPrivateNote.emptyBody':
+      'Aucune note privée n’a encore été enregistrée.',
+    'studentPrivateNote.validationRequired': 'Saisissez une note avant d’enregistrer.',
+    'studentPrivateNote.validationTooLong':
+      'La note ne peut pas dépasser 2000 caractères.',
+    'studentPrivateNote.loadErrorTitle': 'Note indisponible',
+    'studentPrivateNote.loadErrorBody':
+      'Impossible de charger la note privée pour le moment.',
+    'studentPrivateNote.saveSuccessTitle': 'Note enregistrée',
+    'studentPrivateNote.saveSuccessBody':
+      'La note privée est à jour dans votre espace coach.',
+    'studentPrivateNote.saveErrorTitle': 'Enregistrement impossible',
+    'studentPrivateNote.saveErrorBody':
+      'La note existante n’a pas été modifiée. Réessayez.',
     'auth.signInTitle': 'Retrouvez votre espace.',
     'auth.signInSubtitle':
       'Connectez-vous avec votre email et votre mot de passe pour accéder à NextPoint.',
@@ -663,6 +690,32 @@ export const dictionaries = {
     'studentDetail.activationErrorTitle': 'Link unavailable',
     'studentDetail.activationErrorBody':
       'The link could not be generated or shared. Check the account status and try again.',
+    'studentPrivateNote.loading': 'Loading private note...',
+    'studentPrivateNote.title': 'Private coach note',
+    'studentPrivateNote.privateHint':
+      'Visible only in your coach space.',
+    'studentPrivateNote.addAction': 'Add a note',
+    'studentPrivateNote.editAction': 'Edit',
+    'studentPrivateNote.fieldLabel': 'Private note',
+    'studentPrivateNote.placeholder':
+      'Add a useful reminder for upcoming lessons.',
+    'studentPrivateNote.characterCount': '{{count}} / 2000 characters',
+    'studentPrivateNote.saveAction': 'Save',
+    'studentPrivateNote.saving': 'Saving...',
+    'studentPrivateNote.cancelAction': 'Cancel',
+    'studentPrivateNote.emptyBody': 'No private note has been saved yet.',
+    'studentPrivateNote.validationRequired': 'Enter a note before saving.',
+    'studentPrivateNote.validationTooLong':
+      'The note cannot exceed 2000 characters.',
+    'studentPrivateNote.loadErrorTitle': 'Note unavailable',
+    'studentPrivateNote.loadErrorBody':
+      'The private note cannot be loaded right now.',
+    'studentPrivateNote.saveSuccessTitle': 'Note saved',
+    'studentPrivateNote.saveSuccessBody':
+      'The private note is up to date in your coach space.',
+    'studentPrivateNote.saveErrorTitle': 'Unable to save',
+    'studentPrivateNote.saveErrorBody':
+      'The existing note was not changed. Try again.',
     'auth.signInTitle': 'Return to your space.',
     'auth.signInSubtitle':
       'Sign in with your email and password to access NextPoint.',
@@ -1046,6 +1099,34 @@ export const dictionaries = {
     'studentDetail.activationErrorTitle': 'Enlace no disponible',
     'studentDetail.activationErrorBody':
       'No se ha podido generar o compartir el enlace. Revisa el estado de la cuenta e inténtalo de nuevo.',
+    'studentPrivateNote.loading': 'Cargando la nota privada...',
+    'studentPrivateNote.title': 'Nota privada del coach',
+    'studentPrivateNote.privateHint':
+      'Visible únicamente en tu espacio de coach.',
+    'studentPrivateNote.addAction': 'Añadir una nota',
+    'studentPrivateNote.editAction': 'Modificar',
+    'studentPrivateNote.fieldLabel': 'Nota privada',
+    'studentPrivateNote.placeholder':
+      'Añade un recordatorio útil para preparar las próximas clases.',
+    'studentPrivateNote.characterCount': '{{count}} / 2000 caracteres',
+    'studentPrivateNote.saveAction': 'Guardar',
+    'studentPrivateNote.saving': 'Guardando...',
+    'studentPrivateNote.cancelAction': 'Cancelar',
+    'studentPrivateNote.emptyBody':
+      'Todavía no se ha guardado ninguna nota privada.',
+    'studentPrivateNote.validationRequired':
+      'Introduce una nota antes de guardar.',
+    'studentPrivateNote.validationTooLong':
+      'La nota no puede superar los 2000 caracteres.',
+    'studentPrivateNote.loadErrorTitle': 'Nota no disponible',
+    'studentPrivateNote.loadErrorBody':
+      'No se puede cargar la nota privada en este momento.',
+    'studentPrivateNote.saveSuccessTitle': 'Nota guardada',
+    'studentPrivateNote.saveSuccessBody':
+      'La nota privada está actualizada en tu espacio de coach.',
+    'studentPrivateNote.saveErrorTitle': 'No se puede guardar',
+    'studentPrivateNote.saveErrorBody':
+      'La nota existente no se ha modificado. Inténtalo de nuevo.',
     'auth.signInTitle': 'Vuelve a tu espacio.',
     'auth.signInSubtitle':
       'Inicia sesión con tu email y contraseña para acceder a NextPoint.',
