@@ -12,6 +12,21 @@ export type StudentActivationResult =
   | { ok: true }
   | { ok: false; code: StudentActivationFailureCode };
 
+export type GeneratedStudentActivationLink = {
+  activationLink: string;
+  expiresAt: string;
+};
+
+export type GenerateStudentActivationLinkResult =
+  | { ok: true; data: GeneratedStudentActivationLink }
+  | {
+      ok: false;
+      code:
+        | 'account_not_activatable'
+        | 'unauthorized'
+        | 'configuration_error';
+    };
+
 export async function activateStudentAccount(
   input: Pick<ActivateStudentAccountInput, 'token' | 'password'>
 ): Promise<StudentActivationResult> {
@@ -34,4 +49,35 @@ export async function activateStudentAccount(
   }
 
   return { ok: true };
+}
+
+export async function generateStudentActivationLink(
+  studentId: string
+): Promise<GenerateStudentActivationLinkResult> {
+  if (!supabase) return { ok: false, code: 'configuration_error' };
+
+  const { data, error } = await supabase.functions.invoke(
+    'generate-student-activation-link',
+    { body: { studentId } }
+  );
+
+  if (error || !data?.ok || !data.data) {
+    return {
+      ok: false,
+      code:
+        data?.error?.code === 'unauthorized'
+          ? 'unauthorized'
+          : data?.error?.code === 'account_not_activatable'
+            ? 'account_not_activatable'
+            : 'configuration_error',
+    };
+  }
+
+  return {
+    ok: true,
+    data: {
+      activationLink: data.data.activationLink,
+      expiresAt: data.data.expiresAt,
+    },
+  };
 }

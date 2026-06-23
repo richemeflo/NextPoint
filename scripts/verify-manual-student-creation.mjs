@@ -275,8 +275,39 @@ try {
   assert.equal(signIn.error, null);
   assert.ok(signIn.data.session);
 
+  for (const accountStatus of ['suspended', 'deleted']) {
+    execFileSync(
+      'docker',
+      [
+        'exec',
+        'supabase_db_nextpoint',
+        'psql',
+        '-U',
+        'postgres',
+        '-d',
+        'postgres',
+        '-v',
+        'ON_ERROR_STOP=1',
+        '-c',
+        `update public.student_profiles set account_status = '${accountStatus}' where user_id = '${created.data.user_id}'::uuid;`,
+      ],
+      { stdio: 'ignore' }
+    );
+
+    const generationRejected = await invoke(
+      'generate-student-activation-link',
+      { studentId: created.data.user_id },
+      coach.session.access_token
+    );
+    assert.equal(generationRejected.ok, false);
+    assert.equal(
+      generationRejected.error.code,
+      'account_not_activatable'
+    );
+  }
+
   console.log(
-    'MANUAL_STUDENT_ACTIVATION_INTEGRATION_OK provision, duplicate denial, coach-only links, 24h regeneration, one-time activation'
+    'MANUAL_STUDENT_ACTIVATION_INTEGRATION_OK provision, duplicate denial, coach-only links, 24h regeneration, one-time activation, non-pending refusal'
   );
 } finally {
   for (const userId of [...new Set(createdUserIds)]) {

@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { StudentSex } from '@nextpoint/shared';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { type Href, useRouter } from 'expo-router';
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -39,26 +46,35 @@ const emptyFilters: StudentListFilters = {
 
 function StudentRow({ student }: { student: AssociatedStudent }) {
   const { t } = useTranslation();
+  const router = useRouter();
 
   return (
-    <Card style={styles.studentRow}>
-      <View style={styles.studentMain}>
-        <ThemedText type="smallBold">{student.fullName}</ThemedText>
-        <ThemedText type="small" themeColor="textMuted">
-          {t('students.levelValue', { level: student.padelLevel })} ·{' '}
-          {t('students.ageValue', { age: student.age })} ·{' '}
-          {t(`profile.sex.${student.sex === 'not_specified' ? 'notSpecified' : student.sex}`)}
-        </ThemedText>
-      </View>
-      <View style={styles.contact}>
-        <ThemedText type="small" themeColor="textMuted">
-          {student.phone}
-        </ThemedText>
-        <ThemedText type="small" themeColor="textMuted">
-          {student.email}
-        </ThemedText>
-      </View>
-    </Card>
+    <Pressable
+      accessibilityRole="button"
+      onPress={() =>
+        router.push(`/coach/students/${student.userId}` as Href)
+      }>
+      {({ pressed }) => (
+        <Card style={[styles.studentRow, pressed && styles.studentRowPressed]}>
+          <View style={styles.studentMain}>
+            <ThemedText type="smallBold">{student.fullName}</ThemedText>
+            <ThemedText type="small" themeColor="textMuted">
+              {t('students.levelValue', { level: student.padelLevel })} ·{' '}
+              {t('students.ageValue', { age: student.age })} ·{' '}
+              {t(`profile.sex.${student.sex === 'not_specified' ? 'notSpecified' : student.sex}`)}
+            </ThemedText>
+          </View>
+          <View style={styles.contact}>
+            <ThemedText type="small" themeColor="textMuted">
+              {student.phone}
+            </ThemedText>
+            <ThemedText type="small" themeColor="textMuted">
+              {student.email}
+            </ThemedText>
+          </View>
+        </Card>
+      )}
+    </Pressable>
   );
 }
 
@@ -316,6 +332,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     gap: Spacing.three,
+  },
+  studentRowPressed: {
+    opacity: 0.76,
   },
   studentMain: {
     minWidth: 200,

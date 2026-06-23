@@ -1,6 +1,8 @@
 import type {
   ManualStudentProfileInput,
   StudentAccountStatus,
+  StudentHistoryEventStatus,
+  StudentHistoryEventType,
   StudentSex,
   Tables,
 } from '@nextpoint/shared';
@@ -8,6 +10,7 @@ import type {
 import { supabase } from '@/lib/supabase/client';
 
 type RelationshipRow = Tables<'student_coach_relationships'>;
+type StudentHistoryRow = Tables<'student_history_events'>;
 type StudentProfileRow = Tables<'student_profiles'>;
 
 export type StudentCoachAssociation = {
@@ -30,6 +33,20 @@ export type AssociatedStudent = {
   accountStatus: StudentAccountStatus;
 };
 
+export type StudentHistoryEvent = {
+  id: string;
+  eventType: StudentHistoryEventType;
+  status: StudentHistoryEventStatus;
+  title: string;
+  description: string | null;
+  occurredAt: string;
+};
+
+export type AssociatedStudentDetail = {
+  student: AssociatedStudent;
+  history: StudentHistoryEvent[];
+};
+
 type AssociationResult =
   | { ok: true; data: StudentCoachAssociation | null }
   | { ok: false };
@@ -41,6 +58,10 @@ type AssociatedStudentsResult =
 type AssociatedStudentResult =
   | { ok: true; data: AssociatedStudent }
   | { ok: false; code?: string };
+
+type AssociatedStudentDetailResult =
+  | { ok: true; data: AssociatedStudentDetail }
+  | { ok: false; code: 'not_found' | 'load_failed' };
 
 function mapAssociation(row: RelationshipRow): StudentCoachAssociation {
   return {
@@ -63,6 +84,17 @@ function mapStudent(row: StudentProfileRow): AssociatedStudent {
     age: row.age,
     sex: row.sex,
     accountStatus: row.account_status,
+  };
+}
+
+function mapHistoryEvent(row: StudentHistoryRow): StudentHistoryEvent {
+  return {
+    id: row.id,
+    eventType: row.event_type,
+    status: row.status,
+    title: row.title,
+    description: row.description,
+    occurredAt: row.occurred_at,
   };
 }
 
@@ -106,6 +138,37 @@ export async function getAssociatedStudents(
 
   if (profiles.error) return { ok: false };
   return { ok: true, data: profiles.data.map(mapStudent) };
+}
+
+export async function getAssociatedStudentDetail(
+  studentId: string
+): Promise<AssociatedStudentDetailResult> {
+  if (!supabase) return { ok: false, code: 'load_failed' };
+
+  const profile = await supabase
+    .from('student_profiles')
+    .select('*')
+    .eq('user_id', studentId)
+    .maybeSingle();
+
+  if (profile.error) return { ok: false, code: 'load_failed' };
+  if (!profile.data) return { ok: false, code: 'not_found' };
+
+  const history = await supabase
+    .from('student_history_events')
+    .select('*')
+    .eq('student_id', studentId)
+    .order('occurred_at', { ascending: false });
+
+  if (history.error) return { ok: false, code: 'load_failed' };
+
+  return {
+    ok: true,
+    data: {
+      student: mapStudent(profile.data),
+      history: history.data.map(mapHistoryEvent),
+    },
+  };
 }
 
 export async function createManualStudent(

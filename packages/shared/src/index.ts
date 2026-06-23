@@ -5,6 +5,12 @@ export {
   isStudentAccountStatus,
   studentAccountStatuses,
 } from './contracts/student-account';
+export {
+  isStudentHistoryEventStatus,
+  isStudentHistoryEventType,
+  studentHistoryEventStatuses,
+  studentHistoryEventTypes,
+} from './contracts/student-history';
 export { coachProfileSchema, toCoachProfileInput } from './contracts/coach-profile';
 export {
   pricingApplicabilityContexts,
@@ -28,6 +34,10 @@ export type {
   ActivateStudentAccountInput,
   StudentAccountStatus,
 } from './contracts/student-account';
+export type {
+  StudentHistoryEventStatus,
+  StudentHistoryEventType,
+} from './contracts/student-history';
 export type {
   CoachProfileFormInput,
   CoachProfileInput,

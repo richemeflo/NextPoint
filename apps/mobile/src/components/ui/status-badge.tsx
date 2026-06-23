@@ -5,14 +5,33 @@ import { Radii, Spacing, type ThemeColor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
 
-type Status = 'active' | 'inactive' | 'pending' | 'confirmed' | 'refused';
+type Status =
+  | 'active'
+  | 'inactive'
+  | 'pending'
+  | 'pendingActivation'
+  | 'confirmed'
+  | 'refused'
+  | 'expired'
+  | 'cancelled'
+  | 'modified'
+  | 'exhausted'
+  | 'suspended'
+  | 'deleted';
 
 const statusTokens: Record<Status, { surface: ThemeColor; text: ThemeColor }> = {
   active: { surface: 'successSurface', text: 'success' },
   inactive: { surface: 'warningSurface', text: 'warning' },
   pending: { surface: 'warningSurface', text: 'warning' },
+  pendingActivation: { surface: 'warningSurface', text: 'warning' },
   confirmed: { surface: 'successSurface', text: 'success' },
   refused: { surface: 'errorSurface', text: 'error' },
+  expired: { surface: 'warningSurface', text: 'warning' },
+  cancelled: { surface: 'errorSurface', text: 'error' },
+  modified: { surface: 'warningSurface', text: 'warning' },
+  exhausted: { surface: 'warningSurface', text: 'warning' },
+  suspended: { surface: 'warningSurface', text: 'warning' },
+  deleted: { surface: 'errorSurface', text: 'error' },
 };
 
 export function StatusBadge({ status }: { status: Status }) {

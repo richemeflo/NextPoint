@@ -1,6 +1,10 @@
+---
+baseline_commit: 917d59ad5aec37f8a4016225cbc21574d4722d15
+---
+
 # Story 2.4: Consulter la fiche élève avec historique
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -26,16 +30,16 @@ so that je puisse préparer les cours et comprendre l’activité passée.
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 2.4 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer liste/fiche eleve selon la story (AC: tous)
-  - [ ] Filtrer par relation coach/eleve via RLS et queries typees.
-  - [ ] Gerer recherche, filtres niveau/age et etats vides mobile-first.
-  - [ ] Ne jamais exposer note privee cote eleve.
-- [ ] Tester visibilite et filtrage (AC: securite/UX)
-  - [ ] Couvrir coach proprietaire, eleve concerne et utilisateur non autorise.
+- [x] Verifier les preconditions et dependances de Story 2.4 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer liste/fiche eleve selon la story (AC: tous)
+  - [x] Filtrer par relation coach/eleve via RLS et queries typees.
+  - [x] Gerer recherche, filtres niveau/age et etats vides mobile-first.
+  - [x] Ne jamais exposer note privee cote eleve.
+- [x] Tester visibilite et filtrage (AC: securite/UX)
+  - [x] Couvrir coach proprietaire, eleve concerne et utilisateur non autorise.
 
 ## Interventions utilisateur requises
 
@@ -156,18 +160,71 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Codex GPT-5
+
+### Implementation Plan
+
+- Ajouter une route coach dynamique ouverte depuis la liste eleves.
+- Charger le profil et un historique type via des queries Supabase protegees par RLS.
+- Introduire un read model d'evenements compatible avec les futures stories demandes, cours et packs.
+- Afficher l'etat du compte et limiter l'action d'activation a `pending_activation`.
+- Reutiliser la commande serveur de Story 2.3 pour generer, regenerer, copier ou partager le lien.
+- Couvrir contrats, schema, RLS, parcours Auth et compilation mobile/web.
 
 ### Debug Log References
+
+- 2026-06-23: Baseline HEAD `917d59ad5aec37f8a4016225cbc21574d4722d15`; Story 2.3 et son cycle d'activation sont disponibles.
+- 2026-06-23: Les domaines demandes, cours et packs ne disposent pas encore de tables implementees; la fiche utilisera un read model d'evenements extensible afin de ne pas simuler leurs modeles futurs.
+- 2026-06-23: Tests RED confirmes sur le contrat d'evenements et le schema d'historique absents.
+- 2026-06-23: Migration `0010` appliquee apres reset de la base Supabase locale uniquement; types TypeScript regeneres.
+- 2026-06-23: Le read model exclut notes privees et progression sportive, refuse toute mutation client et limite la lecture au coach activement associe.
+- 2026-06-23: Les statuts `refused` et `expired` ont ete ajoutes pour rester coherents avec la machine d'etat des futures demandes.
+- 2026-06-23: La route `/coach/students/[studentId]` affiche profil, contacts cliquables, badge compte, historique et etat vide.
+- 2026-06-23: La generation d'activation est visible uniquement pour `pending_activation`; copie Web, partage natif/web et expiration sont affiches.
+- 2026-06-23: Validation finale: 31 tests TypeScript, 106 assertions SQL, huit integrations Supabase, typecheck, lint et export Expo Web de 21 routes passent.
+- 2026-06-23: Aucun secret reel detecte; validation sur telephone physique non executee.
 
 ### Completion Notes List
 
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+- Les lignes de la liste eleves ouvrent maintenant une fiche coach dynamique et conservent les filtres existants de Story 2.2.
+- La fiche affiche nom, niveau, age, sexe, telephone et email; les coordonnees utilisent les actions natives `tel:` et `mailto:`.
+- Le badge de compte traduit couvre `pending_activation`, `active`, `suspended` et `deleted`.
+- Un read model `student_history_events` ordonne les demandes, cours, annulations, modifications et packs sans introduire de suivi de progression sportive.
+- Les evenements sont ecrits uniquement par `service_role`; les eleves et utilisateurs anonymes ne peuvent pas lire l'historique coach.
+- L'etat vide laisse le profil et les actions disponibles lorsque aucun evenement n'existe.
+- Le bouton haut droit genere ou regenere un lien de 24 heures seulement avant activation; le lien, son expiration, la copie Web et le partage sont proposes.
+- La commande serveur refuse la generation pour les comptes actifs, suspendus, supprimes et pour les utilisateurs non coach.
+- Verification: 31 tests TypeScript, 106 assertions SQL, huit integrations Supabase, typecheck, lint et export Expo Web de 21 routes.
+- Verification restante non bloquante: rendu et partage sur telephone physique.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/2-4-consulter-la-fiche-eleve-avec-historique.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `apps/mobile/src/app/coach/students.tsx`
+- `apps/mobile/src/app/coach/students/[studentId].tsx`
+- `apps/mobile/src/components/ui/status-badge.tsx`
+- `apps/mobile/src/features/students/student-account-service.ts`
+- `apps/mobile/src/features/students/student-coach-service.ts`
+- `apps/mobile/src/i18n/translations.ts`
+- `package.json`
+- `packages/shared/src/contracts/student-history.test.ts`
+- `packages/shared/src/contracts/student-history.ts`
+- `packages/shared/src/index.ts`
+- `packages/shared/src/types/database.types.ts`
+- `scripts/verify-manual-student-creation.mjs`
+- `scripts/verify-student-detail-access.mjs`
+- `supabase/migrations/0010_student_detail_history.sql`
+- `supabase/tests/database/0008_student_detail_history.sql`
+
+### Change Log
+
+- 2026-06-23: Ajout de la fiche eleve coach avec profil, contacts, badge de compte et historique.
+- 2026-06-23: Ajout du read model historique et de sa politique RLS coach uniquement.
+- 2026-06-23: Ajout de la generation/regeneration, copie et partage du lien d'activation depuis la fiche.
+- 2026-06-23: Ajout des contrats et tests de visibilite, securite et refus selon l'etat du compte.
 
 ## Completion Note
 

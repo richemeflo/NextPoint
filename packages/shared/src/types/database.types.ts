@@ -201,6 +201,45 @@ export type Database = {
         }
         Relationships: []
       }
+      student_history_events: {
+        Row: {
+          coach_id: string
+          created_at: string
+          description: string | null
+          event_type: Database["public"]["Enums"]["student_history_event_type"]
+          id: string
+          occurred_at: string
+          source_id: string | null
+          status: Database["public"]["Enums"]["student_history_event_status"]
+          student_id: string
+          title: string
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          description?: string | null
+          event_type: Database["public"]["Enums"]["student_history_event_type"]
+          id?: string
+          occurred_at: string
+          source_id?: string | null
+          status: Database["public"]["Enums"]["student_history_event_status"]
+          student_id: string
+          title: string
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          description?: string | null
+          event_type?: Database["public"]["Enums"]["student_history_event_type"]
+          id?: string
+          occurred_at?: string
+          source_id?: string | null
+          status?: Database["public"]["Enums"]["student_history_event_status"]
+          student_id?: string
+          title?: string
+        }
+        Relationships: []
+      }
       student_profiles: {
         Row: {
           account_status: Database["public"]["Enums"]["student_account_status"]
@@ -397,6 +436,22 @@ export type Database = {
         | "active"
         | "suspended"
         | "deleted"
+      student_history_event_status:
+        | "pending"
+        | "confirmed"
+        | "refused"
+        | "expired"
+        | "cancelled"
+        | "modified"
+        | "active"
+        | "exhausted"
+      student_history_event_type:
+        | "booking_requested"
+        | "lesson_confirmed"
+        | "booking_cancelled"
+        | "booking_modified"
+        | "lesson_pack_assigned"
+        | "lesson_pack_consumed"
       student_sex: "female" | "male" | "other" | "not_specified"
     }
     CompositeTypes: {
@@ -535,6 +590,24 @@ export const Constants = {
         "active",
         "suspended",
         "deleted",
+      ],
+      student_history_event_status: [
+        "pending",
+        "confirmed",
+        "refused",
+        "expired",
+        "cancelled",
+        "modified",
+        "active",
+        "exhausted",
+      ],
+      student_history_event_type: [
+        "booking_requested",
+        "lesson_confirmed",
+        "booking_cancelled",
+        "booking_modified",
+        "lesson_pack_assigned",
+        "lesson_pack_consumed",
       ],
       student_sex: ["female", "male", "other", "not_specified"],
     },
