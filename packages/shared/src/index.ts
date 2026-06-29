@@ -4,9 +4,11 @@ export {
   availabilityLocations,
   availabilityRangeSchema,
   availabilityRecurrenceTypes,
+  availabilitySlotStatuses,
   availabilitySlotDurations,
   buildAvailabilityPreviewSlots,
   defaultAvailabilityLocation,
+  isAvailabilitySlotRequestable,
   toAvailabilityRangeInput,
 } from './contracts/availability-range';
 export {
@@ -55,6 +57,8 @@ export type {
   AvailabilityRangeInput,
   AvailabilityRecurrenceType,
   AvailabilitySlotDuration,
+  AvailabilitySlotRequestabilityCandidate,
+  AvailabilitySlotStatus,
 } from './contracts/availability-range';
 export type {
   ActivateStudentAccountInput,

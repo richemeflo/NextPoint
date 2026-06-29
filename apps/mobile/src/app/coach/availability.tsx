@@ -30,8 +30,10 @@ import { useAuth } from '@/features/auth/auth-context';
 import { ProfileOptionSelector } from '@/features/profiles/profile-option-selector';
 import {
   createAvailabilityRange,
+  getCoachAvailabilitySlots,
   getCoachAvailabilityRanges,
   type AvailabilityRange,
+  type AvailabilitySlot,
 } from '@/features/scheduling/availability-service';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
@@ -57,6 +59,7 @@ export default function CoachAvailabilityScreen() {
   const { locale, t } = useTranslation();
   const theme = useTheme();
   const [ranges, setRanges] = useState<AvailabilityRange[]>([]);
+  const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>(
     'loading'
   );
@@ -77,13 +80,17 @@ export default function CoachAvailabilityScreen() {
   const loadRanges = useCallback(async () => {
     if (!user) return;
 
-    const result = await getCoachAvailabilityRanges(user.id);
-    if (!result.ok) {
+    const [rangesResult, slotsResult] = await Promise.all([
+      getCoachAvailabilityRanges(user.id),
+      getCoachAvailabilitySlots(user.id),
+    ]);
+    if (!rangesResult.ok || !slotsResult.ok) {
       setLoadState('error');
       return;
     }
 
-    setRanges(result.data);
+    setRanges(rangesResult.data);
+    setSlots(slotsResult.data);
     setLoadState('ready');
   }, [user]);
 
@@ -92,14 +99,18 @@ export default function CoachAvailabilityScreen() {
 
     if (!user) return undefined;
 
-    void getCoachAvailabilityRanges(user.id).then((result) => {
+    void Promise.all([
+      getCoachAvailabilityRanges(user.id),
+      getCoachAvailabilitySlots(user.id),
+    ]).then(([rangesResult, slotsResult]) => {
       if (!active) return;
-      if (!result.ok) {
+      if (!rangesResult.ok || !slotsResult.ok) {
         setLoadState('error');
         return;
       }
 
-      setRanges(result.data);
+      setRanges(rangesResult.data);
+      setSlots(slotsResult.data);
       setLoadState('ready');
     });
 
@@ -138,6 +149,18 @@ export default function CoachAvailabilityScreen() {
       hour: '2-digit',
       minute: '2-digit',
     }).format(new Date(value));
+
+  const slotsByRangeId = useMemo(() => {
+    const grouped = new Map<string, AvailabilitySlot[]>();
+
+    for (const slot of slots) {
+      const current = grouped.get(slot.rangeId) ?? [];
+      current.push(slot);
+      grouped.set(slot.rangeId, current);
+    }
+
+    return grouped;
+  }, [slots]);
 
   const onSubmit = handleSubmit(async (form) => {
     setFeedback('none');
@@ -392,6 +415,30 @@ export default function CoachAvailabilityScreen() {
                         `availability.recurrence.${range.recurrenceType}` as TranslationKey
                       )}
                     </ThemedText>
+                    <View style={styles.slotList}>
+                      <ThemedText type="smallBold">
+                        {t('availability.generatedSlotsTitle')}
+                      </ThemedText>
+                      {(slotsByRangeId.get(range.id) ?? []).map((slot) => (
+                        <View key={slot.id} style={styles.slotRow}>
+                          <ThemedText type="small" themeColor="textMuted">
+                            {t('availability.generatedSlot', {
+                              start: formatTime(slot.startsAt),
+                              end: formatTime(slot.endsAt),
+                              duration: t(
+                                `availability.duration.${slot.durationMinutes}` as TranslationKey
+                              ),
+                              location: slot.location,
+                            })}
+                          </ThemedText>
+                          <ThemedText type="smallBold" themeColor="primary">
+                            {t(
+                              `availability.slotStatus.${slot.status}` as TranslationKey
+                            )}
+                          </ThemedText>
+                        </View>
+                      ))}
+                    </View>
                   </Card>
                 ))}
               </View>
@@ -458,5 +505,12 @@ const styles = StyleSheet.create({
     minWidth: 280,
     flex: 1,
     gap: Spacing.two,
+  },
+  slotList: {
+    gap: Spacing.two,
+    paddingTop: Spacing.two,
+  },
+  slotRow: {
+    gap: Spacing.half,
   },
 });

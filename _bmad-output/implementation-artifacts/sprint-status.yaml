@@ -65,7 +65,7 @@ development_status:
 
   epic-3: in-progress
   3-1-creer-une-plage-de-disponibilite-coach: review
-  3-2-generer-les-creneaux-depuis-une-plage: ready-for-dev
+  3-2-generer-les-creneaux-depuis-une-plage: review
   3-3-gerer-les-recurrences-de-disponibilites-p0: ready-for-dev
   3-4-modifier-ou-supprimer-une-disponibilite-sans-conflit: ready-for-dev
   3-5-afficher-le-planning-coach-en-vues-semaine-et-jour: ready-for-dev

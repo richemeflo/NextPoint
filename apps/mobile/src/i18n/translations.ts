@@ -242,6 +242,12 @@ export const dictionaries = {
       'Créez une première plage pour préparer les créneaux réservables.',
     'availability.rangeTime': '{{start}}–{{end}}',
     'availability.rangeMeta': '{{duration}} · {{location}}',
+    'availability.generatedSlotsTitle': 'Créneaux générés',
+    'availability.generatedSlot':
+      '{{start}}–{{end}} · {{duration}} · {{location}}',
+    'availability.slotStatus.available': 'Disponible',
+    'availability.slotStatus.booked': 'Réservé',
+    'availability.slotStatus.cancelled': 'Annulé',
     'availability.validation.invalidDate': 'Saisissez une date au format AAAA-MM-JJ.',
     'availability.validation.invalidTime': 'Saisissez une heure au format HH:MM.',
     'availability.validation.endBeforeStart':
@@ -744,6 +750,12 @@ export const dictionaries = {
       'Create a first range to prepare requestable slots.',
     'availability.rangeTime': '{{start}}–{{end}}',
     'availability.rangeMeta': '{{duration}} · {{location}}',
+    'availability.generatedSlotsTitle': 'Generated slots',
+    'availability.generatedSlot':
+      '{{start}}–{{end}} · {{duration}} · {{location}}',
+    'availability.slotStatus.available': 'Available',
+    'availability.slotStatus.booked': 'Booked',
+    'availability.slotStatus.cancelled': 'Cancelled',
     'availability.validation.invalidDate': 'Enter a date using YYYY-MM-DD.',
     'availability.validation.invalidTime': 'Enter a time using HH:MM.',
     'availability.validation.endBeforeStart':
@@ -1245,6 +1257,12 @@ export const dictionaries = {
       'Crea una primera franja para preparar horarios reservables.',
     'availability.rangeTime': '{{start}}–{{end}}',
     'availability.rangeMeta': '{{duration}} · {{location}}',
+    'availability.generatedSlotsTitle': 'Horarios generados',
+    'availability.generatedSlot':
+      '{{start}}–{{end}} · {{duration}} · {{location}}',
+    'availability.slotStatus.available': 'Disponible',
+    'availability.slotStatus.booked': 'Reservado',
+    'availability.slotStatus.cancelled': 'Cancelado',
     'availability.validation.invalidDate': 'Introduce una fecha con formato AAAA-MM-DD.',
     'availability.validation.invalidTime': 'Introduce una hora con formato HH:MM.',
     'availability.validation.endBeforeStart':

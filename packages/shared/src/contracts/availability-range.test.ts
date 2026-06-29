@@ -5,14 +5,17 @@ import {
   availabilityLocations,
   availabilityRangeSchema,
   availabilityRecurrenceTypes,
+  availabilitySlotStatuses,
   availabilitySlotDurations,
   buildAvailabilityPreviewSlots,
   defaultAvailabilityLocation,
+  isAvailabilitySlotRequestable,
   toAvailabilityRangeInput,
 } from './availability-range';
 
 test('availability constants expose P0 durations, location and recurrence limits', () => {
   assert.deepEqual(availabilitySlotDurations, [60, 90]);
+  assert.deepEqual(availabilitySlotStatuses, ['available', 'booked', 'cancelled']);
   assert.equal(defaultAvailabilityLocation, 'Les Bruyères Centre Sportif');
   assert.deepEqual(availabilityLocations, ['Les Bruyères Centre Sportif']);
   assert.deepEqual(availabilityRecurrenceTypes, ['none', 'daily', 'weekly']);
@@ -117,4 +120,29 @@ test('buildAvailabilityPreviewSlots keeps generated slot location and duration',
       location: defaultAvailabilityLocation,
     },
   ]);
+});
+
+test('buildAvailabilityPreviewSlots creates only complete slots', () => {
+  const slots = buildAvailabilityPreviewSlots({
+    startsAt: '2026-07-01T16:00:00.000Z',
+    endsAt: '2026-07-01T18:15:00.000Z',
+    slotDurationMinutes: 90,
+    location: defaultAvailabilityLocation,
+    recurrenceType: 'none',
+  });
+
+  assert.deepEqual(slots, [
+    {
+      startsAt: '2026-07-01T16:00:00.000Z',
+      endsAt: '2026-07-01T17:30:00.000Z',
+      durationMinutes: 90,
+      location: defaultAvailabilityLocation,
+    },
+  ]);
+});
+
+test('isAvailabilitySlotRequestable only exposes available slots', () => {
+  assert.equal(isAvailabilitySlotRequestable({ status: 'available' }), true);
+  assert.equal(isAvailabilitySlotRequestable({ status: 'booked' }), false);
+  assert.equal(isAvailabilitySlotRequestable({ status: 'cancelled' }), false);
 });

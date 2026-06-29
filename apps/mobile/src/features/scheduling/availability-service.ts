@@ -2,12 +2,14 @@ import type {
   AvailabilityRangeInput,
   AvailabilityRecurrenceType,
   AvailabilitySlotDuration,
+  AvailabilitySlotStatus,
   Tables,
 } from '@nextpoint/shared';
 
 import { supabase } from '@/lib/supabase/client';
 
 type AvailabilityRangeRow = Tables<'availability_ranges'>;
+type AvailabilitySlotRow = Tables<'availability_slots'>;
 
 export type AvailabilityRange = {
   id: string;
@@ -20,8 +22,24 @@ export type AvailabilityRange = {
   updatedAt: string;
 };
 
+export type AvailabilitySlot = {
+  id: string;
+  rangeId: string;
+  coachId: string;
+  startsAt: string;
+  endsAt: string;
+  durationMinutes: AvailabilitySlotDuration;
+  location: string;
+  status: AvailabilitySlotStatus;
+  updatedAt: string;
+};
+
 type AvailabilityRangesResult =
   | { ok: true; data: AvailabilityRange[] }
+  | { ok: false };
+
+type AvailabilitySlotsResult =
+  | { ok: true; data: AvailabilitySlot[] }
   | { ok: false };
 
 type CreateAvailabilityRangeResult =
@@ -41,6 +59,20 @@ function mapAvailabilityRange(row: AvailabilityRangeRow): AvailabilityRange {
   };
 }
 
+function mapAvailabilitySlot(row: AvailabilitySlotRow): AvailabilitySlot {
+  return {
+    id: row.id,
+    rangeId: row.availability_range_id,
+    coachId: row.coach_id,
+    startsAt: row.starts_at,
+    endsAt: row.ends_at,
+    durationMinutes: row.duration_minutes as AvailabilitySlotDuration,
+    location: row.location,
+    status: row.status,
+    updatedAt: row.updated_at,
+  };
+}
+
 export async function getCoachAvailabilityRanges(
   coachId: string
 ): Promise<AvailabilityRangesResult> {
@@ -55,6 +87,22 @@ export async function getCoachAvailabilityRanges(
 
   if (error) return { ok: false };
   return { ok: true, data: data.map(mapAvailabilityRange) };
+}
+
+export async function getCoachAvailabilitySlots(
+  coachId: string
+): Promise<AvailabilitySlotsResult> {
+  if (!supabase) return { ok: false };
+
+  const { data, error } = await supabase
+    .from('availability_slots')
+    .select('*')
+    .eq('coach_id', coachId)
+    .is('deleted_at', null)
+    .order('starts_at', { ascending: true });
+
+  if (error) return { ok: false };
+  return { ok: true, data: data.map(mapAvailabilitySlot) };
 }
 
 export async function createAvailabilityRange(

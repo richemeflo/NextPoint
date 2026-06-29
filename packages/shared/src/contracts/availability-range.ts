@@ -1,6 +1,11 @@
 import { z } from 'zod';
 
 export const availabilitySlotDurations = [60, 90] as const;
+export const availabilitySlotStatuses = [
+  'available',
+  'booked',
+  'cancelled',
+] as const;
 export const availabilityLocations = ['Les Bruyères Centre Sportif'] as const;
 export const defaultAvailabilityLocation = availabilityLocations[0];
 export const availabilityRecurrenceTypes = ['none', 'daily', 'weekly'] as const;
@@ -10,6 +15,7 @@ const localDateRegex = /^\d{4}-\d{2}-\d{2}$/;
 
 export type AvailabilitySlotDuration =
   (typeof availabilitySlotDurations)[number];
+export type AvailabilitySlotStatus = (typeof availabilitySlotStatuses)[number];
 export type AvailabilityLocation = (typeof availabilityLocations)[number];
 export type AvailabilityRecurrenceType =
   (typeof availabilityRecurrenceTypes)[number];
@@ -71,6 +77,10 @@ export type AvailabilityPreviewSlot = {
   endsAt: string;
   durationMinutes: AvailabilitySlotDuration;
   location: AvailabilityLocation;
+};
+
+export type AvailabilitySlotRequestabilityCandidate = {
+  status: AvailabilitySlotStatus;
 };
 
 function parseDate(date: string) {
@@ -150,4 +160,10 @@ export function buildAvailabilityPreviewSlots(
   }
 
   return slots;
+}
+
+export function isAvailabilitySlotRequestable(
+  slot: AvailabilitySlotRequestabilityCandidate
+) {
+  return slot.status === 'available';
 }

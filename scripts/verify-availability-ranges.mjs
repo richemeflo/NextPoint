@@ -103,7 +103,7 @@ try {
 
   const created = await coach.client.rpc('create_availability_range', {
     p_starts_at: '2026-07-01T16:00:00.000Z',
-    p_ends_at: '2026-07-01T18:00:00.000Z',
+    p_ends_at: '2026-07-01T18:15:00.000Z',
     p_slot_duration_minutes: 90,
     p_location: 'Les Bruyères Centre Sportif',
     p_recurrence_type: 'weekly',
@@ -114,6 +114,35 @@ try {
   assert.equal(created.data.location, 'Les Bruyères Centre Sportif');
   assert.equal(created.data.recurrence_type, 'weekly');
   createdRangeIds.push(created.data.id);
+
+  const generatedSlots = await coach.client
+    .from('availability_slots')
+    .select('id, coach_id, availability_range_id, starts_at, ends_at, duration_minutes, location, status')
+    .eq('availability_range_id', created.data.id)
+    .order('starts_at', { ascending: true });
+  assert.equal(generatedSlots.error, null);
+  assert.deepEqual(
+    generatedSlots.data.map((slot) => ({
+      coach_id: slot.coach_id,
+      availability_range_id: slot.availability_range_id,
+      starts_at: slot.starts_at,
+      ends_at: slot.ends_at,
+      duration_minutes: slot.duration_minutes,
+      location: slot.location,
+      status: slot.status,
+    })),
+    [
+      {
+        coach_id: coach.userId,
+        availability_range_id: created.data.id,
+        starts_at: '2026-07-01T16:00:00+00:00',
+        ends_at: '2026-07-01T17:30:00+00:00',
+        duration_minutes: 90,
+        location: 'Les Bruyères Centre Sportif',
+        status: 'available',
+      },
+    ]
+  );
 
   const coachRead = await coach.client
     .from('availability_ranges')
@@ -129,6 +158,13 @@ try {
     .eq('id', created.data.id);
   assert.equal(studentRead.error, null);
   assert.deepEqual(studentRead.data, []);
+
+  const studentSlotRead = await student.client
+    .from('availability_slots')
+    .select('id')
+    .eq('availability_range_id', created.data.id);
+  assert.equal(studentSlotRead.error, null);
+  assert.deepEqual(studentSlotRead.data, []);
 
   const overlapping = await coach.client.rpc('create_availability_range', {
     p_starts_at: '2026-07-01T17:00:00.000Z',
@@ -149,6 +185,14 @@ try {
   });
   assert.notEqual(invalidDuration.error, null);
 
+  const rangeCountAfterInvalid = await adminClient
+    .from('availability_ranges')
+    .select('id', { count: 'exact', head: true })
+    .eq('coach_id', coach.userId)
+    .eq('starts_at', '2026-07-02T16:00:00.000Z');
+  assert.equal(rangeCountAfterInvalid.error, null);
+  assert.equal(rangeCountAfterInvalid.count, 0);
+
   const studentCreate = await student.client.rpc('create_availability_range', {
     p_starts_at: '2026-07-03T16:00:00.000Z',
     p_ends_at: '2026-07-03T18:00:00.000Z',
@@ -168,8 +212,31 @@ try {
   });
   assert.notEqual(directInsert.error, null);
 
+  const directSlotMutation = await coach.client
+    .from('availability_slots')
+    .update({ status: 'booked' })
+    .eq('availability_range_id', created.data.id);
+  assert.notEqual(directSlotMutation.error, null);
+
+  const booked = await adminClient
+    .from('availability_slots')
+    .update({ status: 'booked' })
+    .eq('availability_range_id', created.data.id)
+    .select('status')
+    .single();
+  assert.equal(booked.error, null);
+  assert.equal(booked.data.status, 'booked');
+
+  const requestableAfterBooked = await adminClient
+    .from('availability_slots')
+    .select('id')
+    .eq('availability_range_id', created.data.id)
+    .eq('status', 'available');
+  assert.equal(requestableAfterBooked.error, null);
+  assert.deepEqual(requestableAfterBooked.data, []);
+
   console.log(
-    'AVAILABILITY_RANGES_INTEGRATION_OK coach create/read, non-coach refusal, direct mutation refusal, overlap guard, duration/location/recurrence constraints'
+    'AVAILABILITY_RANGES_INTEGRATION_OK atomic range and slot generation, complete-slot truncation, coach read, non-coach refusal, direct mutation refusal, overlap guard, duration/location/recurrence constraints, booked slots hidden from requestable reads'
   );
 } finally {
   for (const rangeId of createdRangeIds) {

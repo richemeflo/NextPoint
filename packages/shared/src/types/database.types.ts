@@ -73,6 +73,56 @@ export type Database = {
         }
         Relationships: []
       }
+      availability_slots: {
+        Row: {
+          availability_range_id: string
+          coach_id: string
+          created_at: string
+          deleted_at: string | null
+          duration_minutes: number
+          ends_at: string
+          id: string
+          location: string
+          starts_at: string
+          status: Database["public"]["Enums"]["availability_slot_status"]
+          updated_at: string
+        }
+        Insert: {
+          availability_range_id: string
+          coach_id: string
+          created_at?: string
+          deleted_at?: string | null
+          duration_minutes: number
+          ends_at: string
+          id?: string
+          location: string
+          starts_at: string
+          status?: Database["public"]["Enums"]["availability_slot_status"]
+          updated_at?: string
+        }
+        Update: {
+          availability_range_id?: string
+          coach_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          duration_minutes?: number
+          ends_at?: string
+          id?: string
+          location?: string
+          starts_at?: string
+          status?: Database["public"]["Enums"]["availability_slot_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "availability_slots_availability_range_id_fkey"
+            columns: ["availability_range_id"]
+            isOneToOne: false
+            referencedRelation: "availability_ranges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_profiles: {
         Row: {
           bio: string
@@ -618,6 +668,7 @@ export type Database = {
       app_language: "fr" | "en" | "es"
       app_role: "coach" | "eleve"
       availability_recurrence_type: "none" | "daily" | "weekly"
+      availability_slot_status: "available" | "booked" | "cancelled"
       lesson_pack_status: "active" | "exhausted"
       student_account_status:
         | "pending_activation"
@@ -774,6 +825,7 @@ export const Constants = {
       app_language: ["fr", "en", "es"],
       app_role: ["coach", "eleve"],
       availability_recurrence_type: ["none", "daily", "weekly"],
+      availability_slot_status: ["available", "booked", "cancelled"],
       lesson_pack_status: ["active", "exhausted"],
       student_account_status: [
         "pending_activation",

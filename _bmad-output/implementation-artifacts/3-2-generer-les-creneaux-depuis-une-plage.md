@@ -1,6 +1,10 @@
+---
+baseline_commit: 8d3fc2126c154b6b7664f5bac8a1c2ab600a1b47
+---
+
 # Story 3.2: Générer les créneaux depuis une plage
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -20,16 +24,16 @@ so that je n’aie pas à créer chaque créneau manuellement.
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 3.2 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer disponibilites/planning selon la story (AC: tous)
-  - [ ] Utiliser date/heure API en ISO 8601 UTC; timezone locale seulement a la frontiere UI.
-  - [ ] Garder durees 1h/1h30, lieu initial `Les Bruyeres Centre Sportif` et recurrence P0 limitee.
-  - [ ] Ne pas dupliquer les commandes de booking de l'Epic 4.
-- [ ] Tester conflits, recurrence et affichage (AC: integrite/UX)
-  - [ ] Couvrir modification/suppression sans demande active ni reservation confirmee selon la story.
+- [x] Verifier les preconditions et dependances de Story 3.2 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer disponibilites/planning selon la story (AC: tous)
+  - [x] Utiliser date/heure API en ISO 8601 UTC; timezone locale seulement a la frontiere UI.
+  - [x] Garder durees 1h/1h30, lieu initial `Les Bruyeres Centre Sportif` et recurrence P0 limitee.
+  - [x] Ne pas dupliquer les commandes de booking de l'Epic 4.
+- [x] Tester conflits, recurrence et affichage (AC: integrite/UX)
+  - [x] Couvrir modification/suppression sans demande active ni reservation confirmee selon la story.
 
 ## Interventions utilisateur requises
 
@@ -150,18 +154,58 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Codex GPT-5
+
+### Implementation Plan
+
+- Ajouter une table `availability_slots` generee depuis `availability_ranges`, avec statut initial `available` et donnees denormalisees utiles au planning.
+- Remplacer `create_availability_range` par une commande atomique qui cree la plage et ses creneaux complets dans la meme transaction.
+- Exposer les creneaux cote coach dans l'ecran Disponibilites sans introduire les commandes de demande/reservation de l'Epic 4.
 
 ### Debug Log References
+
+- 2026-06-29: Activation `bmad-dev-story` effectuee; workflow personnalise resolu sans etapes prepend/append.
+- 2026-06-29: Preconditions confirmees: Story 3.1 en review, migration `availability_ranges`, contrat `availability-range`, service scheduling et ecran Disponibilites presents.
+- 2026-06-29: Documentation Expo SDK 56 deja consultee avant modifications mobile, conformement a `apps/mobile/AGENTS.md`.
+- 2026-06-29: Tests RED confirmes: exports shared `availabilitySlotStatuses`, table `availability_slots` et generation de slots absents.
+- 2026-06-29: Migration `0014_availability_slots.sql` appliquee localement via `npx supabase migration up`; types Supabase regeneres.
+- 2026-06-29: `npm test`, `npm run typecheck`, `npm run lint`, `npm run supabase:test:db`, `npm run test:availability-ranges`, `npx expo install --check` passent.
+- 2026-06-29: Expo Web existant repond HTTP 200 sur `http://localhost:8081/coach/availability`.
+- 2026-06-29: Captures Playwright mobile/desktop tentees avec storage Supabase injecte; elles restent sur la page publique, donc validation visuelle authentifiee complete non confirmee automatiquement.
 
 ### Completion Notes List
 
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+- Implementation demarree avec baseline git `8d3fc2126c154b6b7664f5bac8a1c2ab600a1b47`.
+- Table `availability_slots` ajoutee avec `availability_range_id`, `coach_id`, bornes UTC, duree, lieu, statut `available/booked/cancelled`, timestamps et RLS.
+- La RPC `create_availability_range` cree maintenant la plage et tous les creneaux complets dans une seule transaction; aucun dernier creneau incomplet ne depasse l'heure de fin.
+- Les creneaux generes conservent coach, plage source, date/heure UTC, duree, lieu et statut initial `available`.
+- Le statut `booked` prepare le blocage par reservation confirmee sans creer de commande de booking; les lectures demandables filtrent les creneaux `available`.
+- L'ecran Disponibilites charge et affiche les creneaux generes sous chaque plage avec heure, duree, lieu et statut traduit.
+- Les erreurs serveur restent atomiques: les tests verifient qu'une erreur de generation/validation ne laisse pas de plage ou creneaux partiels.
+- Validation visuelle authentifiee complete non confirmee par Playwright; le rendu devra etre verifie dans une session coach connectee.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/3-2-generer-les-creneaux-depuis-une-plage.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `apps/mobile/src/app/coach/availability.tsx`
+- `apps/mobile/src/features/scheduling/availability-service.ts`
+- `apps/mobile/src/i18n/translations.ts`
+- `packages/shared/src/contracts/availability-range.test.ts`
+- `packages/shared/src/contracts/availability-range.ts`
+- `packages/shared/src/index.ts`
+- `packages/shared/src/types/database.types.ts`
+- `scripts/verify-availability-ranges.mjs`
+- `supabase/migrations/0014_availability_slots.sql`
+- `supabase/tests/database/0012_availability_slots.sql`
+
+### Change Log
+
+- 2026-06-29: Ajout du modele `availability_slots`, de ses contraintes, RLS, indexes et statuts.
+- 2026-06-29: Generation transactionnelle des creneaux complets dans `create_availability_range`.
+- 2026-06-29: Ajout des helpers shared de statut/demandabilite et affichage des creneaux generes dans l'ecran coach.
 
 ## Completion Note
 
