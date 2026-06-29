@@ -1,6 +1,10 @@
+---
+baseline_commit: db3a736cf15779dbcf2f764b627b214480e879d2
+---
+
 # Story 3.6: Afficher l’agenda élève avec les créneaux demandables uniquement
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -20,16 +24,16 @@ so that je puisse choisir un créneau sans confusion.
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 3.6 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer disponibilites/planning selon la story (AC: tous)
-  - [ ] Utiliser date/heure API en ISO 8601 UTC; timezone locale seulement a la frontiere UI.
-  - [ ] Garder durees 1h/1h30, lieu initial `Les Bruyeres Centre Sportif` et recurrence P0 limitee.
-  - [ ] Ne pas dupliquer les commandes de booking de l'Epic 4.
-- [ ] Tester conflits, recurrence et affichage (AC: integrite/UX)
-  - [ ] Couvrir modification/suppression sans demande active ni reservation confirmee selon la story.
+- [x] Verifier les preconditions et dependances de Story 3.6 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer disponibilites/planning selon la story (AC: tous)
+  - [x] Utiliser date/heure API en ISO 8601 UTC; timezone locale seulement a la frontiere UI.
+  - [x] Garder durees 1h/1h30, lieu initial `Les Bruyeres Centre Sportif` et recurrence P0 limitee.
+  - [x] Ne pas dupliquer les commandes de booking de l'Epic 4.
+- [x] Tester conflits, recurrence et affichage (AC: integrite/UX)
+  - [x] Couvrir modification/suppression sans demande active ni reservation confirmee selon la story.
 
 ## Interventions utilisateur requises
 
@@ -150,18 +154,55 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Codex GPT-5
+
+### Implementation Plan
+
+- Ouvrir la lecture RLS des slots `available` aux eleves associes au coach du slot uniquement.
+- Ajouter un agenda eleve reutilisant la fenetre semaine/jour de Story 3.5.
+- Afficher les details utiles du slot sans ajouter de commande de demande/reservation Epic 4.
 
 ### Debug Log References
+
+- 2026-06-29: Activation `bmad-dev-story` deja chargee pour l'enchainement Epic 3; workflow personnalise resolu sans etapes prepend/append.
+- 2026-06-29: Preconditions confirmees: Story 3.5 en review, module `planning-window`, service scheduling, relations eleve-coach et slots disponibles.
+- 2026-06-29: Documentation Expo SDK 56 consultee avant modifications mobile, conformement a `apps/mobile/AGENTS.md`.
+- 2026-06-29: Policy RLS `availability_slots_select_associated_student_requestable` ajoutee et testee.
+- 2026-06-29: `npm test`, `npm run typecheck`, `npm run lint`, `npm run supabase:test:db`, `npm run test:availability-ranges`, `npx expo install --check` depuis `apps/mobile` et `git diff --check` passent.
+- 2026-06-29: Expo Web lance sur `http://localhost:8091`; routes `/coach` et `/eleve` verifiees en HTTP 200 apres compilation.
+- 2026-06-29: Scan motifs sensibles effectue; resultats restants limites aux usages/placeholders attendus (`service_role`, `SECRET_KEY` issu de `supabase status -o env`, package-lock), aucun secret reel detecte.
 
 ### Completion Notes List
 
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+- Implementation demarree avec baseline git `db3a736cf15779dbcf2f764b627b214480e879d2`.
+- Aucune dependance bloquante manquante pour les disponibilites demandables; les cours propres a l'eleve n'ont pas encore de table source avant l'Epic 4 et seront ajoutes au meme agenda quand les reservations existeront.
+- Les eleves associes au coach unique peuvent lire uniquement les slots `available` non supprimes de leur coach via RLS.
+- Les slots `booked`, `cancelled` ou soft-deleted ne sont pas visibles dans la lecture eleve demandable.
+- L'accueil eleve affiche l'agenda hebdomadaire par defaut apres les tarifs, avec bascule jour/semaine.
+- L'onglet Planning / Demandes eleve reutilise le meme agenda.
+- Les cartes eleve affichent date, heure, duree et lieu; aucune action de demande n'est exposee avant l'Epic 4.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/3-6-afficher-lagenda-eleve-avec-les-creneaux-demandables-uniquement.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `apps/mobile/src/app/eleve/index.tsx`
+- `apps/mobile/src/app/eleve/planning.tsx`
+- `apps/mobile/src/features/scheduling/availability-service.ts`
+- `apps/mobile/src/features/scheduling/student-agenda.tsx`
+- `apps/mobile/src/i18n/translations.ts`
+- `packages/shared/src/types/database.types.ts`
+- `scripts/verify-availability-ranges.mjs`
+- `supabase/migrations/0018_student_requestable_availability_slots.sql`
+- `supabase/tests/database/0012_availability_slots.sql`
+
+### Change Log
+
+- 2026-06-29: Ajout de la policy RLS eleve pour slots demandables.
+- 2026-06-29: Ajout de l'agenda eleve semaine/jour sur accueil et planning eleve.
+- 2026-06-29: Ajout des tests d'integration garantissant que les slots `booked` ne sont plus demandables cote eleve.
 
 ## Completion Note
 
