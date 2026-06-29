@@ -15,6 +15,7 @@ import { Card } from '@/components/ui/card';
 import { Feedback } from '@/components/ui/feedback';
 import { TextField } from '@/components/ui/text-field';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { useAuth } from '@/features/auth/auth-context';
 import { activateStudentAccount } from '@/features/students/student-account-service';
 import { useTranslation, type TranslationKey } from '@/i18n';
 
@@ -22,6 +23,7 @@ export default function ActivateStudentScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ token?: string }>();
   const { t } = useTranslation();
+  const { signOut, status } = useAuth();
   const {
     control,
     handleSubmit,
@@ -37,6 +39,7 @@ export default function ActivateStudentScreen() {
   const [result, setResult] = useState<
     'idle' | 'success' | 'invalid' | 'error'
   >('idle');
+  const [isRedirectingToSignIn, setIsRedirectingToSignIn] = useState(false);
 
   const validationKeys: Record<string, TranslationKey> = {
     required: 'auth.validation.required',
@@ -57,6 +60,14 @@ export default function ActivateStudentScreen() {
     }
     setResult('success');
   });
+
+  const goToSignIn = async () => {
+    setIsRedirectingToSignIn(true);
+    if (status !== 'unauthenticated' && status !== 'configuration-error') {
+      await signOut('local');
+    }
+    router.replace('/(auth)/sign-in');
+  };
 
   return (
     <ThemedView style={styles.screen}>
@@ -80,8 +91,9 @@ export default function ActivateStudentScreen() {
                   tone="success"
                 />
                 <Button
+                  disabled={isRedirectingToSignIn}
                   label={t('activation.signInAction')}
-                  onPress={() => router.replace('/sign-in')}
+                  onPress={() => void goToSignIn()}
                 />
               </>
             ) : (

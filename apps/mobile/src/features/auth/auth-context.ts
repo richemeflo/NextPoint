@@ -3,7 +3,7 @@ import type { AppRole, StudentAccountStatus } from '@nextpoint/shared';
 import type { Session, User } from '@supabase/supabase-js';
 
 import type { AuthStatus } from './access-policy';
-import type { AuthResult } from './auth-service';
+import type { AuthResult, SignOutScope } from './auth-service';
 
 export type AuthContextValue = {
   session: Session | null;
@@ -13,7 +13,7 @@ export type AuthContextValue = {
   status: AuthStatus;
   signIn: (email: string, password: string) => Promise<AuthResult>;
   signUp: (email: string, password: string, role: AppRole) => Promise<AuthResult>;
-  signOut: () => Promise<AuthResult>;
+  signOut: (scope?: SignOutScope) => Promise<AuthResult>;
 };
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
