@@ -19,6 +19,8 @@
     "apps/mobile/src/features/auth/auth-error.ts",
     "apps/mobile/src/features/auth/auth-error.test.ts",
     "apps/mobile/src/features/students/student-list-filters.ts",
-    "apps/mobile/src/features/students/student-list-filters.test.ts"
+    "apps/mobile/src/features/students/student-list-filters.test.ts",
+    "apps/mobile/src/features/lesson-packs/lesson-pack-state.ts",
+    "apps/mobile/src/features/lesson-packs/lesson-pack-state.test.ts"
   ]
 }

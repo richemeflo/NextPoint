@@ -140,6 +140,30 @@ try {
   });
   assert.notEqual(nonOwnerAssign.error, null);
 
+  const studentConsumeActive = await student.client.rpc(
+    'consume_lesson_pack_session',
+    { p_pack_id: assigned.data.id }
+  );
+  assert.notEqual(studentConsumeActive.error, null);
+
+  const nonOwnerConsumeActive = await nonOwner.client.rpc(
+    'consume_lesson_pack_session',
+    { p_pack_id: assigned.data.id }
+  );
+  assert.notEqual(nonOwnerConsumeActive.error, null);
+
+  const afterUnauthorizedConsumption = await coach.client
+    .from('lesson_packs')
+    .select('used_sessions, remaining_sessions, status')
+    .eq('id', assigned.data.id)
+    .single();
+  assert.equal(afterUnauthorizedConsumption.error, null);
+  assert.deepEqual(afterUnauthorizedConsumption.data, {
+    used_sessions: 0,
+    remaining_sessions: 2,
+    status: 'active',
+  });
+
   const firstUse = await coach.client.rpc('consume_lesson_pack_session', {
     p_pack_id: assigned.data.id,
   });
@@ -147,6 +171,21 @@ try {
   assert.equal(firstUse.data.used_sessions, 1);
   assert.equal(firstUse.data.remaining_sessions, 1);
   assert.equal(firstUse.data.status, 'active');
+
+  const firstUseHistory = await coach.client
+    .from('student_history_events')
+    .select('event_type, status, source_id, student_id, coach_id')
+    .eq('source_id', assigned.data.id)
+    .eq('event_type', 'lesson_pack_consumed')
+    .single();
+  assert.equal(firstUseHistory.error, null);
+  assert.deepEqual(firstUseHistory.data, {
+    event_type: 'lesson_pack_consumed',
+    status: 'active',
+    source_id: assigned.data.id,
+    student_id: student.userId,
+    coach_id: coach.userId,
+  });
 
   const secondUse = await coach.client.rpc('consume_lesson_pack_session', {
     p_pack_id: assigned.data.id,
@@ -188,7 +227,7 @@ try {
   );
 
   console.log(
-    'LESSON_PACKS_INTEGRATION_OK coach assignment, counters, participant read, non-owner denial, zero floor, no payment data'
+    'LESSON_PACKS_INTEGRATION_OK coach assignment, consumption, counters, history, participant read, non-owner denial, zero floor, no payment data'
   );
 } finally {
   for (const userId of createdUserIds) {

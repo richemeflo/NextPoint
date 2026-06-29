@@ -26,6 +26,10 @@ type LessonPackResult =
   | { ok: true; data: LessonPack }
   | { ok: false; code?: 'active_pack_exists' };
 
+type ConsumeLessonPackResult =
+  | { ok: true; data: LessonPack }
+  | { ok: false; code: 'consume_refused' };
+
 function mapLessonPack(row: LessonPackRow): LessonPack {
   return {
     id: row.id,
@@ -70,6 +74,22 @@ export async function assignLessonPack(
       ok: false,
       code: error?.code === '23505' ? 'active_pack_exists' : undefined,
     };
+  }
+
+  return { ok: true, data: mapLessonPack(data) };
+}
+
+export async function consumeLessonPackSession(
+  packId: string
+): Promise<ConsumeLessonPackResult> {
+  if (!supabase) return { ok: false, code: 'consume_refused' };
+
+  const { data, error } = await supabase.rpc('consume_lesson_pack_session', {
+    p_pack_id: packId,
+  });
+
+  if (error || !data) {
+    return { ok: false, code: 'consume_refused' };
   }
 
   return { ok: true, data: mapLessonPack(data) };

@@ -11,9 +11,14 @@ import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
 import {
   assignLessonPack,
+  consumeLessonPackSession,
   getStudentLessonPacks,
   type LessonPack,
 } from '@/features/lesson-packs/lesson-pack-service';
+import {
+  getLessonPackConsumeDisabledReason,
+  replaceConsumedLessonPack,
+} from '@/features/lesson-packs/lesson-pack-state';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/i18n';
 
@@ -32,6 +37,9 @@ export function StudentLessonPackCard({
   );
   const [saveState, setSaveState] = useState<
     'idle' | 'saving' | 'saved' | 'duplicate' | 'error'
+  >('idle');
+  const [consumeState, setConsumeState] = useState<
+    'idle' | 'consuming' | 'consumed' | 'noRemaining' | 'error'
   >('idle');
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -77,6 +85,24 @@ export function StudentLessonPackCard({
     setSaveState('saved');
   };
 
+  const consumePack = async (pack: LessonPack) => {
+    const disabledReason = getLessonPackConsumeDisabledReason(pack);
+    if (disabledReason === 'no_remaining_session') {
+      setConsumeState('noRemaining');
+      return;
+    }
+
+    setConsumeState('consuming');
+    const result = await consumeLessonPackSession(pack.id);
+    if (!result.ok) {
+      setConsumeState('error');
+      return;
+    }
+
+    setPacks((current) => replaceConsumedLessonPack(current, result.data));
+    setConsumeState('consumed');
+  };
+
   if (loadState === 'loading') {
     return (
       <Card elevated style={styles.card}>
@@ -114,6 +140,7 @@ export function StudentLessonPackCard({
             label={t('lessonPack.assignAction')}
             onPress={() => {
               setSaveState('idle');
+              setConsumeState('idle');
               setIsFormOpen(true);
             }}
           />
@@ -176,6 +203,27 @@ export function StudentLessonPackCard({
           tone="error"
         />
       ) : null}
+      {consumeState === 'consumed' ? (
+        <Feedback
+          message={t('lessonPack.consumeSuccessBody')}
+          title={t('lessonPack.consumeSuccessTitle')}
+          tone="success"
+        />
+      ) : null}
+      {consumeState === 'noRemaining' ? (
+        <Feedback
+          message={t('lessonPack.noRemainingBody')}
+          title={t('lessonPack.noRemainingTitle')}
+          tone="warning"
+        />
+      ) : null}
+      {consumeState === 'error' ? (
+        <Feedback
+          message={t('lessonPack.consumeErrorBody')}
+          title={t('lessonPack.consumeErrorTitle')}
+          tone="error"
+        />
+      ) : null}
 
       {packs.length === 0 ? (
         <ThemedText type="default" themeColor="textMuted">
@@ -224,6 +272,21 @@ export function StudentLessonPackCard({
                   </ThemedText>
                 </View>
               </View>
+              {pack.status === 'active' ? (
+                <Button
+                  disabled={
+                    consumeState === 'consuming' ||
+                    getLessonPackConsumeDisabledReason(pack) !== null
+                  }
+                  label={
+                    consumeState === 'consuming'
+                      ? t('lessonPack.consuming')
+                      : t('lessonPack.consumeAction')
+                  }
+                  onPress={() => void consumePack(pack)}
+                  variant="secondary"
+                />
+              ) : null}
             </View>
           ))}
         </View>

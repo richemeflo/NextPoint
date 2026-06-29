@@ -1,6 +1,10 @@
+---
+baseline_commit: f6ec8d82c2f27d8fb1ef6c1fdcb8abc73651d2bd
+---
+
 # Story 2.7: Consommer une session de pack individuel
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -20,16 +24,16 @@ so that les cours restants de l’élève soient suivis correctement.
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 2.7 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer packs individuels selon la story (AC: tous)
-  - [ ] Restreindre attribution/consommation au coach.
-  - [ ] Maintenir inclus, utilises, restants avec invariants backend.
-  - [ ] Ne pas presenter achat ou paiement a l'eleve.
-- [ ] Tester decrementation et acces (AC: integrite/securite)
-  - [ ] Couvrir impossibilite de passer sous zero et refus cote eleve.
+- [x] Verifier les preconditions et dependances de Story 2.7 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer packs individuels selon la story (AC: tous)
+  - [x] Restreindre attribution/consommation au coach.
+  - [x] Maintenir inclus, utilises, restants avec invariants backend.
+  - [x] Ne pas presenter achat ou paiement a l'eleve.
+- [x] Tester decrementation et acces (AC: integrite/securite)
+  - [x] Couvrir impossibilite de passer sous zero et refus cote eleve.
 
 ## Interventions utilisateur requises
 
@@ -150,18 +154,48 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Codex GPT-5
 
 ### Debug Log References
+
+- 2026-06-29: Baseline HEAD `f6ec8d82c2f27d8fb1ef6c1fdcb8abc73651d2bd`; sprint status passe de `ready-for-dev` a `in-progress`.
+- 2026-06-29: Preconditions confirmees: Story 2.6 a livre `lesson_packs`, RPC `consume_lesson_pack_session`, invariants compteur, historique `lesson_pack_consumed`, RLS et carte fiche eleve.
+- 2026-06-29: Tests RED confirmes: `lesson-pack-state.test.ts` echoue d'abord sur module absent avant implementation.
+- 2026-06-29: Implementation: ajout d'un service client de consommation, d'un helper d'etat testable, d'un bouton coach sur pack actif, de feedbacks traduits FR/EN/ES et de mise a jour locale des compteurs.
+- 2026-06-29: Integration renforcee: le script pack verifie refus eleve/non-proprietaire avant consommation, compteurs inchanges, historique rattache au coach/eleve, plancher a zero et absence de donnees paiement.
+- 2026-06-29: Validation: `npm test` passe avec 44 tests; `npm run typecheck` passe; `npm run test:lesson-packs` passe; `npm run supabase:test:db` passe avec 134 assertions SQL; `npx expo export --platform web` passe avec 21 routes.
+- 2026-06-29: Validation lint impossible dans ce runner: `npm run lint` et `CI=1 EXPO_NO_TELEMETRY=1 npx expo lint` restent suspendus apres chargement de l'env; `eslint` direct repond en version mais l'execution ciblee plante avec `ENOENT: no such file or directory, uv_cwd` ou reste suspendue depuis la racine.
+- 2026-06-29: Scan secrets effectue; resultats restants limites aux usages/placeholders attendus (`service_role`, `SECRET_KEY` issu de `supabase status -o env`, docs et grants SQL), aucun secret reel detecte.
 
 ### Completion Notes List
 
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+- La fiche eleve coach affiche maintenant une action de consommation sur le pack actif uniquement.
+- Une consommation reussie appelle `consume_lesson_pack_session`, remplace le pack retourne dans la liste locale et affiche les compteurs mis a jour sans declencher de paiement.
+- Les packs epuises ou sans session restante ne peuvent pas etre consommes depuis l'UI; un message clair et traduit est affiche.
+- Les refus backend, y compris acces non autorise ou pack devenu indisponible, affichent un feedback traduit sans modifier les compteurs locaux.
+- L'integration locale verifie que l'historique `lesson_pack_consumed` est cree avec le coach, l'eleve et le pack source.
+- Validation visuelle sur appareil physique non executee; export Expo Web valide sur la route fiche eleve.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/2-7-consommer-une-session-de-pack-individuel.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `apps/mobile/src/features/lesson-packs/lesson-pack-service.ts`
+- `apps/mobile/src/features/lesson-packs/lesson-pack-state.ts`
+- `apps/mobile/src/features/lesson-packs/lesson-pack-state.test.ts`
+- `apps/mobile/src/features/lesson-packs/student-lesson-pack-card.tsx`
+- `apps/mobile/src/i18n/translations.ts`
+- `package.json`
+- `scripts/verify-lesson-packs.mjs`
+- `tsconfig.tests.json`
+
+### Change Log
+
+- 2026-06-29: Ajout de l'action coach de consommation de session sur pack individuel actif.
+- 2026-06-29: Ajout des feedbacks traduits de succes, pack epuise et refus de consommation.
+- 2026-06-29: Ajout de tests unitaires d'etat et extension de l'integration Supabase pour decrementation, acces, historique et plancher zero.
 
 ## Completion Note
 

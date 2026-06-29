@@ -337,6 +337,17 @@ export const dictionaries = {
     'lessonPack.loadErrorTitle': 'Packs indisponibles',
     'lessonPack.loadErrorBody':
       'Impossible de charger les crédits de cours pour le moment.',
+    'lessonPack.consumeAction': 'Marquer une session consommée',
+    'lessonPack.consuming': 'Consommation...',
+    'lessonPack.consumeSuccessTitle': 'Session consommée',
+    'lessonPack.consumeSuccessBody':
+      'Les compteurs du pack sont à jour et l’historique élève a été alimenté.',
+    'lessonPack.noRemainingTitle': 'Pack épuisé',
+    'lessonPack.noRemainingBody':
+      'Aucune session ne peut être consommée: ce pack n’a plus de cours restants.',
+    'lessonPack.consumeErrorTitle': 'Consommation impossible',
+    'lessonPack.consumeErrorBody':
+      'Aucun cours restant n’a été modifié. Le pack est peut-être épuisé ou l’accès refusé.',
     'auth.signInTitle': 'Retrouvez votre espace.',
     'auth.signInSubtitle':
       'Connectez-vous avec votre email et votre mot de passe pour accéder à NextPoint.',
@@ -776,6 +787,17 @@ export const dictionaries = {
     'lessonPack.loadErrorTitle': 'Packs unavailable',
     'lessonPack.loadErrorBody':
       'Lesson credits cannot be loaded right now.',
+    'lessonPack.consumeAction': 'Mark one session used',
+    'lessonPack.consuming': 'Marking used...',
+    'lessonPack.consumeSuccessTitle': 'Session used',
+    'lessonPack.consumeSuccessBody':
+      'Pack counters are up to date and the student history was updated.',
+    'lessonPack.noRemainingTitle': 'Pack exhausted',
+    'lessonPack.noRemainingBody':
+      'No session can be used: this pack has no remaining lessons.',
+    'lessonPack.consumeErrorTitle': 'Unable to mark used',
+    'lessonPack.consumeErrorBody':
+      'No remaining lesson was changed. The pack may be exhausted or access denied.',
     'auth.signInTitle': 'Return to your space.',
     'auth.signInSubtitle':
       'Sign in with your email and password to access NextPoint.',
@@ -1217,6 +1239,17 @@ export const dictionaries = {
     'lessonPack.loadErrorTitle': 'Packs no disponibles',
     'lessonPack.loadErrorBody':
       'No se pueden cargar los créditos de clases en este momento.',
+    'lessonPack.consumeAction': 'Marcar una sesión consumida',
+    'lessonPack.consuming': 'Consumiendo...',
+    'lessonPack.consumeSuccessTitle': 'Sesión consumida',
+    'lessonPack.consumeSuccessBody':
+      'Los contadores del pack están actualizados y el historial del alumno se ha completado.',
+    'lessonPack.noRemainingTitle': 'Pack agotado',
+    'lessonPack.noRemainingBody':
+      'No se puede consumir ninguna sesión: este pack no tiene clases restantes.',
+    'lessonPack.consumeErrorTitle': 'No se puede consumir',
+    'lessonPack.consumeErrorBody':
+      'No se ha modificado ninguna clase restante. Puede que el pack esté agotado o que el acceso esté denegado.',
     'auth.signInTitle': 'Vuelve a tu espacio.',
     'auth.signInSubtitle':
       'Inicia sesión con tu email y contraseña para acceder a NextPoint.',
