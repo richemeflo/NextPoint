@@ -27,6 +27,7 @@ import {
   generateStudentActivationLink,
   type GeneratedStudentActivationLink,
 } from '@/features/students/student-account-service';
+import { StudentLessonPackCard } from '@/features/lesson-packs/student-lesson-pack-card';
 import {
   getAssociatedStudentDetail,
   type AssociatedStudentDetail,
@@ -359,6 +360,7 @@ export default function CoachStudentDetailScreen() {
           </Card>
 
           <StudentPrivateNoteCard studentId={student.userId} />
+          <StudentLessonPackCard studentId={student.userId} />
 
           <View style={styles.historySection}>
             <View style={styles.sectionHeading}>

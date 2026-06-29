@@ -67,6 +67,42 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_packs: {
+        Row: {
+          coach_id: string
+          created_at: string
+          id: string
+          included_sessions: number
+          remaining_sessions: number | null
+          status: Database["public"]["Enums"]["lesson_pack_status"]
+          student_id: string
+          updated_at: string
+          used_sessions: number
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          id?: string
+          included_sessions: number
+          remaining_sessions?: number | null
+          status?: Database["public"]["Enums"]["lesson_pack_status"]
+          student_id: string
+          updated_at?: string
+          used_sessions?: number
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          id?: string
+          included_sessions?: number
+          remaining_sessions?: number | null
+          status?: Database["public"]["Enums"]["lesson_pack_status"]
+          student_id?: string
+          updated_at?: string
+          used_sessions?: number
+        }
+        Relationships: []
+      }
       pricing_rate_students: {
         Row: {
           created_at: string
@@ -332,6 +368,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_lesson_pack: {
+        Args: { p_included_sessions: number; p_student_id: string }
+        Returns: {
+          coach_id: string
+          created_at: string
+          id: string
+          included_sessions: number
+          remaining_sessions: number | null
+          status: Database["public"]["Enums"]["lesson_pack_status"]
+          student_id: string
+          updated_at: string
+          used_sessions: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "lesson_packs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       assign_student_to_single_coach: {
         Args: { student_user_id: string }
         Returns: undefined
@@ -382,6 +438,26 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "student_profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      consume_lesson_pack_session: {
+        Args: { p_pack_id: string }
+        Returns: {
+          coach_id: string
+          created_at: string
+          id: string
+          included_sessions: number
+          remaining_sessions: number | null
+          status: Database["public"]["Enums"]["lesson_pack_status"]
+          student_id: string
+          updated_at: string
+          used_sessions: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "lesson_packs"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -475,6 +551,7 @@ export type Database = {
     Enums: {
       app_language: "fr" | "en" | "es"
       app_role: "coach" | "eleve"
+      lesson_pack_status: "active" | "exhausted"
       student_account_status:
         | "pending_activation"
         | "active"
@@ -629,6 +706,7 @@ export const Constants = {
     Enums: {
       app_language: ["fr", "en", "es"],
       app_role: ["coach", "eleve"],
+      lesson_pack_status: ["active", "exhausted"],
       student_account_status: [
         "pending_activation",
         "active",

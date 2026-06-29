@@ -63,7 +63,7 @@ export const dictionaries = {
       'Renseignez les informations utiles au coach pour organiser vos prochains cours.',
     'profile.loading': 'Chargement de votre profil...',
     'profile.fullNameLabel': 'Nom complet',
-    'profile.fullNamePlaceholder': 'Votre prénom et votre nom',
+    'profile.fullNamePlaceholder': 'Prénom et nom',
     'profile.phoneLabel': 'Téléphone',
     'profile.phonePlaceholder': '+33 6 12 34 56 78',
     'profile.emailLabel': 'Email de contact',
@@ -307,6 +307,36 @@ export const dictionaries = {
     'studentPrivateNote.saveErrorTitle': 'Enregistrement impossible',
     'studentPrivateNote.saveErrorBody':
       'La note existante n’a pas été modifiée. Réessayez.',
+    'lessonPack.loading': 'Chargement des packs...',
+    'lessonPack.title': 'Pack de cours individuels',
+    'lessonPack.trackingOnlyHint':
+      'Suivi de crédits uniquement, sans achat ni paiement intégré.',
+    'lessonPack.assignAction': 'Attribuer un pack',
+    'lessonPack.includedLabel': 'Nombre de cours inclus',
+    'lessonPack.includedPlaceholder': 'Ex. 10',
+    'lessonPack.confirmAssignAction': 'Confirmer l’attribution',
+    'lessonPack.assigning': 'Attribution...',
+    'lessonPack.cancelAction': 'Annuler',
+    'lessonPack.individualTitle': 'Pack individuel',
+    'lessonPack.includedMetric': 'Inclus',
+    'lessonPack.usedMetric': 'Utilisés',
+    'lessonPack.remainingMetric': 'Restants',
+    'lessonPack.emptyBody':
+      'Aucun pack individuel n’est encore rattaché à cet élève.',
+    'lessonPack.validationInvalidCount':
+      'Saisissez un nombre entier compris entre 1 et 100.',
+    'lessonPack.saveSuccessTitle': 'Pack attribué',
+    'lessonPack.saveSuccessBody':
+      'Les crédits de cours sont maintenant suivis sur cette fiche.',
+    'lessonPack.activeExistsTitle': 'Pack actif existant',
+    'lessonPack.activeExistsBody':
+      'Terminez le pack actif avant d’en attribuer un nouveau.',
+    'lessonPack.saveErrorTitle': 'Attribution impossible',
+    'lessonPack.saveErrorBody':
+      'Aucun pack n’a été créé. Vérifiez la relation élève puis réessayez.',
+    'lessonPack.loadErrorTitle': 'Packs indisponibles',
+    'lessonPack.loadErrorBody':
+      'Impossible de charger les crédits de cours pour le moment.',
     'auth.signInTitle': 'Retrouvez votre espace.',
     'auth.signInSubtitle':
       'Connectez-vous avec votre email et votre mot de passe pour accéder à NextPoint.',
@@ -716,6 +746,36 @@ export const dictionaries = {
     'studentPrivateNote.saveErrorTitle': 'Unable to save',
     'studentPrivateNote.saveErrorBody':
       'The existing note was not changed. Try again.',
+    'lessonPack.loading': 'Loading lesson packs...',
+    'lessonPack.title': 'Individual lesson pack',
+    'lessonPack.trackingOnlyHint':
+      'Credit tracking only, with no purchase or integrated payment.',
+    'lessonPack.assignAction': 'Assign a pack',
+    'lessonPack.includedLabel': 'Included lessons',
+    'lessonPack.includedPlaceholder': 'E.g. 10',
+    'lessonPack.confirmAssignAction': 'Confirm assignment',
+    'lessonPack.assigning': 'Assigning...',
+    'lessonPack.cancelAction': 'Cancel',
+    'lessonPack.individualTitle': 'Individual pack',
+    'lessonPack.includedMetric': 'Included',
+    'lessonPack.usedMetric': 'Used',
+    'lessonPack.remainingMetric': 'Remaining',
+    'lessonPack.emptyBody':
+      'No individual lesson pack is attached to this student yet.',
+    'lessonPack.validationInvalidCount':
+      'Enter a whole number between 1 and 100.',
+    'lessonPack.saveSuccessTitle': 'Pack assigned',
+    'lessonPack.saveSuccessBody':
+      'Lesson credits are now tracked on this student record.',
+    'lessonPack.activeExistsTitle': 'Active pack already exists',
+    'lessonPack.activeExistsBody':
+      'Finish the active pack before assigning a new one.',
+    'lessonPack.saveErrorTitle': 'Unable to assign',
+    'lessonPack.saveErrorBody':
+      'No pack was created. Check the student relationship and try again.',
+    'lessonPack.loadErrorTitle': 'Packs unavailable',
+    'lessonPack.loadErrorBody':
+      'Lesson credits cannot be loaded right now.',
     'auth.signInTitle': 'Return to your space.',
     'auth.signInSubtitle':
       'Sign in with your email and password to access NextPoint.',
@@ -1127,6 +1187,36 @@ export const dictionaries = {
     'studentPrivateNote.saveErrorTitle': 'No se puede guardar',
     'studentPrivateNote.saveErrorBody':
       'La nota existente no se ha modificado. Inténtalo de nuevo.',
+    'lessonPack.loading': 'Cargando los packs...',
+    'lessonPack.title': 'Pack de clases individuales',
+    'lessonPack.trackingOnlyHint':
+      'Solo seguimiento de créditos, sin compra ni pago integrado.',
+    'lessonPack.assignAction': 'Asignar un pack',
+    'lessonPack.includedLabel': 'Número de clases incluidas',
+    'lessonPack.includedPlaceholder': 'Ej. 10',
+    'lessonPack.confirmAssignAction': 'Confirmar asignación',
+    'lessonPack.assigning': 'Asignando...',
+    'lessonPack.cancelAction': 'Cancelar',
+    'lessonPack.individualTitle': 'Pack individual',
+    'lessonPack.includedMetric': 'Incluidas',
+    'lessonPack.usedMetric': 'Usadas',
+    'lessonPack.remainingMetric': 'Restantes',
+    'lessonPack.emptyBody':
+      'Todavía no hay ningún pack individual asociado a este alumno.',
+    'lessonPack.validationInvalidCount':
+      'Introduce un número entero entre 1 y 100.',
+    'lessonPack.saveSuccessTitle': 'Pack asignado',
+    'lessonPack.saveSuccessBody':
+      'Los créditos de clases ya se siguen en esta ficha.',
+    'lessonPack.activeExistsTitle': 'Ya existe un pack activo',
+    'lessonPack.activeExistsBody':
+      'Finaliza el pack activo antes de asignar uno nuevo.',
+    'lessonPack.saveErrorTitle': 'No se puede asignar',
+    'lessonPack.saveErrorBody':
+      'No se ha creado ningún pack. Revisa la relación con el alumno e inténtalo de nuevo.',
+    'lessonPack.loadErrorTitle': 'Packs no disponibles',
+    'lessonPack.loadErrorBody':
+      'No se pueden cargar los créditos de clases en este momento.',
     'auth.signInTitle': 'Vuelve a tu espacio.',
     'auth.signInSubtitle':
       'Inicia sesión con tu email y contraseña para acceder a NextPoint.',

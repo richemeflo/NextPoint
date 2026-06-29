@@ -17,6 +17,11 @@ export {
 } from './contracts/student-private-note';
 export { coachProfileSchema, toCoachProfileInput } from './contracts/coach-profile';
 export {
+  lessonPackSchema,
+  lessonPackStatuses,
+  toLessonPackInput,
+} from './contracts/lesson-pack';
+export {
   pricingApplicabilityContexts,
   pricingDurations,
   pricingLessonTypes,
@@ -50,6 +55,11 @@ export type {
   CoachProfileFormInput,
   CoachProfileInput,
 } from './contracts/coach-profile';
+export type {
+  LessonPackFormInput,
+  LessonPackInput,
+  LessonPackStatus,
+} from './contracts/lesson-pack';
 export type {
   PricingApplicabilityContext,
   PricingDuration,
