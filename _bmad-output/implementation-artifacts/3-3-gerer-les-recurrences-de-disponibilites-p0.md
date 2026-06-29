@@ -1,6 +1,10 @@
+---
+baseline_commit: e9240e4b6deca2e3e7c32f8ce7a19c8d39639ab9
+---
+
 # Story 3.3: Gérer les récurrences de disponibilités P0
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -20,16 +24,16 @@ so that je puisse publier rapidement mes créneaux récurrents.
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 3.3 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer disponibilites/planning selon la story (AC: tous)
-  - [ ] Utiliser date/heure API en ISO 8601 UTC; timezone locale seulement a la frontiere UI.
-  - [ ] Garder durees 1h/1h30, lieu initial `Les Bruyeres Centre Sportif` et recurrence P0 limitee.
-  - [ ] Ne pas dupliquer les commandes de booking de l'Epic 4.
-- [ ] Tester conflits, recurrence et affichage (AC: integrite/UX)
-  - [ ] Couvrir modification/suppression sans demande active ni reservation confirmee selon la story.
+- [x] Verifier les preconditions et dependances de Story 3.3 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer disponibilites/planning selon la story (AC: tous)
+  - [x] Utiliser date/heure API en ISO 8601 UTC; timezone locale seulement a la frontiere UI.
+  - [x] Garder durees 1h/1h30, lieu initial `Les Bruyeres Centre Sportif` et recurrence P0 limitee.
+  - [x] Ne pas dupliquer les commandes de booking de l'Epic 4.
+- [x] Tester conflits, recurrence et affichage (AC: integrite/UX)
+  - [x] Couvrir modification/suppression sans demande active ni reservation confirmee selon la story.
 
 ## Interventions utilisateur requises
 
@@ -150,18 +154,60 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Codex GPT-5
+
+### Implementation Plan
+
+- Etendre la commande transactionnelle Supabase `create_availability_range` avec un horizon `recurrence_ends_on`.
+- Generer les occurrences `none`, `daily` et `weekly` cote base en conservant le lien `availability_range_id` sur chaque slot.
+- Exposer l'horizon dans le formulaire coach avec un defaut a un mois et afficher les occurrences generees dans la liste existante.
 
 ### Debug Log References
+
+- 2026-06-29: Activation `bmad-dev-story` effectuee; workflow personnalise resolu sans etapes prepend/append.
+- 2026-06-29: Preconditions confirmees: stories 3.1 et 3.2 en review, contrats `availability-range`, service scheduling, migrations `availability_ranges`/`availability_slots`, tests DB et script d'integration presents.
+- 2026-06-29: Documentation Expo SDK 56 consultee avant modifications mobile, conformement a `apps/mobile/AGENTS.md`.
+- 2026-06-29: Tests RED confirmes: export shared `getDefaultAvailabilityRecurrenceEndsOn`, colonne `recurrence_ends_on`, signature RPC avec horizon et contrainte anti-chevauchement de slots absents.
+- 2026-06-29: Migration `0015_availability_recurrences.sql` appliquee localement via `npx supabase migration up`; types Supabase regeneres.
+- 2026-06-29: `npm test`, `npm run typecheck`, `npm run lint`, `npm run supabase:test:db`, `npm run test:availability-ranges`, `npx expo install --check` depuis `apps/mobile` et `git diff --check` passent.
+- 2026-06-29: Expo Web lance sur `http://localhost:8091`; `GET /coach/availability` verifie en HTTP 200 apres compilation.
+- 2026-06-29: Scan motifs sensibles effectue; resultats restants limites aux usages/placeholders attendus (`service_role`, `SECRET_KEY` issu de `supabase status -o env`, package-lock), aucun secret reel detecte.
 
 ### Completion Notes List
 
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+- Implementation demarree avec baseline git `e9240e4b6deca2e3e7c32f8ce7a19c8d39639ab9`.
+- Aucune dependance bloquante manquante: les stories 3.1 et 3.2 fournissent les plages, slots, contrat shared, service mobile et tests d'integration necessaires.
+- Les options P0 restent limitees a ponctuelle, quotidienne et hebdomadaire dans le contrat partage et le formulaire.
+- Les disponibilites recurrentes demandent un horizon `recurrence_ends_on`; l'UI propose un mois par defaut et la base lie chaque slot genere a sa plage source.
+- Les disponibilites ponctuelles envoient `recurrence_ends_on = null` et ne generent que les slots complets de la date selectionnee.
+- La generation quotidienne/hebdomadaire reste transactionnelle: une recurrence invalide ou un conflit de slot annule la creation coheremment.
+- Les slots recurrents affiches cote coach conservent date, heure, duree, lieu, statut et lien source `availability_range_id`.
+- Les commandes de booking Epic 4 ne sont pas implementees; les tests couvrent seulement le blocage des mutations directes client sur plages/slots et le statut `booked` deja prepare.
+- Validation visuelle authentifiee complete non confirmee automatiquement; la route web compile et repond HTTP 200, mais la session coach connectee doit etre verifiee manuellement si besoin sur appareil/navigateur.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/3-3-gerer-les-recurrences-de-disponibilites-p0.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `apps/mobile/src/app/coach/availability.tsx`
+- `apps/mobile/src/features/scheduling/availability-service.ts`
+- `apps/mobile/src/i18n/translations.ts`
+- `packages/shared/src/contracts/availability-range.test.ts`
+- `packages/shared/src/contracts/availability-range.ts`
+- `packages/shared/src/index.ts`
+- `packages/shared/src/types/database.types.ts`
+- `scripts/verify-availability-ranges.mjs`
+- `supabase/migrations/0015_availability_recurrences.sql`
+- `supabase/tests/database/0011_availability_ranges.sql`
+- `supabase/tests/database/0012_availability_slots.sql`
+
+### Change Log
+
+- 2026-06-29: Ajout de l'horizon `recurrence_ends_on`, validation shared et generation transactionnelle des occurrences `none/daily/weekly`.
+- 2026-06-29: Ajout de la contrainte anti-chevauchement des slots actifs et verification d'atomicite en integration.
+- 2026-06-29: Mise a jour de l'ecran coach pour demander l'horizon, proposer un mois par defaut et afficher les occurrences generees.
 
 ## Completion Note
 

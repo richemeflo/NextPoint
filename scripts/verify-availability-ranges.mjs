@@ -107,12 +107,14 @@ try {
     p_slot_duration_minutes: 90,
     p_location: 'Les Bruyères Centre Sportif',
     p_recurrence_type: 'weekly',
+    p_recurrence_ends_on: '2026-07-15',
   });
   assert.equal(created.error, null);
   assert.equal(created.data.coach_id, coach.userId);
   assert.equal(created.data.slot_duration_minutes, 90);
   assert.equal(created.data.location, 'Les Bruyères Centre Sportif');
   assert.equal(created.data.recurrence_type, 'weekly');
+  assert.equal(created.data.recurrence_ends_on, '2026-07-15');
   createdRangeIds.push(created.data.id);
 
   const generatedSlots = await coach.client
@@ -121,6 +123,7 @@ try {
     .eq('availability_range_id', created.data.id)
     .order('starts_at', { ascending: true });
   assert.equal(generatedSlots.error, null);
+  const firstGeneratedSlotId = generatedSlots.data[0].id;
   assert.deepEqual(
     generatedSlots.data.map((slot) => ({
       coach_id: slot.coach_id,
@@ -141,8 +144,76 @@ try {
         location: 'Les Bruyères Centre Sportif',
         status: 'available',
       },
+      {
+        coach_id: coach.userId,
+        availability_range_id: created.data.id,
+        starts_at: '2026-07-08T16:00:00+00:00',
+        ends_at: '2026-07-08T17:30:00+00:00',
+        duration_minutes: 90,
+        location: 'Les Bruyères Centre Sportif',
+        status: 'available',
+      },
+      {
+        coach_id: coach.userId,
+        availability_range_id: created.data.id,
+        starts_at: '2026-07-15T16:00:00+00:00',
+        ends_at: '2026-07-15T17:30:00+00:00',
+        duration_minutes: 90,
+        location: 'Les Bruyères Centre Sportif',
+        status: 'available',
+      },
     ]
   );
+
+  const dailyCreated = await coach.client.rpc('create_availability_range', {
+    p_starts_at: '2026-08-03T16:00:00.000Z',
+    p_ends_at: '2026-08-03T18:00:00.000Z',
+    p_slot_duration_minutes: 60,
+    p_location: 'Les Bruyères Centre Sportif',
+    p_recurrence_type: 'daily',
+    p_recurrence_ends_on: '2026-08-05',
+  });
+  assert.equal(dailyCreated.error, null);
+  createdRangeIds.push(dailyCreated.data.id);
+
+  const dailySlots = await coach.client
+    .from('availability_slots')
+    .select('starts_at, ends_at, duration_minutes')
+    .eq('availability_range_id', dailyCreated.data.id)
+    .order('starts_at', { ascending: true });
+  assert.equal(dailySlots.error, null);
+  assert.deepEqual(dailySlots.data, [
+    {
+      starts_at: '2026-08-03T16:00:00+00:00',
+      ends_at: '2026-08-03T17:00:00+00:00',
+      duration_minutes: 60,
+    },
+    {
+      starts_at: '2026-08-03T17:00:00+00:00',
+      ends_at: '2026-08-03T18:00:00+00:00',
+      duration_minutes: 60,
+    },
+    {
+      starts_at: '2026-08-04T16:00:00+00:00',
+      ends_at: '2026-08-04T17:00:00+00:00',
+      duration_minutes: 60,
+    },
+    {
+      starts_at: '2026-08-04T17:00:00+00:00',
+      ends_at: '2026-08-04T18:00:00+00:00',
+      duration_minutes: 60,
+    },
+    {
+      starts_at: '2026-08-05T16:00:00+00:00',
+      ends_at: '2026-08-05T17:00:00+00:00',
+      duration_minutes: 60,
+    },
+    {
+      starts_at: '2026-08-05T17:00:00+00:00',
+      ends_at: '2026-08-05T18:00:00+00:00',
+      duration_minutes: 60,
+    },
+  ]);
 
   const coachRead = await coach.client
     .from('availability_ranges')
@@ -172,6 +243,7 @@ try {
     p_slot_duration_minutes: 60,
     p_location: 'Les Bruyères Centre Sportif',
     p_recurrence_type: 'none',
+    p_recurrence_ends_on: null,
   });
   assert.notEqual(overlapping.error, null);
   assert.equal(overlapping.error.code, '23P01');
@@ -182,6 +254,7 @@ try {
     p_slot_duration_minutes: 45,
     p_location: 'Les Bruyères Centre Sportif',
     p_recurrence_type: 'none',
+    p_recurrence_ends_on: null,
   });
   assert.notEqual(invalidDuration.error, null);
 
@@ -193,12 +266,31 @@ try {
   assert.equal(rangeCountAfterInvalid.error, null);
   assert.equal(rangeCountAfterInvalid.count, 0);
 
+  const invalidRecurrence = await coach.client.rpc('create_availability_range', {
+    p_starts_at: '2026-07-04T16:00:00.000Z',
+    p_ends_at: '2026-07-04T18:00:00.000Z',
+    p_slot_duration_minutes: 60,
+    p_location: 'Les Bruyères Centre Sportif',
+    p_recurrence_type: 'weekly',
+    p_recurrence_ends_on: '2026-07-03',
+  });
+  assert.notEqual(invalidRecurrence.error, null);
+
+  const rangeCountAfterInvalidRecurrence = await adminClient
+    .from('availability_ranges')
+    .select('id', { count: 'exact', head: true })
+    .eq('coach_id', coach.userId)
+    .eq('starts_at', '2026-07-04T16:00:00.000Z');
+  assert.equal(rangeCountAfterInvalidRecurrence.error, null);
+  assert.equal(rangeCountAfterInvalidRecurrence.count, 0);
+
   const studentCreate = await student.client.rpc('create_availability_range', {
     p_starts_at: '2026-07-03T16:00:00.000Z',
     p_ends_at: '2026-07-03T18:00:00.000Z',
     p_slot_duration_minutes: 60,
     p_location: 'Les Bruyères Centre Sportif',
     p_recurrence_type: 'none',
+    p_recurrence_ends_on: null,
   });
   assert.notEqual(studentCreate.error, null);
 
@@ -209,8 +301,21 @@ try {
     slot_duration_minutes: 60,
     location: 'Les Bruyères Centre Sportif',
     recurrence_type: 'none',
+    recurrence_ends_on: null,
   });
   assert.notEqual(directInsert.error, null);
+
+  const directRangeUpdate = await coach.client
+    .from('availability_ranges')
+    .update({ location: 'Les Bruyères Centre Sportif' })
+    .eq('id', created.data.id);
+  assert.notEqual(directRangeUpdate.error, null);
+
+  const directRangeDelete = await coach.client
+    .from('availability_ranges')
+    .delete()
+    .eq('id', created.data.id);
+  assert.notEqual(directRangeDelete.error, null);
 
   const directSlotMutation = await coach.client
     .from('availability_slots')
@@ -221,7 +326,7 @@ try {
   const booked = await adminClient
     .from('availability_slots')
     .update({ status: 'booked' })
-    .eq('availability_range_id', created.data.id)
+    .eq('id', firstGeneratedSlotId)
     .select('status')
     .single();
   assert.equal(booked.error, null);
@@ -230,13 +335,13 @@ try {
   const requestableAfterBooked = await adminClient
     .from('availability_slots')
     .select('id')
-    .eq('availability_range_id', created.data.id)
+    .eq('id', firstGeneratedSlotId)
     .eq('status', 'available');
   assert.equal(requestableAfterBooked.error, null);
   assert.deepEqual(requestableAfterBooked.data, []);
 
   console.log(
-    'AVAILABILITY_RANGES_INTEGRATION_OK atomic range and slot generation, complete-slot truncation, coach read, non-coach refusal, direct mutation refusal, overlap guard, duration/location/recurrence constraints, booked slots hidden from requestable reads'
+    'AVAILABILITY_RANGES_INTEGRATION_OK atomic range and recurring slot generation, complete-slot truncation, coach read, non-coach refusal, direct mutation/update/delete refusal, overlap guard, duration/location/recurrence constraints, booked slots hidden from requestable reads'
   );
 } finally {
   for (const rangeId of createdRangeIds) {

@@ -1,6 +1,6 @@
 begin;
 
-select plan(21);
+select plan(22);
 
 select ok(
   to_regtype('public.availability_slot_status') is not null,
@@ -108,10 +108,19 @@ select ok(
   ),
   'requestable slot lookup is indexed'
 );
+select ok(
+  exists (
+    select 1
+    from pg_indexes
+    where schemaname = 'public'
+      and indexname = 'availability_slots_no_overlap_active'
+  ),
+  'generated active slots cannot overlap for one coach'
+);
 select has_function(
   'public',
   'create_availability_range',
-  array['timestamptz', 'timestamptz', 'integer', 'text', 'availability_recurrence_type'],
+  array['timestamptz', 'timestamptz', 'integer', 'text', 'availability_recurrence_type', 'date'],
   'availability creation command still exists after slot generation'
 );
 select ok(

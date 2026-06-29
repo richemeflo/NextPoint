@@ -42,6 +42,7 @@ export type Database = {
           ends_at: string
           id: string
           location: string
+          recurrence_ends_on: string | null
           recurrence_type: Database["public"]["Enums"]["availability_recurrence_type"]
           slot_duration_minutes: number
           starts_at: string
@@ -54,6 +55,7 @@ export type Database = {
           ends_at: string
           id?: string
           location: string
+          recurrence_ends_on?: string | null
           recurrence_type?: Database["public"]["Enums"]["availability_recurrence_type"]
           slot_duration_minutes: number
           starts_at: string
@@ -66,6 +68,7 @@ export type Database = {
           ends_at?: string
           id?: string
           location?: string
+          recurrence_ends_on?: string | null
           recurrence_type?: Database["public"]["Enums"]["availability_recurrence_type"]
           slot_duration_minutes?: number
           starts_at?: string
@@ -555,6 +558,7 @@ export type Database = {
         Args: {
           p_ends_at: string
           p_location: string
+          p_recurrence_ends_on: string
           p_recurrence_type: Database["public"]["Enums"]["availability_recurrence_type"]
           p_slot_duration_minutes: number
           p_starts_at: string
@@ -566,6 +570,7 @@ export type Database = {
           ends_at: string
           id: string
           location: string
+          recurrence_ends_on: string | null
           recurrence_type: Database["public"]["Enums"]["availability_recurrence_type"]
           slot_duration_minutes: number
           starts_at: string

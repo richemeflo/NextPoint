@@ -9,6 +9,7 @@ import {
   availabilitySlotDurations,
   buildAvailabilityPreviewSlots,
   defaultAvailabilityLocation,
+  getDefaultAvailabilityRecurrenceEndsOn,
   isAvailabilitySlotRequestable,
   toAvailabilityRangeInput,
 } from './availability-range';
@@ -29,6 +30,21 @@ test('availabilityRangeSchema accepts a valid 1h30 coach range', () => {
     slotDurationMinutes: '90',
     location: defaultAvailabilityLocation,
     recurrenceType: 'none',
+    recurrenceEndsOn: '',
+  });
+
+  assert.equal(parsed.success, true);
+});
+
+test('availabilityRangeSchema accepts a valid daily recurring range with horizon', () => {
+  const parsed = availabilityRangeSchema.safeParse({
+    date: '2026-07-01',
+    startsAtLocalTime: '18:00',
+    endsAtLocalTime: '20:00',
+    slotDurationMinutes: '60',
+    location: defaultAvailabilityLocation,
+    recurrenceType: 'daily',
+    recurrenceEndsOn: '2026-08-01',
   });
 
   assert.equal(parsed.success, true);
@@ -43,6 +59,7 @@ test('availabilityRangeSchema rejects incomplete or incoherent ranges', () => {
       slotDurationMinutes: '60',
       location: defaultAvailabilityLocation,
       recurrenceType: 'none',
+      recurrenceEndsOn: '',
     },
     {
       date: '2026-07-01',
@@ -51,6 +68,7 @@ test('availabilityRangeSchema rejects incomplete or incoherent ranges', () => {
       slotDurationMinutes: '60',
       location: defaultAvailabilityLocation,
       recurrenceType: 'none',
+      recurrenceEndsOn: '',
     },
     {
       date: '2026-07-01',
@@ -59,6 +77,7 @@ test('availabilityRangeSchema rejects incomplete or incoherent ranges', () => {
       slotDurationMinutes: '60',
       location: defaultAvailabilityLocation,
       recurrenceType: 'none',
+      recurrenceEndsOn: '',
     },
     {
       date: '2026-07-01',
@@ -67,6 +86,25 @@ test('availabilityRangeSchema rejects incomplete or incoherent ranges', () => {
       slotDurationMinutes: '45',
       location: 'Club inconnu',
       recurrenceType: 'monthly',
+      recurrenceEndsOn: '',
+    },
+    {
+      date: '2026-07-01',
+      startsAtLocalTime: '18:00',
+      endsAtLocalTime: '20:00',
+      slotDurationMinutes: '60',
+      location: defaultAvailabilityLocation,
+      recurrenceType: 'daily',
+      recurrenceEndsOn: '',
+    },
+    {
+      date: '2026-07-01',
+      startsAtLocalTime: '18:00',
+      endsAtLocalTime: '20:00',
+      slotDurationMinutes: '60',
+      location: defaultAvailabilityLocation,
+      recurrenceType: 'weekly',
+      recurrenceEndsOn: '2026-06-30',
     },
   ];
 
@@ -84,6 +122,7 @@ test('toAvailabilityRangeInput converts local UI boundaries to UTC ISO strings',
       slotDurationMinutes: '90',
       location: defaultAvailabilityLocation,
       recurrenceType: 'none',
+      recurrenceEndsOn: '',
     },
     -120
   );
@@ -94,7 +133,30 @@ test('toAvailabilityRangeInput converts local UI boundaries to UTC ISO strings',
     slotDurationMinutes: 90,
     location: defaultAvailabilityLocation,
     recurrenceType: 'none',
+    recurrenceEndsOn: null,
   });
+});
+
+test('toAvailabilityRangeInput preserves recurring generation horizon', () => {
+  const input = toAvailabilityRangeInput(
+    {
+      date: '2026-07-01',
+      startsAtLocalTime: '18:00',
+      endsAtLocalTime: '20:00',
+      slotDurationMinutes: '60',
+      location: defaultAvailabilityLocation,
+      recurrenceType: 'weekly',
+      recurrenceEndsOn: '2026-08-01',
+    },
+    -120
+  );
+
+  assert.equal(input.recurrenceEndsOn, '2026-08-01');
+});
+
+test('getDefaultAvailabilityRecurrenceEndsOn proposes one month by default', () => {
+  assert.equal(getDefaultAvailabilityRecurrenceEndsOn('2026-07-01'), '2026-08-01');
+  assert.equal(getDefaultAvailabilityRecurrenceEndsOn('2026-01-31'), '2026-02-28');
 });
 
 test('buildAvailabilityPreviewSlots keeps generated slot location and duration', () => {
@@ -104,6 +166,7 @@ test('buildAvailabilityPreviewSlots keeps generated slot location and duration',
     slotDurationMinutes: 60,
     location: defaultAvailabilityLocation,
     recurrenceType: 'none',
+    recurrenceEndsOn: null,
   });
 
   assert.deepEqual(slots, [
@@ -129,6 +192,7 @@ test('buildAvailabilityPreviewSlots creates only complete slots', () => {
     slotDurationMinutes: 90,
     location: defaultAvailabilityLocation,
     recurrenceType: 'none',
+    recurrenceEndsOn: null,
   });
 
   assert.deepEqual(slots, [

@@ -28,6 +28,7 @@ export const availabilityRangeSchema = z
     slotDurationMinutes: z.enum(['60', '90']),
     location: z.enum(availabilityLocations),
     recurrenceType: z.enum(availabilityRecurrenceTypes),
+    recurrenceEndsOn: z.string().optional(),
   })
   .superRefine((value, context) => {
     const start = localDateTimeToUtcMs(
@@ -58,6 +59,35 @@ export const availabilityRangeSchema = z
         path: ['endsAtLocalTime'],
       });
     }
+
+    const recurrenceEndsOn = value.recurrenceEndsOn?.trim() ?? '';
+    if (value.recurrenceType === 'none') return;
+
+    if (!recurrenceEndsOn) {
+      context.addIssue({
+        code: 'custom',
+        message: 'recurrence_end_required',
+        path: ['recurrenceEndsOn'],
+      });
+      return;
+    }
+
+    if (!localDateRegex.test(recurrenceEndsOn)) {
+      context.addIssue({
+        code: 'custom',
+        message: 'invalid_date',
+        path: ['recurrenceEndsOn'],
+      });
+      return;
+    }
+
+    if (recurrenceEndsOn < value.date) {
+      context.addIssue({
+        code: 'custom',
+        message: 'recurrence_end_before_start',
+        path: ['recurrenceEndsOn'],
+      });
+    }
   });
 
 export type AvailabilityRangeFormInput = z.infer<
@@ -70,6 +100,7 @@ export type AvailabilityRangeInput = {
   slotDurationMinutes: AvailabilitySlotDuration;
   location: AvailabilityLocation;
   recurrenceType: AvailabilityRecurrenceType;
+  recurrenceEndsOn: string | null;
 };
 
 export type AvailabilityPreviewSlot = {
@@ -91,6 +122,27 @@ function parseDate(date: string) {
 function parseTime(time: string) {
   const [hours, minutes] = time.split(':').map(Number);
   return { hours, minutes };
+}
+
+export function getDefaultAvailabilityRecurrenceEndsOn(date: string) {
+  const { year, monthIndex, day } = parseDate(date);
+  const targetMonthIndex = monthIndex + 1;
+  const lastDayOfTargetMonth = new Date(
+    year,
+    targetMonthIndex + 1,
+    0
+  ).getDate();
+  const target = new Date(
+    year,
+    targetMonthIndex,
+    Math.min(day, lastDayOfTargetMonth)
+  );
+
+  return [
+    target.getFullYear(),
+    String(target.getMonth() + 1).padStart(2, '0'),
+    String(target.getDate()).padStart(2, '0'),
+  ].join('-');
 }
 
 function getTimezoneOffsetForLocalDateTime(date: string, time: string) {
@@ -135,6 +187,10 @@ export function toAvailabilityRangeInput(
     ) as AvailabilitySlotDuration,
     location: form.location,
     recurrenceType: form.recurrenceType,
+    recurrenceEndsOn:
+      form.recurrenceType === 'none'
+        ? null
+        : (form.recurrenceEndsOn?.trim() ?? null),
   };
 }
 

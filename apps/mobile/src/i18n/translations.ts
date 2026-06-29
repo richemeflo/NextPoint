@@ -215,6 +215,8 @@ export const dictionaries = {
     'availability.recurrence.none': 'Ponctuelle',
     'availability.recurrence.daily': 'Quotidienne',
     'availability.recurrence.weekly': 'Hebdomadaire',
+    'availability.recurrenceEndsOnLabel': 'Générer jusqu’au',
+    'availability.recurrenceUntil': 'Générée jusqu’au {{date}}',
     'availability.previewTitle': 'Aperçu des créneaux',
     'availability.previewEmpty':
       'Complétez une plage cohérente pour afficher l’aperçu.',
@@ -244,7 +246,7 @@ export const dictionaries = {
     'availability.rangeMeta': '{{duration}} · {{location}}',
     'availability.generatedSlotsTitle': 'Créneaux générés',
     'availability.generatedSlot':
-      '{{start}}–{{end}} · {{duration}} · {{location}}',
+      '{{date}}–{{end}} · {{duration}} · {{location}}',
     'availability.slotStatus.available': 'Disponible',
     'availability.slotStatus.booked': 'Réservé',
     'availability.slotStatus.cancelled': 'Annulé',
@@ -254,6 +256,10 @@ export const dictionaries = {
       'L’heure de fin doit être après l’heure de début.',
     'availability.validation.rangeTooShort':
       'La plage doit contenir au moins un créneau complet.',
+    'availability.validation.recurrenceEndRequired':
+      'Saisissez un horizon de génération.',
+    'availability.validation.recurrenceEndBeforeStart':
+      'L’horizon doit être le jour de départ ou après.',
     'students.loading': 'Chargement des élèves...',
     'students.title': 'Élèves',
     'students.subtitle':
@@ -723,6 +729,8 @@ export const dictionaries = {
     'availability.recurrence.none': 'One-off',
     'availability.recurrence.daily': 'Daily',
     'availability.recurrence.weekly': 'Weekly',
+    'availability.recurrenceEndsOnLabel': 'Generate until',
+    'availability.recurrenceUntil': 'Generated until {{date}}',
     'availability.previewTitle': 'Slot preview',
     'availability.previewEmpty':
       'Complete a coherent range to display the preview.',
@@ -752,7 +760,7 @@ export const dictionaries = {
     'availability.rangeMeta': '{{duration}} · {{location}}',
     'availability.generatedSlotsTitle': 'Generated slots',
     'availability.generatedSlot':
-      '{{start}}–{{end}} · {{duration}} · {{location}}',
+      '{{date}}–{{end}} · {{duration}} · {{location}}',
     'availability.slotStatus.available': 'Available',
     'availability.slotStatus.booked': 'Booked',
     'availability.slotStatus.cancelled': 'Cancelled',
@@ -762,6 +770,10 @@ export const dictionaries = {
       'The end time must be after the start time.',
     'availability.validation.rangeTooShort':
       'The range must contain at least one complete slot.',
+    'availability.validation.recurrenceEndRequired':
+      'Enter a generation horizon.',
+    'availability.validation.recurrenceEndBeforeStart':
+      'The horizon must be on or after the start date.',
     'students.loading': 'Loading students...',
     'students.title': 'Students',
     'students.subtitle':
@@ -1230,6 +1242,8 @@ export const dictionaries = {
     'availability.recurrence.none': 'Puntual',
     'availability.recurrence.daily': 'Diaria',
     'availability.recurrence.weekly': 'Semanal',
+    'availability.recurrenceEndsOnLabel': 'Generar hasta',
+    'availability.recurrenceUntil': 'Generada hasta {{date}}',
     'availability.previewTitle': 'Vista previa de horarios',
     'availability.previewEmpty':
       'Completa una franja coherente para mostrar la vista previa.',
@@ -1259,7 +1273,7 @@ export const dictionaries = {
     'availability.rangeMeta': '{{duration}} · {{location}}',
     'availability.generatedSlotsTitle': 'Horarios generados',
     'availability.generatedSlot':
-      '{{start}}–{{end}} · {{duration}} · {{location}}',
+      '{{date}}–{{end}} · {{duration}} · {{location}}',
     'availability.slotStatus.available': 'Disponible',
     'availability.slotStatus.booked': 'Reservado',
     'availability.slotStatus.cancelled': 'Cancelado',
@@ -1269,6 +1283,10 @@ export const dictionaries = {
       'La hora de fin debe ser posterior a la hora de inicio.',
     'availability.validation.rangeTooShort':
       'La franja debe contener al menos un horario completo.',
+    'availability.validation.recurrenceEndRequired':
+      'Introduce un horizonte de generación.',
+    'availability.validation.recurrenceEndBeforeStart':
+      'El horizonte debe ser el día de inicio o posterior.',
     'students.loading': 'Cargando alumnos...',
     'students.title': 'Alumnos',
     'students.subtitle':

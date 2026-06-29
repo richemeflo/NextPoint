@@ -6,6 +6,7 @@ import {
   availabilitySlotDurations,
   buildAvailabilityPreviewSlots,
   defaultAvailabilityLocation,
+  getDefaultAvailabilityRecurrenceEndsOn,
   toAvailabilityRangeInput,
   type AvailabilityRangeFormInput,
   type AvailabilityRecurrenceType,
@@ -52,6 +53,7 @@ const defaultValues: AvailabilityRangeFormInput = {
   slotDurationMinutes: '90',
   location: defaultAvailabilityLocation,
   recurrenceType: 'none',
+  recurrenceEndsOn: '',
 };
 
 export default function CoachAvailabilityScreen() {
@@ -70,12 +72,14 @@ export default function CoachAvailabilityScreen() {
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { isSubmitting },
   } = useForm<AvailabilityRangeFormInput>({
     resolver: zodResolver(availabilityRangeSchema),
     defaultValues,
   });
   const watchedValues = useWatch({ control });
+  const selectedRecurrenceType = watchedValues.recurrenceType ?? 'none';
 
   const loadRanges = useCallback(async () => {
     if (!user) return;
@@ -119,6 +123,28 @@ export default function CoachAvailabilityScreen() {
     };
   }, [user]);
 
+  useEffect(() => {
+    const date = watchedValues.date ?? defaultValues.date;
+
+    if (selectedRecurrenceType === 'none') {
+      if (watchedValues.recurrenceEndsOn) {
+        setValue('recurrenceEndsOn', '', { shouldValidate: true });
+      }
+      return;
+    }
+
+    if (!watchedValues.recurrenceEndsOn) {
+      setValue('recurrenceEndsOn', getDefaultAvailabilityRecurrenceEndsOn(date), {
+        shouldValidate: true,
+      });
+    }
+  }, [
+    selectedRecurrenceType,
+    setValue,
+    watchedValues.date,
+    watchedValues.recurrenceEndsOn,
+  ]);
+
   const previewSlots = useMemo(() => {
     const parsed = availabilityRangeSchema.safeParse(watchedValues);
     if (!parsed.success) return [];
@@ -131,6 +157,8 @@ export default function CoachAvailabilityScreen() {
     invalid_time: 'availability.validation.invalidTime',
     end_before_start: 'availability.validation.endBeforeStart',
     range_too_short: 'availability.validation.rangeTooShort',
+    recurrence_end_required: 'availability.validation.recurrenceEndRequired',
+    recurrence_end_before_start: 'availability.validation.recurrenceEndBeforeStart',
   };
   const translateError = (message: string | undefined) =>
     message ? t(validationKeys[message] ?? 'auth.validation.invalid') : undefined;
@@ -149,6 +177,13 @@ export default function CoachAvailabilityScreen() {
       hour: '2-digit',
       minute: '2-digit',
     }).format(new Date(value));
+
+  const formatDate = (value: string) =>
+    new Intl.DateTimeFormat(locale, {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }).format(new Date(`${value}T00:00:00`));
 
   const slotsByRangeId = useMemo(() => {
     const grouped = new Map<string, AvailabilitySlot[]>();
@@ -312,6 +347,22 @@ export default function CoachAvailabilityScreen() {
                 />
               )}
             />
+            {selectedRecurrenceType !== 'none' ? (
+              <Controller
+                control={control}
+                name="recurrenceEndsOn"
+                render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
+                  <TextField
+                    error={translateError(error?.message)}
+                    label={t('availability.recurrenceEndsOnLabel')}
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    placeholder={t('availability.datePlaceholder')}
+                    value={value ?? ''}
+                  />
+                )}
+              />
+            ) : null}
 
             <View style={styles.preview}>
               <ThemedText type="smallBold">
@@ -415,6 +466,13 @@ export default function CoachAvailabilityScreen() {
                         `availability.recurrence.${range.recurrenceType}` as TranslationKey
                       )}
                     </ThemedText>
+                    {range.recurrenceEndsOn ? (
+                      <ThemedText type="small" themeColor="textMuted">
+                        {t('availability.recurrenceUntil', {
+                          date: formatDate(range.recurrenceEndsOn),
+                        })}
+                      </ThemedText>
+                    ) : null}
                     <View style={styles.slotList}>
                       <ThemedText type="smallBold">
                         {t('availability.generatedSlotsTitle')}
@@ -423,6 +481,7 @@ export default function CoachAvailabilityScreen() {
                         <View key={slot.id} style={styles.slotRow}>
                           <ThemedText type="small" themeColor="textMuted">
                             {t('availability.generatedSlot', {
+                              date: formatDateTime(slot.startsAt),
                               start: formatTime(slot.startsAt),
                               end: formatTime(slot.endsAt),
                               duration: t(

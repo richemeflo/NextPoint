@@ -19,6 +19,7 @@ export type AvailabilityRange = {
   slotDurationMinutes: AvailabilitySlotDuration;
   location: string;
   recurrenceType: AvailabilityRecurrenceType;
+  recurrenceEndsOn: string | null;
   updatedAt: string;
 };
 
@@ -55,6 +56,7 @@ function mapAvailabilityRange(row: AvailabilityRangeRow): AvailabilityRange {
     slotDurationMinutes: row.slot_duration_minutes as AvailabilitySlotDuration,
     location: row.location,
     recurrenceType: row.recurrence_type,
+    recurrenceEndsOn: row.recurrence_ends_on,
     updatedAt: row.updated_at,
   };
 }
@@ -116,6 +118,7 @@ export async function createAvailabilityRange(
     p_slot_duration_minutes: range.slotDurationMinutes,
     p_location: range.location,
     p_recurrence_type: range.recurrenceType,
+    p_recurrence_ends_on: range.recurrenceEndsOn as string,
   });
 
   if (error || !data) {

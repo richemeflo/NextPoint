@@ -8,6 +8,7 @@ export {
   availabilitySlotDurations,
   buildAvailabilityPreviewSlots,
   defaultAvailabilityLocation,
+  getDefaultAvailabilityRecurrenceEndsOn,
   isAvailabilitySlotRequestable,
   toAvailabilityRangeInput,
 } from './contracts/availability-range';

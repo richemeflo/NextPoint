@@ -1,5 +1,5 @@
 # generated: 2026-06-21T12:16:42+02:00
-# last_updated: 2026-06-29T00:00:00+02:00
+# last_updated: 2026-06-29T11:45:00+02:00
 # project: NextPoint
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review in a fresh context.
 
 generated: 2026-06-21T12:16:42+02:00
-last_updated: 2026-06-29T00:00:00+02:00
+last_updated: 2026-06-29T11:45:00+02:00
 project: NextPoint
 project_key: NOKEY
 tracking_system: file-system
@@ -66,7 +66,7 @@ development_status:
   epic-3: in-progress
   3-1-creer-une-plage-de-disponibilite-coach: review
   3-2-generer-les-creneaux-depuis-une-plage: review
-  3-3-gerer-les-recurrences-de-disponibilites-p0: ready-for-dev
+  3-3-gerer-les-recurrences-de-disponibilites-p0: review
   3-4-modifier-ou-supprimer-une-disponibilite-sans-conflit: ready-for-dev
   3-5-afficher-le-planning-coach-en-vues-semaine-et-jour: ready-for-dev
   3-6-afficher-lagenda-eleve-avec-les-creneaux-demandables-uniquement: ready-for-dev

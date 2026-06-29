@@ -1,6 +1,6 @@
 begin;
 
-select plan(18);
+select plan(20);
 
 select ok(
   to_regtype('public.availability_recurrence_type') is not null,
@@ -59,6 +59,21 @@ select col_has_check(
   'recurrence_type',
   'availability recurrence is constrained'
 );
+select has_column(
+  'public',
+  'availability_ranges',
+  'recurrence_ends_on',
+  'recurring availability stores its generation horizon'
+);
+select ok(
+  exists (
+    select 1
+    from pg_constraint
+    where conrelid = 'public.availability_ranges'::regclass
+      and conname = 'availability_ranges_recurrence_horizon_valid'
+  ),
+  'recurrence horizon is constrained'
+);
 select has_trigger(
   'public',
   'availability_ranges',
@@ -87,13 +102,13 @@ select ok(
 select has_function(
   'public',
   'create_availability_range',
-  array['timestamptz', 'timestamptz', 'integer', 'text', 'availability_recurrence_type'],
+  array['timestamptz', 'timestamptz', 'integer', 'text', 'availability_recurrence_type', 'date'],
   'coach-only availability creation command exists'
 );
 select ok(
   has_function_privilege(
     'authenticated',
-    'public.create_availability_range(timestamptz,timestamptz,integer,text,availability_recurrence_type)',
+    'public.create_availability_range(timestamptz,timestamptz,integer,text,availability_recurrence_type,date)',
     'execute'
   ),
   'authenticated coach can call availability creation command'
