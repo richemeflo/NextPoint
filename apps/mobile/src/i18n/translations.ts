@@ -197,6 +197,57 @@ export const dictionaries = {
       'Saisissez un prix positif avec au maximum deux décimales.',
     'pricing.validation.invalidStudent':
       'Un élève ciblé n’est pas valide.',
+    'availability.loading': 'Chargement des disponibilités...',
+    'availability.manageTitle': 'Gestion des disponibilités',
+    'availability.manageBody':
+      'Créez des plages datées avec durée, lieu et récurrence limitée pour préparer les créneaux demandables.',
+    'availability.createTitle': 'Nouvelle plage',
+    'availability.dateLabel': 'Date',
+    'availability.datePlaceholder': 'AAAA-MM-JJ',
+    'availability.startsAtLabel': 'Heure de début',
+    'availability.endsAtLabel': 'Heure de fin',
+    'availability.timePlaceholder': 'HH:MM',
+    'availability.durationLabel': 'Durée du créneau',
+    'availability.duration.60': '1 heure',
+    'availability.duration.90': '1 h 30',
+    'availability.locationLabel': 'Lieu',
+    'availability.recurrenceLabel': 'Récurrence',
+    'availability.recurrence.none': 'Ponctuelle',
+    'availability.recurrence.daily': 'Quotidienne',
+    'availability.recurrence.weekly': 'Hebdomadaire',
+    'availability.previewTitle': 'Aperçu des créneaux',
+    'availability.previewEmpty':
+      'Complétez une plage cohérente pour afficher l’aperçu.',
+    'availability.previewSlot': '{{start}}–{{end}} · {{location}}',
+    'availability.createAction': 'Créer la disponibilité',
+    'availability.saving': 'Enregistrement...',
+    'availability.saveSuccessTitle': 'Disponibilité créée',
+    'availability.saveSuccessBody':
+      'La plage est enregistrée et conserve la durée et le lieu pour la génération des créneaux.',
+    'availability.saveErrorTitle': 'Création impossible',
+    'availability.saveErrorBody':
+      'Aucune disponibilité n’a été créée. Vérifiez les informations puis réessayez.',
+    'availability.conflictTitle': 'Plage en conflit',
+    'availability.conflictBody':
+      'Cette plage chevauche une disponibilité existante. Ajustez les horaires.',
+    'availability.forbiddenTitle': 'Accès refusé',
+    'availability.forbiddenBody':
+      'Seul un compte coach peut créer une disponibilité.',
+    'availability.loadErrorTitle': 'Disponibilités indisponibles',
+    'availability.loadErrorBody':
+      'Impossible de charger vos disponibilités pour le moment.',
+    'availability.listTitle': 'Plages enregistrées',
+    'availability.emptyTitle': 'Aucune disponibilité',
+    'availability.emptyBody':
+      'Créez une première plage pour préparer les créneaux réservables.',
+    'availability.rangeTime': '{{start}}–{{end}}',
+    'availability.rangeMeta': '{{duration}} · {{location}}',
+    'availability.validation.invalidDate': 'Saisissez une date au format AAAA-MM-JJ.',
+    'availability.validation.invalidTime': 'Saisissez une heure au format HH:MM.',
+    'availability.validation.endBeforeStart':
+      'L’heure de fin doit être après l’heure de début.',
+    'availability.validation.rangeTooShort':
+      'La plage doit contenir au moins un créneau complet.',
     'students.loading': 'Chargement des élèves...',
     'students.title': 'Élèves',
     'students.subtitle':
@@ -648,6 +699,57 @@ export const dictionaries = {
       'Enter a positive price with no more than two decimals.',
     'pricing.validation.invalidStudent':
       'A targeted student is invalid.',
+    'availability.loading': 'Loading availability...',
+    'availability.manageTitle': 'Availability management',
+    'availability.manageBody':
+      'Create dated ranges with duration, location, and limited recurrence to prepare requestable slots.',
+    'availability.createTitle': 'New range',
+    'availability.dateLabel': 'Date',
+    'availability.datePlaceholder': 'YYYY-MM-DD',
+    'availability.startsAtLabel': 'Start time',
+    'availability.endsAtLabel': 'End time',
+    'availability.timePlaceholder': 'HH:MM',
+    'availability.durationLabel': 'Slot duration',
+    'availability.duration.60': '1 hour',
+    'availability.duration.90': '1 h 30',
+    'availability.locationLabel': 'Location',
+    'availability.recurrenceLabel': 'Recurrence',
+    'availability.recurrence.none': 'One-off',
+    'availability.recurrence.daily': 'Daily',
+    'availability.recurrence.weekly': 'Weekly',
+    'availability.previewTitle': 'Slot preview',
+    'availability.previewEmpty':
+      'Complete a coherent range to display the preview.',
+    'availability.previewSlot': '{{start}}–{{end}} · {{location}}',
+    'availability.createAction': 'Create availability',
+    'availability.saving': 'Saving...',
+    'availability.saveSuccessTitle': 'Availability created',
+    'availability.saveSuccessBody':
+      'The range is saved and keeps its duration and location for slot generation.',
+    'availability.saveErrorTitle': 'Unable to create',
+    'availability.saveErrorBody':
+      'No availability was created. Check the information and try again.',
+    'availability.conflictTitle': 'Range conflict',
+    'availability.conflictBody':
+      'This range overlaps an existing availability. Adjust the times.',
+    'availability.forbiddenTitle': 'Access denied',
+    'availability.forbiddenBody':
+      'Only a coach account can create availability.',
+    'availability.loadErrorTitle': 'Availability unavailable',
+    'availability.loadErrorBody':
+      'Your availability cannot be loaded right now.',
+    'availability.listTitle': 'Saved ranges',
+    'availability.emptyTitle': 'No availability',
+    'availability.emptyBody':
+      'Create a first range to prepare requestable slots.',
+    'availability.rangeTime': '{{start}}–{{end}}',
+    'availability.rangeMeta': '{{duration}} · {{location}}',
+    'availability.validation.invalidDate': 'Enter a date using YYYY-MM-DD.',
+    'availability.validation.invalidTime': 'Enter a time using HH:MM.',
+    'availability.validation.endBeforeStart':
+      'The end time must be after the start time.',
+    'availability.validation.rangeTooShort':
+      'The range must contain at least one complete slot.',
     'students.loading': 'Loading students...',
     'students.title': 'Students',
     'students.subtitle':
@@ -1098,6 +1200,57 @@ export const dictionaries = {
       'Introduce un precio positivo con dos decimales como máximo.',
     'pricing.validation.invalidStudent':
       'Uno de los alumnos seleccionados no es válido.',
+    'availability.loading': 'Cargando disponibilidades...',
+    'availability.manageTitle': 'Gestión de disponibilidad',
+    'availability.manageBody':
+      'Crea franjas con fecha, duración, lugar y recurrencia limitada para preparar horarios solicitables.',
+    'availability.createTitle': 'Nueva franja',
+    'availability.dateLabel': 'Fecha',
+    'availability.datePlaceholder': 'AAAA-MM-DD',
+    'availability.startsAtLabel': 'Hora de inicio',
+    'availability.endsAtLabel': 'Hora de fin',
+    'availability.timePlaceholder': 'HH:MM',
+    'availability.durationLabel': 'Duración del horario',
+    'availability.duration.60': '1 hora',
+    'availability.duration.90': '1 h 30',
+    'availability.locationLabel': 'Lugar',
+    'availability.recurrenceLabel': 'Recurrencia',
+    'availability.recurrence.none': 'Puntual',
+    'availability.recurrence.daily': 'Diaria',
+    'availability.recurrence.weekly': 'Semanal',
+    'availability.previewTitle': 'Vista previa de horarios',
+    'availability.previewEmpty':
+      'Completa una franja coherente para mostrar la vista previa.',
+    'availability.previewSlot': '{{start}}–{{end}} · {{location}}',
+    'availability.createAction': 'Crear disponibilidad',
+    'availability.saving': 'Guardando...',
+    'availability.saveSuccessTitle': 'Disponibilidad creada',
+    'availability.saveSuccessBody':
+      'La franja está guardada y conserva la duración y el lugar para generar horarios.',
+    'availability.saveErrorTitle': 'No se puede crear',
+    'availability.saveErrorBody':
+      'No se ha creado ninguna disponibilidad. Revisa la información e inténtalo de nuevo.',
+    'availability.conflictTitle': 'Franja en conflicto',
+    'availability.conflictBody':
+      'Esta franja se solapa con una disponibilidad existente. Ajusta los horarios.',
+    'availability.forbiddenTitle': 'Acceso denegado',
+    'availability.forbiddenBody':
+      'Solo una cuenta de coach puede crear disponibilidad.',
+    'availability.loadErrorTitle': 'Disponibilidades no disponibles',
+    'availability.loadErrorBody':
+      'No se pueden cargar tus disponibilidades en este momento.',
+    'availability.listTitle': 'Franjas guardadas',
+    'availability.emptyTitle': 'Sin disponibilidad',
+    'availability.emptyBody':
+      'Crea una primera franja para preparar horarios reservables.',
+    'availability.rangeTime': '{{start}}–{{end}}',
+    'availability.rangeMeta': '{{duration}} · {{location}}',
+    'availability.validation.invalidDate': 'Introduce una fecha con formato AAAA-MM-DD.',
+    'availability.validation.invalidTime': 'Introduce una hora con formato HH:MM.',
+    'availability.validation.endBeforeStart':
+      'La hora de fin debe ser posterior a la hora de inicio.',
+    'availability.validation.rangeTooShort':
+      'La franja debe contener al menos un horario completo.',
     'students.loading': 'Cargando alumnos...',
     'students.title': 'Alumnos',
     'students.subtitle':

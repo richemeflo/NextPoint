@@ -64,7 +64,7 @@ development_status:
   epic-2-retrospective: optional
 
   epic-3: in-progress
-  3-1-creer-une-plage-de-disponibilite-coach: ready-for-dev
+  3-1-creer-une-plage-de-disponibilite-coach: review
   3-2-generer-les-creneaux-depuis-une-plage: ready-for-dev
   3-3-gerer-les-recurrences-de-disponibilites-p0: ready-for-dev
   3-4-modifier-ou-supprimer-une-disponibilite-sans-conflit: ready-for-dev

@@ -1,6 +1,15 @@
 export { Constants } from './types/database.types';
 export { signInSchema, signUpSchema } from './contracts/auth';
 export {
+  availabilityLocations,
+  availabilityRangeSchema,
+  availabilityRecurrenceTypes,
+  availabilitySlotDurations,
+  buildAvailabilityPreviewSlots,
+  defaultAvailabilityLocation,
+  toAvailabilityRangeInput,
+} from './contracts/availability-range';
+export {
   activateStudentAccountSchema,
   isStudentAccountStatus,
   studentAccountStatuses,
@@ -39,6 +48,14 @@ export {
 export { appLanguages } from './domain/languages';
 export { appRoles, isAppRole } from './domain/roles';
 export type { SignInInput, SignUpInput } from './contracts/auth';
+export type {
+  AvailabilityLocation,
+  AvailabilityPreviewSlot,
+  AvailabilityRangeFormInput,
+  AvailabilityRangeInput,
+  AvailabilityRecurrenceType,
+  AvailabilitySlotDuration,
+} from './contracts/availability-range';
 export type {
   ActivateStudentAccountInput,
   StudentAccountStatus,

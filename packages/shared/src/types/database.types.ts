@@ -34,6 +34,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      availability_ranges: {
+        Row: {
+          coach_id: string
+          created_at: string
+          deleted_at: string | null
+          ends_at: string
+          id: string
+          location: string
+          recurrence_type: Database["public"]["Enums"]["availability_recurrence_type"]
+          slot_duration_minutes: number
+          starts_at: string
+          updated_at: string
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          deleted_at?: string | null
+          ends_at: string
+          id?: string
+          location: string
+          recurrence_type?: Database["public"]["Enums"]["availability_recurrence_type"]
+          slot_duration_minutes: number
+          starts_at: string
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          ends_at?: string
+          id?: string
+          location?: string
+          recurrence_type?: Database["public"]["Enums"]["availability_recurrence_type"]
+          slot_duration_minutes?: number
+          starts_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       coach_profiles: {
         Row: {
           bio: string
@@ -462,6 +501,33 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_availability_range: {
+        Args: {
+          p_ends_at: string
+          p_location: string
+          p_recurrence_type: Database["public"]["Enums"]["availability_recurrence_type"]
+          p_slot_duration_minutes: number
+          p_starts_at: string
+        }
+        Returns: {
+          coach_id: string
+          created_at: string
+          deleted_at: string | null
+          ends_at: string
+          id: string
+          location: string
+          recurrence_type: Database["public"]["Enums"]["availability_recurrence_type"]
+          slot_duration_minutes: number
+          starts_at: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "availability_ranges"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_student_activation_token: {
         Args: {
           p_coach_id: string
@@ -551,6 +617,7 @@ export type Database = {
     Enums: {
       app_language: "fr" | "en" | "es"
       app_role: "coach" | "eleve"
+      availability_recurrence_type: "none" | "daily" | "weekly"
       lesson_pack_status: "active" | "exhausted"
       student_account_status:
         | "pending_activation"
@@ -706,6 +773,7 @@ export const Constants = {
     Enums: {
       app_language: ["fr", "en", "es"],
       app_role: ["coach", "eleve"],
+      availability_recurrence_type: ["none", "daily", "weekly"],
       lesson_pack_status: ["active", "exhausted"],
       student_account_status: [
         "pending_activation",
