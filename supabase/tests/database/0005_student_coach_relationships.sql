@@ -142,7 +142,6 @@ select ok(
   ),
   'authenticated clients cannot invoke the trigger helper'
 );
-
 select * from finish();
 
 rollback;

@@ -68,6 +68,7 @@ try {
     email: owner.email,
     padel_level: 4,
     age: 28,
+    sex: 'female',
     preferred_language: 'fr',
   };
 
@@ -97,16 +98,18 @@ try {
     .single();
   assert.equal(reloaded.error, null);
   assert.equal(reloaded.data.full_name, 'Camille Martin');
+  assert.equal(reloaded.data.sex, 'female');
 
   const updated = await reloadedClient
     .from('student_profiles')
-    .update({ padel_level: 7, preferred_language: 'es' })
+    .update({ padel_level: 7, preferred_language: 'es', sex: 'other' })
     .eq('user_id', owner.userId)
     .select('*')
     .single();
   assert.equal(updated.error, null);
   assert.equal(updated.data.padel_level, 7);
   assert.equal(updated.data.preferred_language, 'es');
+  assert.equal(updated.data.sex, 'other');
 
   const hiddenFromOther = await other.client
     .from('student_profiles')

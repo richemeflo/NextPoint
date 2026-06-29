@@ -48,6 +48,7 @@ export const dictionaries = {
       'Le contenu métier de cette section sera ajouté par sa story dédiée.',
     'nav.coach.planning': 'Planning',
     'nav.coach.availability': 'Disponibilités',
+    'nav.coach.pricing': 'Tarifs',
     'nav.coach.students': 'Élèves',
     'nav.coach.stats': 'Stats',
     'nav.coach.notifications': 'Notifications',
@@ -62,13 +63,18 @@ export const dictionaries = {
       'Renseignez les informations utiles au coach pour organiser vos prochains cours.',
     'profile.loading': 'Chargement de votre profil...',
     'profile.fullNameLabel': 'Nom complet',
-    'profile.fullNamePlaceholder': 'Votre prénom et votre nom',
+    'profile.fullNamePlaceholder': 'Prénom et nom',
     'profile.phoneLabel': 'Téléphone',
     'profile.phonePlaceholder': '+33 6 12 34 56 78',
     'profile.emailLabel': 'Email de contact',
     'profile.ageLabel': 'Âge',
     'profile.agePlaceholder': 'Ex. 29',
     'profile.levelLabel': 'Niveau padel',
+    'profile.sexLabel': 'Sexe',
+    'profile.sex.female': 'Femme',
+    'profile.sex.male': 'Homme',
+    'profile.sex.other': 'Autre',
+    'profile.sex.notSpecified': 'Préfère ne pas répondre',
     'profile.languageLabel': 'Langue préférée',
     'profile.language.fr': 'Français',
     'profile.language.en': 'Anglais',
@@ -120,6 +126,7 @@ export const dictionaries = {
     'coachProfile.pricingTitle': 'Tarifs',
     'coachProfile.pricingBody':
       'Configurez les tarifs individuels et collectifs présentés avant réservation.',
+    'coachProfile.openPricing': 'Gérer les tarifs',
     'coachProfile.notificationsTitle': 'Notifications push',
     'coachProfile.notificationsBody':
       'Choisissez les alertes reçues pour les demandes et changements de cours.',
@@ -127,6 +134,220 @@ export const dictionaries = {
     'studentHome.title': 'Votre espace de réservation',
     'studentHome.subtitle':
       'Consultez le profil de votre coach avant de préparer une demande de cours.',
+    'pricing.loading': 'Chargement des tarifs...',
+    'pricing.loadErrorTitle': 'Tarifs indisponibles',
+    'pricing.loadErrorBody':
+      'Impossible de charger les tarifs pour le moment. Réessayez après avoir relancé l’application.',
+    'pricing.publishedTitle': 'Tarifs du coach',
+    'pricing.publishedBody':
+      'Prix affichés à titre informatif avant toute demande de cours.',
+    'pricing.emptyPublishedTitle': 'Tarifs bientôt disponibles',
+    'pricing.emptyPublishedBody':
+      'Le coach n’a encore publié aucun tarif actif.',
+    'pricing.manageTitle': 'Gestion des tarifs',
+    'pricing.manageBody':
+      'Créez les tarifs individuels et collectifs proposés avant une demande.',
+    'pricing.createTitle': 'Nouveau tarif',
+    'pricing.editTitle': 'Modifier le tarif',
+    'pricing.catalogTitle': 'Catalogue coach',
+    'pricing.labelLabel': 'Libellé',
+    'pricing.labelPlaceholder': 'Ex. Cours individuel standard',
+    'pricing.amountLabel': 'Prix en euros',
+    'pricing.amountPlaceholder': 'Ex. 45,00',
+    'pricing.typeLabel': 'Type de cours',
+    'pricing.type.individual': 'Individuel',
+    'pricing.type.group': 'Collectif',
+    'pricing.durationLabel': 'Durée',
+    'pricing.duration.60': '1 heure',
+    'pricing.duration.90': '1 h 30',
+    'pricing.statusLabel': 'Publication',
+    'pricing.contextLabel': 'Critères d’applicabilité',
+    'pricing.noContext': 'Aucun critère spécifique',
+    'pricing.context.student': 'Tarif étudiant',
+    'pricing.context.senior': 'Tarif senior',
+    'pricing.context.weekend': 'Week-end',
+    'pricing.context.public_holiday': 'Jour férié',
+    'pricing.studentsLabel': 'Élèves ciblés',
+    'pricing.noStudentsBody':
+      'Aucun élève associé n’est disponible pour un ciblage spécifique.',
+    'pricing.createAction': 'Créer le tarif',
+    'pricing.updateAction': 'Enregistrer les modifications',
+    'pricing.saving': 'Enregistrement...',
+    'pricing.cancelAction': 'Annuler',
+    'pricing.editAction': 'Modifier',
+    'pricing.deleteAction': 'Supprimer',
+    'pricing.confirmDeleteAction': 'Confirmer la suppression',
+    'pricing.deleteTitle': 'Supprimer ce tarif ?',
+    'pricing.deleteBody':
+      'Il ne sera plus proposé aux nouvelles demandes. Les futures références historiques resteront conservées.',
+    'pricing.saveSuccessTitle': 'Tarif enregistré',
+    'pricing.saveSuccessBody':
+      'Le catalogue et les surfaces élève utilisent maintenant la version à jour.',
+    'pricing.saveErrorTitle': 'Enregistrement impossible',
+    'pricing.saveErrorBody':
+      'Le tarif n’a pas été modifié. Vérifiez les informations puis réessayez.',
+    'pricing.emptyCoachTitle': 'Aucun tarif',
+    'pricing.emptyCoachBody':
+      'Créez un premier tarif individuel ou collectif.',
+    'pricing.validation.labelTooShort':
+      'Le libellé doit contenir au moins 2 caractères.',
+    'pricing.validation.labelTooLong':
+      'Le libellé ne peut pas dépasser 100 caractères.',
+    'pricing.validation.invalidAmount':
+      'Saisissez un prix positif avec au maximum deux décimales.',
+    'pricing.validation.invalidStudent':
+      'Un élève ciblé n’est pas valide.',
+    'students.loading': 'Chargement des élèves...',
+    'students.title': 'Élèves',
+    'students.subtitle':
+      'Retrouvez uniquement les élèves actuellement associés à votre espace coach.',
+    'students.createAction': 'Créer une fiche élève',
+    'students.createTitle': 'Nouvelle fiche élève',
+    'students.createBody':
+      'Ajoutez un élève et préparez son compte non activé. Son accès sera finalisé avec un lien valable 24 heures.',
+    'students.createSubmitAction': 'Créer la fiche',
+    'students.createCancelAction': 'Annuler',
+    'students.creating': 'Création...',
+    'students.createSuccessTitle': 'Fiche élève créée',
+    'students.createSuccessBody':
+      '{{name}} est maintenant associé à votre espace coach.',
+    'students.createErrorTitle': 'Création impossible',
+    'students.createErrorBody':
+      'Aucune fiche n’a été créée. Vérifiez les informations puis réessayez.',
+    'students.createDuplicateTitle': 'Élève déjà existant',
+    'students.createDuplicateBody':
+      'Un élève utilise déjà cet email ou ce téléphone. Ouvrez sa fiche existante.',
+    'students.loadErrorTitle': 'Liste indisponible',
+    'students.loadErrorBody':
+      'Impossible de charger les élèves pour le moment. Relancez l’application puis réessayez.',
+    'students.searchLabel': 'Recherche par nom',
+    'students.searchPlaceholder': 'Nom de l’élève',
+    'students.levelFilterLabel': 'Niveau padel',
+    'students.allLevels': 'Tous les niveaux',
+    'students.sexFilterLabel': 'Sexe de l’élève',
+    'students.allSexes': 'Tous',
+    'students.ageRangeSliderLabel': 'Plage d’âge',
+    'students.ageMin': 'Minimum : {{age}} ans',
+    'students.ageMax': 'Maximum : {{age}} ans',
+    'students.ageFilterLabel': 'Tranche d’âge',
+    'students.allAges': 'Tous les âges',
+    'students.ageRange': '{{min}}–{{max}} ans',
+    'students.ageSingle': '{{age}} ans',
+    'students.resetFilters': 'Réinitialiser les filtres',
+    'students.resultsTitle': 'Résultats',
+    'students.resultCount': '{{count}} élève(s)',
+    'students.levelValue': 'Niveau {{level}}',
+    'students.ageValue': '{{age}} ans',
+    'students.emptyListTitle': 'Aucun élève associé',
+    'students.emptyListBody':
+      'Les élèves apparaîtront ici après leur association à votre espace.',
+    'students.emptyFilterTitle': 'Aucun résultat',
+    'students.emptyFilterBody':
+      'Aucun élève ne correspond à cette recherche et à ces filtres.',
+    'studentDetail.loading': 'Chargement de la fiche élève...',
+    'studentDetail.eyebrow': 'Fiche élève',
+    'studentDetail.backAction': 'Retour aux élèves',
+    'studentDetail.notFoundTitle': 'Fiche inaccessible',
+    'studentDetail.notFoundBody':
+      'Cette fiche n’existe pas ou cet élève n’est pas associé à votre espace coach.',
+    'studentDetail.loadErrorTitle': 'Fiche indisponible',
+    'studentDetail.loadErrorBody':
+      'Impossible de charger cette fiche pour le moment.',
+    'studentDetail.profileTitle': 'Informations élève',
+    'studentDetail.historyTitle': 'Historique',
+    'studentDetail.historyCount': '{{count}} élément(s)',
+    'studentDetail.historyEmptyTitle': 'Aucun historique',
+    'studentDetail.historyEmptyBody':
+      'Les demandes, cours, annulations, modifications et packs apparaîtront ici.',
+    'studentDetail.historyType.bookingRequested': 'Demande de cours',
+    'studentDetail.historyType.lessonConfirmed': 'Cours confirmé',
+    'studentDetail.historyType.bookingCancelled': 'Annulation',
+    'studentDetail.historyType.bookingModified': 'Modification',
+    'studentDetail.historyType.lessonPackAssigned': 'Pack attribué',
+    'studentDetail.historyType.lessonPackConsumed': 'Session de pack consommée',
+    'studentDetail.activationGenerateAction': 'Générer le lien d’activation',
+    'studentDetail.activationRegenerateAction': 'Régénérer le lien',
+    'studentDetail.activationGenerating': 'Génération...',
+    'studentDetail.activationReadyTitle': 'Lien d’activation prêt',
+    'studentDetail.activationExpiresAt': 'Expire le {{date}}.',
+    'studentDetail.activationCopyAction': 'Copier le lien',
+    'studentDetail.activationShareAction': 'Partager le lien',
+    'studentDetail.activationShareMessage':
+      'Activez votre compte NextPoint avec ce lien valable 24 heures : {{link}}',
+    'studentDetail.activationCopiedTitle': 'Lien copié',
+    'studentDetail.activationCopiedBody':
+      'Vous pouvez maintenant le transmettre à l’élève.',
+    'studentDetail.activationErrorTitle': 'Lien indisponible',
+    'studentDetail.activationErrorBody':
+      'Le lien n’a pas pu être généré ou partagé. Vérifiez l’état du compte puis réessayez.',
+    'studentPrivateNote.loading': 'Chargement de la note privée...',
+    'studentPrivateNote.title': 'Note privée coach',
+    'studentPrivateNote.privateHint':
+      'Visible uniquement dans votre espace coach.',
+    'studentPrivateNote.addAction': 'Ajouter une note',
+    'studentPrivateNote.editAction': 'Modifier',
+    'studentPrivateNote.fieldLabel': 'Note privée',
+    'studentPrivateNote.placeholder':
+      'Ajoutez un rappel utile pour préparer les prochains cours.',
+    'studentPrivateNote.characterCount': '{{count}} / 2000 caractères',
+    'studentPrivateNote.saveAction': 'Enregistrer',
+    'studentPrivateNote.saving': 'Enregistrement...',
+    'studentPrivateNote.cancelAction': 'Annuler',
+    'studentPrivateNote.emptyBody':
+      'Aucune note privée n’a encore été enregistrée.',
+    'studentPrivateNote.validationRequired': 'Saisissez une note avant d’enregistrer.',
+    'studentPrivateNote.validationTooLong':
+      'La note ne peut pas dépasser 2000 caractères.',
+    'studentPrivateNote.loadErrorTitle': 'Note indisponible',
+    'studentPrivateNote.loadErrorBody':
+      'Impossible de charger la note privée pour le moment.',
+    'studentPrivateNote.saveSuccessTitle': 'Note enregistrée',
+    'studentPrivateNote.saveSuccessBody':
+      'La note privée est à jour dans votre espace coach.',
+    'studentPrivateNote.saveErrorTitle': 'Enregistrement impossible',
+    'studentPrivateNote.saveErrorBody':
+      'La note existante n’a pas été modifiée. Réessayez.',
+    'lessonPack.loading': 'Chargement des packs...',
+    'lessonPack.title': 'Pack de cours individuels',
+    'lessonPack.trackingOnlyHint':
+      'Suivi de crédits uniquement, sans achat ni paiement intégré.',
+    'lessonPack.assignAction': 'Attribuer un pack',
+    'lessonPack.includedLabel': 'Nombre de cours inclus',
+    'lessonPack.includedPlaceholder': 'Ex. 10',
+    'lessonPack.confirmAssignAction': 'Confirmer l’attribution',
+    'lessonPack.assigning': 'Attribution...',
+    'lessonPack.cancelAction': 'Annuler',
+    'lessonPack.individualTitle': 'Pack individuel',
+    'lessonPack.includedMetric': 'Inclus',
+    'lessonPack.usedMetric': 'Utilisés',
+    'lessonPack.remainingMetric': 'Restants',
+    'lessonPack.emptyBody':
+      'Aucun pack individuel n’est encore rattaché à cet élève.',
+    'lessonPack.validationInvalidCount':
+      'Saisissez un nombre entier compris entre 1 et 100.',
+    'lessonPack.saveSuccessTitle': 'Pack attribué',
+    'lessonPack.saveSuccessBody':
+      'Les crédits de cours sont maintenant suivis sur cette fiche.',
+    'lessonPack.activeExistsTitle': 'Pack actif existant',
+    'lessonPack.activeExistsBody':
+      'Terminez le pack actif avant d’en attribuer un nouveau.',
+    'lessonPack.saveErrorTitle': 'Attribution impossible',
+    'lessonPack.saveErrorBody':
+      'Aucun pack n’a été créé. Vérifiez la relation élève puis réessayez.',
+    'lessonPack.loadErrorTitle': 'Packs indisponibles',
+    'lessonPack.loadErrorBody':
+      'Impossible de charger les crédits de cours pour le moment.',
+    'lessonPack.consumeAction': 'Marquer une session consommée',
+    'lessonPack.consuming': 'Consommation...',
+    'lessonPack.consumeSuccessTitle': 'Session consommée',
+    'lessonPack.consumeSuccessBody':
+      'Les compteurs du pack sont à jour et l’historique élève a été alimenté.',
+    'lessonPack.noRemainingTitle': 'Pack épuisé',
+    'lessonPack.noRemainingBody':
+      'Aucune session ne peut être consommée: ce pack n’a plus de cours restants.',
+    'lessonPack.consumeErrorTitle': 'Consommation impossible',
+    'lessonPack.consumeErrorBody':
+      'Aucun cours restant n’a été modifié. Le pack est peut-être épuisé ou l’accès refusé.',
     'auth.signInTitle': 'Retrouvez votre espace.',
     'auth.signInSubtitle':
       'Connectez-vous avec votre email et votre mot de passe pour accéder à NextPoint.',
@@ -149,6 +370,23 @@ export const dictionaries = {
     'auth.confirmationTitle': 'Vérifiez votre email',
     'auth.confirmationMessage':
       'Votre compte est créé. Ouvrez le message reçu pour confirmer votre adresse avant de vous connecter.',
+    'activation.title': 'Activez votre compte élève',
+    'activation.subtitle':
+      'Définissez votre mot de passe pour accéder à l’espace préparé par votre coach.',
+    'activation.passwordLabel': 'Nouveau mot de passe',
+    'activation.confirmPasswordLabel': 'Confirmer le nouveau mot de passe',
+    'activation.submitAction': 'Activer mon compte',
+    'activation.activating': 'Activation...',
+    'activation.successTitle': 'Compte activé',
+    'activation.successBody':
+      'Votre mot de passe est enregistré. Vous pouvez maintenant vous connecter.',
+    'activation.signInAction': 'Se connecter',
+    'activation.invalidTitle': 'Lien invalide',
+    'activation.invalidBody':
+      'Ce lien a expiré, a déjà été utilisé ou a été remplacé. Demandez un nouveau lien à votre coach.',
+    'activation.errorTitle': 'Activation impossible',
+    'activation.errorBody':
+      'Le compte n’a pas été activé. Vérifiez votre connexion puis réessayez.',
     'auth.validation.required': 'Ce champ est requis.',
     'auth.validation.invalidEmail': 'Saisissez une adresse email valide.',
     'auth.validation.passwordTooShort': 'Le mot de passe doit contenir au moins 8 caractères.',
@@ -158,7 +396,8 @@ export const dictionaries = {
     'auth.error.configuration':
       'La connexion Supabase n’est pas configurée. Ajoutez les variables publiques Expo prévues.',
     'auth.error.invalidCredentials': 'Email ou mot de passe incorrect.',
-    'auth.error.emailInUse': 'Un compte utilise déjà cette adresse email.',
+    'auth.error.emailInUse':
+      'Un compte utilise déjà cette adresse email. Si votre coach l’a créé, utilisez son lien d’activation.',
     'auth.error.weakPassword': 'Choisissez un mot de passe plus robuste.',
     'auth.error.emailNotConfirmed': 'Confirmez votre adresse email avant de vous connecter.',
     'auth.error.rateLimited': 'Trop de tentatives. Réessayez dans quelques minutes.',
@@ -203,8 +442,17 @@ export const dictionaries = {
     'foundation.token.darkBackground': 'Fond sombre',
     'foundation.token.darkSurface': 'Surface sombre',
     'status.pending': 'En attente',
+    'status.pendingActivation': 'À activer',
+    'status.active': 'Actif',
+    'status.inactive': 'Inactif',
     'status.confirmed': 'Confirmé',
     'status.refused': 'Refusé',
+    'status.expired': 'Expiré',
+    'status.cancelled': 'Annulé',
+    'status.modified': 'Modifié',
+    'status.exhausted': 'Épuisé',
+    'status.suspended': 'Suspendu',
+    'status.deleted': 'Supprimé',
     'theme.light': 'Clair',
     'theme.dark': 'Sombre',
   },
@@ -251,6 +499,7 @@ export const dictionaries = {
       'The business content for this section will be added by its dedicated story.',
     'nav.coach.planning': 'Schedule',
     'nav.coach.availability': 'Availability',
+    'nav.coach.pricing': 'Pricing',
     'nav.coach.students': 'Students',
     'nav.coach.stats': 'Stats',
     'nav.coach.notifications': 'Notifications',
@@ -272,6 +521,11 @@ export const dictionaries = {
     'profile.ageLabel': 'Age',
     'profile.agePlaceholder': 'E.g. 29',
     'profile.levelLabel': 'Padel level',
+    'profile.sexLabel': 'Sex',
+    'profile.sex.female': 'Woman',
+    'profile.sex.male': 'Man',
+    'profile.sex.other': 'Other',
+    'profile.sex.notSpecified': 'Prefer not to say',
     'profile.languageLabel': 'Preferred language',
     'profile.language.fr': 'French',
     'profile.language.en': 'English',
@@ -323,6 +577,7 @@ export const dictionaries = {
     'coachProfile.pricingTitle': 'Pricing',
     'coachProfile.pricingBody':
       'Configure individual and group rates shown before booking.',
+    'coachProfile.openPricing': 'Manage pricing',
     'coachProfile.notificationsTitle': 'Push notifications',
     'coachProfile.notificationsBody':
       'Choose the alerts you receive for lesson requests and changes.',
@@ -330,6 +585,219 @@ export const dictionaries = {
     'studentHome.title': 'Your booking space',
     'studentHome.subtitle':
       'Review your coach profile before preparing a lesson request.',
+    'pricing.loading': 'Loading pricing...',
+    'pricing.loadErrorTitle': 'Pricing unavailable',
+    'pricing.loadErrorBody':
+      'Pricing cannot be loaded right now. Restart the application and try again.',
+    'pricing.publishedTitle': 'Coach pricing',
+    'pricing.publishedBody':
+      'Prices are shown for information before any lesson request.',
+    'pricing.emptyPublishedTitle': 'Pricing coming soon',
+    'pricing.emptyPublishedBody':
+      'The coach has not published any active rate yet.',
+    'pricing.manageTitle': 'Pricing management',
+    'pricing.manageBody':
+      'Create the individual and group rates shown before a request.',
+    'pricing.createTitle': 'New rate',
+    'pricing.editTitle': 'Edit rate',
+    'pricing.catalogTitle': 'Coach catalog',
+    'pricing.labelLabel': 'Label',
+    'pricing.labelPlaceholder': 'E.g. Standard individual lesson',
+    'pricing.amountLabel': 'Price in euros',
+    'pricing.amountPlaceholder': 'E.g. 45.00',
+    'pricing.typeLabel': 'Lesson type',
+    'pricing.type.individual': 'Individual',
+    'pricing.type.group': 'Group',
+    'pricing.durationLabel': 'Duration',
+    'pricing.duration.60': '1 hour',
+    'pricing.duration.90': '1 h 30',
+    'pricing.statusLabel': 'Publication',
+    'pricing.contextLabel': 'Applicability criteria',
+    'pricing.noContext': 'No specific criteria',
+    'pricing.context.student': 'Student rate',
+    'pricing.context.senior': 'Senior rate',
+    'pricing.context.weekend': 'Weekend',
+    'pricing.context.public_holiday': 'Public holiday',
+    'pricing.studentsLabel': 'Targeted students',
+    'pricing.noStudentsBody':
+      'No associated student is available for specific targeting.',
+    'pricing.createAction': 'Create rate',
+    'pricing.updateAction': 'Save changes',
+    'pricing.saving': 'Saving...',
+    'pricing.cancelAction': 'Cancel',
+    'pricing.editAction': 'Edit',
+    'pricing.deleteAction': 'Delete',
+    'pricing.confirmDeleteAction': 'Confirm deletion',
+    'pricing.deleteTitle': 'Delete this rate?',
+    'pricing.deleteBody':
+      'It will no longer be offered for new requests. Future historical references will remain preserved.',
+    'pricing.saveSuccessTitle': 'Rate saved',
+    'pricing.saveSuccessBody':
+      'The catalog and student surfaces now use the updated version.',
+    'pricing.saveErrorTitle': 'Unable to save',
+    'pricing.saveErrorBody':
+      'The rate was not changed. Check the information and try again.',
+    'pricing.emptyCoachTitle': 'No pricing',
+    'pricing.emptyCoachBody':
+      'Create your first individual or group rate.',
+    'pricing.validation.labelTooShort':
+      'The label must contain at least 2 characters.',
+    'pricing.validation.labelTooLong':
+      'The label cannot exceed 100 characters.',
+    'pricing.validation.invalidAmount':
+      'Enter a positive price with no more than two decimals.',
+    'pricing.validation.invalidStudent':
+      'A targeted student is invalid.',
+    'students.loading': 'Loading students...',
+    'students.title': 'Students',
+    'students.subtitle':
+      'Find only the students currently associated with your coach space.',
+    'students.createAction': 'Create a student record',
+    'students.createTitle': 'New student record',
+    'students.createBody':
+      'Add a student and prepare an inactive account. Access will be completed through a 24-hour link.',
+    'students.createSubmitAction': 'Create record',
+    'students.createCancelAction': 'Cancel',
+    'students.creating': 'Creating...',
+    'students.createSuccessTitle': 'Student record created',
+    'students.createSuccessBody':
+      '{{name}} is now associated with your coach space.',
+    'students.createErrorTitle': 'Unable to create',
+    'students.createErrorBody':
+      'No record was created. Check the information and try again.',
+    'students.createDuplicateTitle': 'Student already exists',
+    'students.createDuplicateBody':
+      'A student already uses this email or phone number. Open the existing record.',
+    'students.loadErrorTitle': 'List unavailable',
+    'students.loadErrorBody':
+      'Students cannot be loaded right now. Restart the application and try again.',
+    'students.searchLabel': 'Search by name',
+    'students.searchPlaceholder': 'Student name',
+    'students.levelFilterLabel': 'Padel level',
+    'students.allLevels': 'All levels',
+    'students.sexFilterLabel': 'Student sex',
+    'students.allSexes': 'All',
+    'students.ageRangeSliderLabel': 'Age range',
+    'students.ageMin': 'Minimum: {{age}}',
+    'students.ageMax': 'Maximum: {{age}}',
+    'students.ageFilterLabel': 'Age range',
+    'students.allAges': 'All ages',
+    'students.ageRange': 'Ages {{min}}–{{max}}',
+    'students.ageSingle': 'Age {{age}}',
+    'students.resetFilters': 'Reset filters',
+    'students.resultsTitle': 'Results',
+    'students.resultCount': '{{count}} student(s)',
+    'students.levelValue': 'Level {{level}}',
+    'students.ageValue': 'Age {{age}}',
+    'students.emptyListTitle': 'No associated students',
+    'students.emptyListBody':
+      'Students will appear here after they are associated with your space.',
+    'students.emptyFilterTitle': 'No results',
+    'students.emptyFilterBody':
+      'No student matches this search and these filters.',
+    'studentDetail.loading': 'Loading student record...',
+    'studentDetail.eyebrow': 'Student record',
+    'studentDetail.backAction': 'Back to students',
+    'studentDetail.notFoundTitle': 'Record unavailable',
+    'studentDetail.notFoundBody':
+      'This record does not exist or the student is not associated with your coach space.',
+    'studentDetail.loadErrorTitle': 'Record unavailable',
+    'studentDetail.loadErrorBody':
+      'This student record cannot be loaded right now.',
+    'studentDetail.profileTitle': 'Student information',
+    'studentDetail.historyTitle': 'History',
+    'studentDetail.historyCount': '{{count}} item(s)',
+    'studentDetail.historyEmptyTitle': 'No history',
+    'studentDetail.historyEmptyBody':
+      'Requests, lessons, cancellations, changes, and packs will appear here.',
+    'studentDetail.historyType.bookingRequested': 'Lesson request',
+    'studentDetail.historyType.lessonConfirmed': 'Confirmed lesson',
+    'studentDetail.historyType.bookingCancelled': 'Cancellation',
+    'studentDetail.historyType.bookingModified': 'Change',
+    'studentDetail.historyType.lessonPackAssigned': 'Pack assigned',
+    'studentDetail.historyType.lessonPackConsumed': 'Pack session used',
+    'studentDetail.activationGenerateAction': 'Generate activation link',
+    'studentDetail.activationRegenerateAction': 'Regenerate link',
+    'studentDetail.activationGenerating': 'Generating...',
+    'studentDetail.activationReadyTitle': 'Activation link ready',
+    'studentDetail.activationExpiresAt': 'Expires on {{date}}.',
+    'studentDetail.activationCopyAction': 'Copy link',
+    'studentDetail.activationShareAction': 'Share link',
+    'studentDetail.activationShareMessage':
+      'Activate your NextPoint account with this 24-hour link: {{link}}',
+    'studentDetail.activationCopiedTitle': 'Link copied',
+    'studentDetail.activationCopiedBody':
+      'You can now send it to the student.',
+    'studentDetail.activationErrorTitle': 'Link unavailable',
+    'studentDetail.activationErrorBody':
+      'The link could not be generated or shared. Check the account status and try again.',
+    'studentPrivateNote.loading': 'Loading private note...',
+    'studentPrivateNote.title': 'Private coach note',
+    'studentPrivateNote.privateHint':
+      'Visible only in your coach space.',
+    'studentPrivateNote.addAction': 'Add a note',
+    'studentPrivateNote.editAction': 'Edit',
+    'studentPrivateNote.fieldLabel': 'Private note',
+    'studentPrivateNote.placeholder':
+      'Add a useful reminder for upcoming lessons.',
+    'studentPrivateNote.characterCount': '{{count}} / 2000 characters',
+    'studentPrivateNote.saveAction': 'Save',
+    'studentPrivateNote.saving': 'Saving...',
+    'studentPrivateNote.cancelAction': 'Cancel',
+    'studentPrivateNote.emptyBody': 'No private note has been saved yet.',
+    'studentPrivateNote.validationRequired': 'Enter a note before saving.',
+    'studentPrivateNote.validationTooLong':
+      'The note cannot exceed 2000 characters.',
+    'studentPrivateNote.loadErrorTitle': 'Note unavailable',
+    'studentPrivateNote.loadErrorBody':
+      'The private note cannot be loaded right now.',
+    'studentPrivateNote.saveSuccessTitle': 'Note saved',
+    'studentPrivateNote.saveSuccessBody':
+      'The private note is up to date in your coach space.',
+    'studentPrivateNote.saveErrorTitle': 'Unable to save',
+    'studentPrivateNote.saveErrorBody':
+      'The existing note was not changed. Try again.',
+    'lessonPack.loading': 'Loading lesson packs...',
+    'lessonPack.title': 'Individual lesson pack',
+    'lessonPack.trackingOnlyHint':
+      'Credit tracking only, with no purchase or integrated payment.',
+    'lessonPack.assignAction': 'Assign a pack',
+    'lessonPack.includedLabel': 'Included lessons',
+    'lessonPack.includedPlaceholder': 'E.g. 10',
+    'lessonPack.confirmAssignAction': 'Confirm assignment',
+    'lessonPack.assigning': 'Assigning...',
+    'lessonPack.cancelAction': 'Cancel',
+    'lessonPack.individualTitle': 'Individual pack',
+    'lessonPack.includedMetric': 'Included',
+    'lessonPack.usedMetric': 'Used',
+    'lessonPack.remainingMetric': 'Remaining',
+    'lessonPack.emptyBody':
+      'No individual lesson pack is attached to this student yet.',
+    'lessonPack.validationInvalidCount':
+      'Enter a whole number between 1 and 100.',
+    'lessonPack.saveSuccessTitle': 'Pack assigned',
+    'lessonPack.saveSuccessBody':
+      'Lesson credits are now tracked on this student record.',
+    'lessonPack.activeExistsTitle': 'Active pack already exists',
+    'lessonPack.activeExistsBody':
+      'Finish the active pack before assigning a new one.',
+    'lessonPack.saveErrorTitle': 'Unable to assign',
+    'lessonPack.saveErrorBody':
+      'No pack was created. Check the student relationship and try again.',
+    'lessonPack.loadErrorTitle': 'Packs unavailable',
+    'lessonPack.loadErrorBody':
+      'Lesson credits cannot be loaded right now.',
+    'lessonPack.consumeAction': 'Mark one session used',
+    'lessonPack.consuming': 'Marking used...',
+    'lessonPack.consumeSuccessTitle': 'Session used',
+    'lessonPack.consumeSuccessBody':
+      'Pack counters are up to date and the student history was updated.',
+    'lessonPack.noRemainingTitle': 'Pack exhausted',
+    'lessonPack.noRemainingBody':
+      'No session can be used: this pack has no remaining lessons.',
+    'lessonPack.consumeErrorTitle': 'Unable to mark used',
+    'lessonPack.consumeErrorBody':
+      'No remaining lesson was changed. The pack may be exhausted or access denied.',
     'auth.signInTitle': 'Return to your space.',
     'auth.signInSubtitle':
       'Sign in with your email and password to access NextPoint.',
@@ -352,6 +820,23 @@ export const dictionaries = {
     'auth.confirmationTitle': 'Check your email',
     'auth.confirmationMessage':
       'Your account was created. Open the message you received to confirm your address before signing in.',
+    'activation.title': 'Activate your student account',
+    'activation.subtitle':
+      'Set your password to access the space prepared by your coach.',
+    'activation.passwordLabel': 'New password',
+    'activation.confirmPasswordLabel': 'Confirm new password',
+    'activation.submitAction': 'Activate my account',
+    'activation.activating': 'Activating...',
+    'activation.successTitle': 'Account activated',
+    'activation.successBody':
+      'Your password is saved. You can now sign in.',
+    'activation.signInAction': 'Sign in',
+    'activation.invalidTitle': 'Invalid link',
+    'activation.invalidBody':
+      'This link expired, was already used, or was replaced. Ask your coach for a new link.',
+    'activation.errorTitle': 'Unable to activate',
+    'activation.errorBody':
+      'The account was not activated. Check your connection and try again.',
     'auth.validation.required': 'This field is required.',
     'auth.validation.invalidEmail': 'Enter a valid email address.',
     'auth.validation.passwordTooShort': 'The password must contain at least 8 characters.',
@@ -361,7 +846,8 @@ export const dictionaries = {
     'auth.error.configuration':
       'Supabase is not configured. Add the expected public Expo variables.',
     'auth.error.invalidCredentials': 'Incorrect email or password.',
-    'auth.error.emailInUse': 'An account already uses this email address.',
+    'auth.error.emailInUse':
+      'An account already uses this email address. If your coach created it, use the activation link.',
     'auth.error.weakPassword': 'Choose a stronger password.',
     'auth.error.emailNotConfirmed': 'Confirm your email address before signing in.',
     'auth.error.rateLimited': 'Too many attempts. Try again in a few minutes.',
@@ -406,8 +892,17 @@ export const dictionaries = {
     'foundation.token.darkBackground': 'Dark background',
     'foundation.token.darkSurface': 'Dark surface',
     'status.pending': 'Pending',
+    'status.pendingActivation': 'Activation pending',
+    'status.active': 'Active',
+    'status.inactive': 'Inactive',
     'status.confirmed': 'Confirmed',
     'status.refused': 'Refused',
+    'status.expired': 'Expired',
+    'status.cancelled': 'Cancelled',
+    'status.modified': 'Modified',
+    'status.exhausted': 'Exhausted',
+    'status.suspended': 'Suspended',
+    'status.deleted': 'Deleted',
     'theme.light': 'Light',
     'theme.dark': 'Dark',
   },
@@ -454,6 +949,7 @@ export const dictionaries = {
       'El contenido funcional de esta sección se añadirá en su historia específica.',
     'nav.coach.planning': 'Planificación',
     'nav.coach.availability': 'Disponibilidad',
+    'nav.coach.pricing': 'Tarifas',
     'nav.coach.students': 'Alumnos',
     'nav.coach.stats': 'Estadísticas',
     'nav.coach.notifications': 'Notificaciones',
@@ -475,6 +971,11 @@ export const dictionaries = {
     'profile.ageLabel': 'Edad',
     'profile.agePlaceholder': 'Ej. 29',
     'profile.levelLabel': 'Nivel de pádel',
+    'profile.sexLabel': 'Sexo',
+    'profile.sex.female': 'Mujer',
+    'profile.sex.male': 'Hombre',
+    'profile.sex.other': 'Otro',
+    'profile.sex.notSpecified': 'Prefiero no responder',
     'profile.languageLabel': 'Idioma preferido',
     'profile.language.fr': 'Francés',
     'profile.language.en': 'Inglés',
@@ -526,6 +1027,7 @@ export const dictionaries = {
     'coachProfile.pricingTitle': 'Tarifas',
     'coachProfile.pricingBody':
       'Configura las tarifas individuales y colectivas mostradas antes de reservar.',
+    'coachProfile.openPricing': 'Gestionar tarifas',
     'coachProfile.notificationsTitle': 'Notificaciones push',
     'coachProfile.notificationsBody':
       'Elige las alertas que recibes para solicitudes y cambios de clase.',
@@ -533,6 +1035,221 @@ export const dictionaries = {
     'studentHome.title': 'Tu espacio de reserva',
     'studentHome.subtitle':
       'Consulta el perfil de tu coach antes de preparar una solicitud de clase.',
+    'pricing.loading': 'Cargando tarifas...',
+    'pricing.loadErrorTitle': 'Tarifas no disponibles',
+    'pricing.loadErrorBody':
+      'No se pueden cargar las tarifas en este momento. Reinicia la aplicación e inténtalo de nuevo.',
+    'pricing.publishedTitle': 'Tarifas del coach',
+    'pricing.publishedBody':
+      'Los precios se muestran como información antes de solicitar una clase.',
+    'pricing.emptyPublishedTitle': 'Tarifas próximamente',
+    'pricing.emptyPublishedBody':
+      'El coach aún no ha publicado ninguna tarifa activa.',
+    'pricing.manageTitle': 'Gestión de tarifas',
+    'pricing.manageBody':
+      'Crea las tarifas individuales y colectivas mostradas antes de una solicitud.',
+    'pricing.createTitle': 'Nueva tarifa',
+    'pricing.editTitle': 'Modificar tarifa',
+    'pricing.catalogTitle': 'Catálogo del coach',
+    'pricing.labelLabel': 'Nombre',
+    'pricing.labelPlaceholder': 'Ej. Clase individual estándar',
+    'pricing.amountLabel': 'Precio en euros',
+    'pricing.amountPlaceholder': 'Ej. 45,00',
+    'pricing.typeLabel': 'Tipo de clase',
+    'pricing.type.individual': 'Individual',
+    'pricing.type.group': 'Colectiva',
+    'pricing.durationLabel': 'Duración',
+    'pricing.duration.60': '1 hora',
+    'pricing.duration.90': '1 h 30',
+    'pricing.statusLabel': 'Publicación',
+    'pricing.contextLabel': 'Criterios de aplicación',
+    'pricing.noContext': 'Sin criterios específicos',
+    'pricing.context.student': 'Tarifa estudiante',
+    'pricing.context.senior': 'Tarifa senior',
+    'pricing.context.weekend': 'Fin de semana',
+    'pricing.context.public_holiday': 'Día festivo',
+    'pricing.studentsLabel': 'Alumnos seleccionados',
+    'pricing.noStudentsBody':
+      'No hay alumnos asociados disponibles para una selección específica.',
+    'pricing.createAction': 'Crear tarifa',
+    'pricing.updateAction': 'Guardar cambios',
+    'pricing.saving': 'Guardando...',
+    'pricing.cancelAction': 'Cancelar',
+    'pricing.editAction': 'Modificar',
+    'pricing.deleteAction': 'Eliminar',
+    'pricing.confirmDeleteAction': 'Confirmar eliminación',
+    'pricing.deleteTitle': '¿Eliminar esta tarifa?',
+    'pricing.deleteBody':
+      'Ya no se propondrá para nuevas solicitudes. Las futuras referencias históricas se conservarán.',
+    'pricing.saveSuccessTitle': 'Tarifa guardada',
+    'pricing.saveSuccessBody':
+      'El catálogo y los espacios alumno ya utilizan la versión actualizada.',
+    'pricing.saveErrorTitle': 'No se puede guardar',
+    'pricing.saveErrorBody':
+      'La tarifa no se ha modificado. Revisa la información e inténtalo de nuevo.',
+    'pricing.emptyCoachTitle': 'Sin tarifas',
+    'pricing.emptyCoachBody':
+      'Crea una primera tarifa individual o colectiva.',
+    'pricing.validation.labelTooShort':
+      'El nombre debe contener al menos 2 caracteres.',
+    'pricing.validation.labelTooLong':
+      'El nombre no puede superar los 100 caracteres.',
+    'pricing.validation.invalidAmount':
+      'Introduce un precio positivo con dos decimales como máximo.',
+    'pricing.validation.invalidStudent':
+      'Uno de los alumnos seleccionados no es válido.',
+    'students.loading': 'Cargando alumnos...',
+    'students.title': 'Alumnos',
+    'students.subtitle':
+      'Encuentra únicamente los alumnos asociados actualmente a tu espacio de coach.',
+    'students.createAction': 'Crear ficha de alumno',
+    'students.createTitle': 'Nueva ficha de alumno',
+    'students.createBody':
+      'Añade un alumno y prepara su cuenta sin activar. El acceso se completará con un enlace válido durante 24 horas.',
+    'students.createSubmitAction': 'Crear ficha',
+    'students.createCancelAction': 'Cancelar',
+    'students.creating': 'Creando...',
+    'students.createSuccessTitle': 'Ficha de alumno creada',
+    'students.createSuccessBody':
+      '{{name}} ya está asociado a tu espacio de coach.',
+    'students.createErrorTitle': 'No se puede crear',
+    'students.createErrorBody':
+      'No se ha creado ninguna ficha. Revisa la información e inténtalo de nuevo.',
+    'students.createDuplicateTitle': 'El alumno ya existe',
+    'students.createDuplicateBody':
+      'Un alumno ya utiliza este email o teléfono. Abre la ficha existente.',
+    'students.loadErrorTitle': 'Lista no disponible',
+    'students.loadErrorBody':
+      'No se pueden cargar los alumnos en este momento. Reinicia la aplicación e inténtalo de nuevo.',
+    'students.searchLabel': 'Buscar por nombre',
+    'students.searchPlaceholder': 'Nombre del alumno',
+    'students.levelFilterLabel': 'Nivel de pádel',
+    'students.allLevels': 'Todos los niveles',
+    'students.sexFilterLabel': 'Sexo del alumno',
+    'students.allSexes': 'Todos',
+    'students.ageRangeSliderLabel': 'Rango de edad',
+    'students.ageMin': 'Mínimo: {{age}} años',
+    'students.ageMax': 'Máximo: {{age}} años',
+    'students.ageFilterLabel': 'Franja de edad',
+    'students.allAges': 'Todas las edades',
+    'students.ageRange': '{{min}}–{{max}} años',
+    'students.ageSingle': '{{age}} años',
+    'students.resetFilters': 'Restablecer filtros',
+    'students.resultsTitle': 'Resultados',
+    'students.resultCount': '{{count}} alumno(s)',
+    'students.levelValue': 'Nivel {{level}}',
+    'students.ageValue': '{{age}} años',
+    'students.emptyListTitle': 'Sin alumnos asociados',
+    'students.emptyListBody':
+      'Los alumnos aparecerán aquí después de asociarse a tu espacio.',
+    'students.emptyFilterTitle': 'Sin resultados',
+    'students.emptyFilterBody':
+      'Ningún alumno coincide con esta búsqueda y estos filtros.',
+    'studentDetail.loading': 'Cargando la ficha del alumno...',
+    'studentDetail.eyebrow': 'Ficha del alumno',
+    'studentDetail.backAction': 'Volver a alumnos',
+    'studentDetail.notFoundTitle': 'Ficha no disponible',
+    'studentDetail.notFoundBody':
+      'Esta ficha no existe o el alumno no está asociado a tu espacio de coach.',
+    'studentDetail.loadErrorTitle': 'Ficha no disponible',
+    'studentDetail.loadErrorBody':
+      'No se puede cargar esta ficha en este momento.',
+    'studentDetail.profileTitle': 'Información del alumno',
+    'studentDetail.historyTitle': 'Historial',
+    'studentDetail.historyCount': '{{count}} elemento(s)',
+    'studentDetail.historyEmptyTitle': 'Sin historial',
+    'studentDetail.historyEmptyBody':
+      'Las solicitudes, clases, cancelaciones, cambios y packs aparecerán aquí.',
+    'studentDetail.historyType.bookingRequested': 'Solicitud de clase',
+    'studentDetail.historyType.lessonConfirmed': 'Clase confirmada',
+    'studentDetail.historyType.bookingCancelled': 'Cancelación',
+    'studentDetail.historyType.bookingModified': 'Modificación',
+    'studentDetail.historyType.lessonPackAssigned': 'Pack asignado',
+    'studentDetail.historyType.lessonPackConsumed': 'Sesión de pack consumida',
+    'studentDetail.activationGenerateAction': 'Generar enlace de activación',
+    'studentDetail.activationRegenerateAction': 'Regenerar enlace',
+    'studentDetail.activationGenerating': 'Generando...',
+    'studentDetail.activationReadyTitle': 'Enlace de activación listo',
+    'studentDetail.activationExpiresAt': 'Caduca el {{date}}.',
+    'studentDetail.activationCopyAction': 'Copiar enlace',
+    'studentDetail.activationShareAction': 'Compartir enlace',
+    'studentDetail.activationShareMessage':
+      'Activa tu cuenta NextPoint con este enlace válido durante 24 horas: {{link}}',
+    'studentDetail.activationCopiedTitle': 'Enlace copiado',
+    'studentDetail.activationCopiedBody':
+      'Ya puedes enviárselo al alumno.',
+    'studentDetail.activationErrorTitle': 'Enlace no disponible',
+    'studentDetail.activationErrorBody':
+      'No se ha podido generar o compartir el enlace. Revisa el estado de la cuenta e inténtalo de nuevo.',
+    'studentPrivateNote.loading': 'Cargando la nota privada...',
+    'studentPrivateNote.title': 'Nota privada del coach',
+    'studentPrivateNote.privateHint':
+      'Visible únicamente en tu espacio de coach.',
+    'studentPrivateNote.addAction': 'Añadir una nota',
+    'studentPrivateNote.editAction': 'Modificar',
+    'studentPrivateNote.fieldLabel': 'Nota privada',
+    'studentPrivateNote.placeholder':
+      'Añade un recordatorio útil para preparar las próximas clases.',
+    'studentPrivateNote.characterCount': '{{count}} / 2000 caracteres',
+    'studentPrivateNote.saveAction': 'Guardar',
+    'studentPrivateNote.saving': 'Guardando...',
+    'studentPrivateNote.cancelAction': 'Cancelar',
+    'studentPrivateNote.emptyBody':
+      'Todavía no se ha guardado ninguna nota privada.',
+    'studentPrivateNote.validationRequired':
+      'Introduce una nota antes de guardar.',
+    'studentPrivateNote.validationTooLong':
+      'La nota no puede superar los 2000 caracteres.',
+    'studentPrivateNote.loadErrorTitle': 'Nota no disponible',
+    'studentPrivateNote.loadErrorBody':
+      'No se puede cargar la nota privada en este momento.',
+    'studentPrivateNote.saveSuccessTitle': 'Nota guardada',
+    'studentPrivateNote.saveSuccessBody':
+      'La nota privada está actualizada en tu espacio de coach.',
+    'studentPrivateNote.saveErrorTitle': 'No se puede guardar',
+    'studentPrivateNote.saveErrorBody':
+      'La nota existente no se ha modificado. Inténtalo de nuevo.',
+    'lessonPack.loading': 'Cargando los packs...',
+    'lessonPack.title': 'Pack de clases individuales',
+    'lessonPack.trackingOnlyHint':
+      'Solo seguimiento de créditos, sin compra ni pago integrado.',
+    'lessonPack.assignAction': 'Asignar un pack',
+    'lessonPack.includedLabel': 'Número de clases incluidas',
+    'lessonPack.includedPlaceholder': 'Ej. 10',
+    'lessonPack.confirmAssignAction': 'Confirmar asignación',
+    'lessonPack.assigning': 'Asignando...',
+    'lessonPack.cancelAction': 'Cancelar',
+    'lessonPack.individualTitle': 'Pack individual',
+    'lessonPack.includedMetric': 'Incluidas',
+    'lessonPack.usedMetric': 'Usadas',
+    'lessonPack.remainingMetric': 'Restantes',
+    'lessonPack.emptyBody':
+      'Todavía no hay ningún pack individual asociado a este alumno.',
+    'lessonPack.validationInvalidCount':
+      'Introduce un número entero entre 1 y 100.',
+    'lessonPack.saveSuccessTitle': 'Pack asignado',
+    'lessonPack.saveSuccessBody':
+      'Los créditos de clases ya se siguen en esta ficha.',
+    'lessonPack.activeExistsTitle': 'Ya existe un pack activo',
+    'lessonPack.activeExistsBody':
+      'Finaliza el pack activo antes de asignar uno nuevo.',
+    'lessonPack.saveErrorTitle': 'No se puede asignar',
+    'lessonPack.saveErrorBody':
+      'No se ha creado ningún pack. Revisa la relación con el alumno e inténtalo de nuevo.',
+    'lessonPack.loadErrorTitle': 'Packs no disponibles',
+    'lessonPack.loadErrorBody':
+      'No se pueden cargar los créditos de clases en este momento.',
+    'lessonPack.consumeAction': 'Marcar una sesión consumida',
+    'lessonPack.consuming': 'Consumiendo...',
+    'lessonPack.consumeSuccessTitle': 'Sesión consumida',
+    'lessonPack.consumeSuccessBody':
+      'Los contadores del pack están actualizados y el historial del alumno se ha completado.',
+    'lessonPack.noRemainingTitle': 'Pack agotado',
+    'lessonPack.noRemainingBody':
+      'No se puede consumir ninguna sesión: este pack no tiene clases restantes.',
+    'lessonPack.consumeErrorTitle': 'No se puede consumir',
+    'lessonPack.consumeErrorBody':
+      'No se ha modificado ninguna clase restante. Puede que el pack esté agotado o que el acceso esté denegado.',
     'auth.signInTitle': 'Vuelve a tu espacio.',
     'auth.signInSubtitle':
       'Inicia sesión con tu email y contraseña para acceder a NextPoint.',
@@ -555,6 +1272,23 @@ export const dictionaries = {
     'auth.confirmationTitle': 'Revisa tu email',
     'auth.confirmationMessage':
       'Tu cuenta ha sido creada. Abre el mensaje recibido para confirmar tu dirección antes de iniciar sesión.',
+    'activation.title': 'Activa tu cuenta de alumno',
+    'activation.subtitle':
+      'Define tu contraseña para acceder al espacio preparado por tu coach.',
+    'activation.passwordLabel': 'Nueva contraseña',
+    'activation.confirmPasswordLabel': 'Confirmar nueva contraseña',
+    'activation.submitAction': 'Activar mi cuenta',
+    'activation.activating': 'Activando...',
+    'activation.successTitle': 'Cuenta activada',
+    'activation.successBody':
+      'Tu contraseña está guardada. Ya puedes iniciar sesión.',
+    'activation.signInAction': 'Iniciar sesión',
+    'activation.invalidTitle': 'Enlace no válido',
+    'activation.invalidBody':
+      'Este enlace ha caducado, ya se utilizó o fue reemplazado. Pide uno nuevo a tu coach.',
+    'activation.errorTitle': 'No se puede activar',
+    'activation.errorBody':
+      'La cuenta no se ha activado. Comprueba tu conexión e inténtalo de nuevo.',
     'auth.validation.required': 'Este campo es obligatorio.',
     'auth.validation.invalidEmail': 'Introduce una dirección de email válida.',
     'auth.validation.passwordTooShort': 'La contraseña debe tener al menos 8 caracteres.',
@@ -564,7 +1298,8 @@ export const dictionaries = {
     'auth.error.configuration':
       'Supabase no está configurado. Añade las variables públicas de Expo previstas.',
     'auth.error.invalidCredentials': 'Email o contraseña incorrectos.',
-    'auth.error.emailInUse': 'Ya existe una cuenta con esta dirección de email.',
+    'auth.error.emailInUse':
+      'Ya existe una cuenta con este email. Si tu coach la creó, utiliza el enlace de activación.',
     'auth.error.weakPassword': 'Elige una contraseña más segura.',
     'auth.error.emailNotConfirmed': 'Confirma tu dirección de email antes de iniciar sesión.',
     'auth.error.rateLimited': 'Demasiados intentos. Inténtalo de nuevo en unos minutos.',
@@ -609,8 +1344,17 @@ export const dictionaries = {
     'foundation.token.darkBackground': 'Fondo oscuro',
     'foundation.token.darkSurface': 'Superficie oscura',
     'status.pending': 'Pendiente',
+    'status.pendingActivation': 'Pendiente de activación',
+    'status.active': 'Activo',
+    'status.inactive': 'Inactivo',
     'status.confirmed': 'Confirmado',
     'status.refused': 'Rechazado',
+    'status.expired': 'Caducado',
+    'status.cancelled': 'Cancelado',
+    'status.modified': 'Modificado',
+    'status.exhausted': 'Agotado',
+    'status.suspended': 'Suspendido',
+    'status.deleted': 'Eliminado',
     'theme.light': 'Claro',
     'theme.dark': 'Oscuro',
   },

@@ -23,6 +23,7 @@ function mapStudentProfile(row: StudentProfileRow): StudentProfile {
     email: row.email,
     padelLevel: row.padel_level,
     age: row.age,
+    sex: row.sex,
     preferredLanguage: row.preferred_language as AppLanguage,
     updatedAt: row.updated_at,
   };
@@ -59,6 +60,7 @@ export async function saveStudentProfile(
         email: profile.email,
         padel_level: profile.padelLevel,
         age: profile.age,
+        sex: profile.sex,
         preferred_language: profile.preferredLanguage,
       },
       { onConflict: 'user_id' }

@@ -4,6 +4,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { PublicCoachCard } from '@/features/coaches/public-coach-card';
+import { PublishedPricingList } from '@/features/pricing/published-pricing-list';
 import { useTranslation } from '@/i18n';
 
 export default function EleveHomeScreen() {
@@ -22,6 +23,7 @@ export default function EleveHomeScreen() {
               {t('studentHome.subtitle')}
             </ThemedText>
           </View>
+          <PublishedPricingList />
           <PublicCoachCard />
         </View>
       </ScrollView>

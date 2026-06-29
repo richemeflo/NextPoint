@@ -1,0 +1,55 @@
+diff --git a/node_modules/@react-native-assets/slider/dist/components/ResponderView.js b/node_modules/@react-native-assets/slider/dist/components/ResponderView.js
+index d9ba9b1..7ceaaab 100644
+--- a/node_modules/@react-native-assets/slider/dist/components/ResponderView.js
++++ b/node_modules/@react-native-assets/slider/dist/components/ResponderView.js
+@@ -93,17 +93,20 @@ const ResponderView = react_1.default.forwardRef((props, ref) => {
+     });
+     const onMove = (0, useEvent_1.useEvent)((event) => {
+         onMoveProp(eventToValue(event));
+-        event.preventDefault();
++        if (RN.Platform.OS !== 'web' || event.cancelable)
++            event.preventDefault();
+         event.stopPropagation();
+     });
+     const onPress = (0, useEvent_1.useEvent)((event) => {
+         onPressProp(eventToValue(event));
+-        event.preventDefault();
++        if (RN.Platform.OS !== 'web' || event.cancelable)
++            event.preventDefault();
+         event.stopPropagation();
+     });
+     const onRelease = (0, useEvent_1.useEvent)((event) => {
+         onReleaseProp(eventToValue(event));
+-        event.preventDefault();
++        if (RN.Platform.OS !== 'web' || event.cancelable)
++            event.preventDefault();
+         event.stopPropagation();
+     });
+     const isEnabled = (0, useEvent_1.useEvent)((event) => {
+diff --git a/node_modules/@react-native-assets/slider/src/components/ResponderView.tsx b/node_modules/@react-native-assets/slider/src/components/ResponderView.tsx
+index 7b45ed9..f36dfda 100644
+--- a/node_modules/@react-native-assets/slider/src/components/ResponderView.tsx
++++ b/node_modules/@react-native-assets/slider/src/components/ResponderView.tsx
+@@ -83,19 +83,19 @@ const ResponderView = React.forwardRef<RN.View, Props>((props, ref) => {
+ 
+   const onMove = useEvent((event: RN.GestureResponderEvent) => {
+     onMoveProp(eventToValue(event))
+-    event.preventDefault()
++    if (RN.Platform.OS !== 'web' || event.cancelable) event.preventDefault()
+     event.stopPropagation()
+   })
+ 
+   const onPress = useEvent((event: RN.GestureResponderEvent) => {
+     onPressProp(eventToValue(event))
+-    event.preventDefault()
++    if (RN.Platform.OS !== 'web' || event.cancelable) event.preventDefault()
+     event.stopPropagation()
+   })
+ 
+   const onRelease = useEvent((event: RN.GestureResponderEvent) => {
+     onReleaseProp(eventToValue(event))
+-    event.preventDefault()
++    if (RN.Platform.OS !== 'web' || event.cancelable) event.preventDefault()
+     event.stopPropagation()
+   })
+ 

@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase/client';
 export type AuthResult =
   | { ok: true; session: Session | null }
   | { ok: false; code: AuthFailureCode };
+export type SignOutScope = 'global' | 'local' | 'others';
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
@@ -52,11 +53,13 @@ export async function signUpWithPassword(
   }
 }
 
-export async function signOutSession(): Promise<AuthResult> {
+export async function signOutSession(
+  scope: SignOutScope = 'global'
+): Promise<AuthResult> {
   if (!supabase) return { ok: false, code: 'configuration_error' };
 
   try {
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut({ scope });
 
     if (error) return { ok: false, code: mapSupabaseAuthError(error) };
     return { ok: true, session: null };

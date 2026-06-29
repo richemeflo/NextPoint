@@ -1,6 +1,10 @@
+---
+baseline_commit: 917d59ad5aec37f8a4016225cbc21574d4722d15
+---
+
 # Story 2.5: Ajouter et modifier une note privée coach
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -20,16 +24,16 @@ so that je puisse conserver un rappel utile sans l’exposer à l’élève.
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 2.5 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer note privee coach (AC: tous)
-  - [ ] Utiliser flux `Modifier` puis `Enregistrer`; pas d'autosave.
-  - [ ] Stocker et lire seulement pour le coach autorise via RLS.
-  - [ ] Ne jamais inclure la note dans les read models eleve.
-- [ ] Ajouter tests RLS obligatoires (AC: confidentialite)
-  - [ ] Prouver qu'un eleve ne peut ni lire ni modifier la note privee.
+- [x] Verifier les preconditions et dependances de Story 2.5 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer note privee coach (AC: tous)
+  - [x] Utiliser flux `Modifier` puis `Enregistrer`; pas d'autosave.
+  - [x] Stocker et lire seulement pour le coach autorise via RLS.
+  - [x] Ne jamais inclure la note dans les read models eleve.
+- [x] Ajouter tests RLS obligatoires (AC: confidentialite)
+  - [x] Prouver qu'un eleve ne peut ni lire ni modifier la note privee.
 
 ## Interventions utilisateur requises
 
@@ -150,18 +154,69 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Codex GPT-5
+
+### Implementation Plan
+
+- Creer une table de note privee separee des profils et historiques eleve.
+- Garantir une note unique par couple coach/eleve et proteger sa lecture par RLS.
+- Interdire les mutations CRUD directes et exposer une commande explicite `save_student_private_note`.
+- Separer contenu persiste et brouillon UI pour garantir l'absence d'autosave.
+- Integrer ajout, modification, annulation et feedback traduit dans la fiche de Story 2.4.
+- Couvrir contrat, transitions d'edition, schema, RLS et parcours d'autorisation.
 
 ### Debug Log References
+
+- 2026-06-23: Baseline HEAD `917d59ad5aec37f8a4016225cbc21574d4722d15`; worktree contenant la Story 2.4 conserve comme dependance directe.
+- 2026-06-23: Preconditions confirmees: fiche eleve coach, relation active, Auth/RLS, composants de formulaire et tests Supabase locaux existent.
+- 2026-06-23: Aucun modele de note privee n'existe; il sera cree dans une table separee pour ne jamais integrer les read models profil/historique eleve.
+- 2026-06-23: Tests RED confirmes sur le contrat, la table, l'unicite et la commande de sauvegarde absents.
+- 2026-06-23: Migration `0011` appliquee apres reset de la base Supabase locale uniquement; types TypeScript regeneres.
+- 2026-06-23: La table autorise uniquement les lectures RLS du coach proprietaire; insert/update directs sont retires aux clients.
+- 2026-06-23: La commande `save_student_private_note` deduit le coach depuis `auth.uid()`, exige le role coach et une relation active.
+- 2026-06-23: L'integration a confirme la contrainte P0 de coach unique; le refus non-proprietaire est couvert avec un second utilisateur eleve.
+- 2026-06-23: L'editeur maintient separement contenu persiste et brouillon; seule l'action `Enregistrer` remplace la valeur serveur.
+- 2026-06-23: Validation finale: 38 tests TypeScript, 118 assertions SQL, neuf integrations Supabase, typecheck, lint et export Expo Web de 21 routes passent.
+- 2026-06-23: Aucun secret reel detecte; validation sur telephone physique non executee.
 
 ### Completion Notes List
 
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+- La fiche eleve affiche une carte `Note privee coach`, chargee independamment du profil et de l'historique.
+- Le coach peut ajouter une note, cliquer sur `Modifier`, changer un brouillon puis choisir explicitement `Enregistrer` ou `Annuler`.
+- Annuler restaure la derniere valeur persistee; quitter sans sauvegarder ne declenche aucun appel backend.
+- Le contenu est valide, normalise et limite a 2000 caracteres dans le contrat partage et en base.
+- Une seule note existe par couple coach/eleve; les sauvegardes suivantes modifient la ligne existante.
+- Les eleves, utilisateurs anonymes et utilisateurs non proprietaires ne peuvent ni lire ni modifier la note.
+- Les projections `student_profiles` et `student_history_events` ne contiennent aucun champ ou contenu de note privee.
+- Verification: 38 tests TypeScript, 118 assertions SQL, neuf integrations Supabase, typecheck, lint et export Expo Web de 21 routes.
+- Verification restante non bloquante: rendu du champ multiligne et du clavier sur telephone physique.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/2-5-ajouter-et-modifier-une-note-privee-coach.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `apps/mobile/src/app/coach/students/[studentId].tsx`
+- `apps/mobile/src/features/students/student-private-note-card.tsx`
+- `apps/mobile/src/features/students/student-private-note-editor.test.ts`
+- `apps/mobile/src/features/students/student-private-note-editor.ts`
+- `apps/mobile/src/features/students/student-private-note-service.ts`
+- `apps/mobile/src/i18n/translations.ts`
+- `package.json`
+- `packages/shared/src/contracts/student-private-note.test.ts`
+- `packages/shared/src/contracts/student-private-note.ts`
+- `packages/shared/src/index.ts`
+- `packages/shared/src/types/database.types.ts`
+- `scripts/verify-student-private-notes.mjs`
+- `supabase/migrations/0011_student_private_notes.sql`
+- `supabase/tests/database/0009_student_private_notes.sql`
+
+### Change Log
+
+- 2026-06-23: Ajout du modele de note privee unique et de sa commande de sauvegarde explicite.
+- 2026-06-23: Ajout de l'editeur sans autosave dans la fiche eleve coach.
+- 2026-06-23: Ajout des contrats, traductions et tests RLS de confidentialite proprietaire.
 
 ## Completion Note
 

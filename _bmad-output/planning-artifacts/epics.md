@@ -34,7 +34,9 @@ This document provides the complete epic and story breakdown for NextPoint, deco
 - FR-011: Le profil coach doit exposer les informations nécessaires à la réservation.
 - FR-012: En P0, le coach n’a pas besoin de partager un lien/code pour associer un élève.
 - FR-013: Le coach doit pouvoir voir les élèves associés à son profil.
-- FR-014: Le coach doit pouvoir créer une fiche élève sans que l’élève ait déjà créé son compte.
+- FR-014: Le coach doit pouvoir créer une fiche et provisionner un compte élève non activé.
+- FR-014a: La création est refusée si email ou téléphone normalisé existe déjà.
+- FR-014b: Le compte élève utilise les états `pending_activation`, `active`, `suspended`, `deleted`.
 - FR-020: L’élève doit pouvoir créer et modifier son profil.
 - FR-021: En P0, l’élève doit être automatiquement associé au coach unique de l’application.
 - FR-022: L’élève doit pouvoir consulter ses réservations.
@@ -45,7 +47,9 @@ This document provides the complete epic and story breakdown for NextPoint, deco
 - FR-031: Le coach doit voir uniquement ses élèves associés.
 - FR-032: L’élève doit être associé à un seul coach en P0.
 - FR-033: La relation doit permettre au coach de consulter les réservations et notes liées à l’élève.
-- FR-034: Le mécanisme de lien/code d’invitation coach est réservé à une évolution future.
+- FR-034: Le coach peut générer/régénérer un lien d’activation de 24 heures pour un compte `pending_activation`.
+- FR-034a: La régénération invalide l’ancien lien et chaque lien est à usage unique.
+- FR-034b: Le lien permet à l’élève de définir son mot de passe et d’activer son compte.
 - FR-040: Le coach doit pouvoir créer une plage de disponibilité avec date, heure de début, heure de fin, durée de créneau et lieu/club.
 - FR-041: Le système doit générer des créneaux à partir d’une plage de disponibilité.
 - FR-042: Le coach doit pouvoir choisir une durée de créneau parmi 1h et 1h30.
@@ -725,35 +729,35 @@ So that je puisse retrouver rapidement le bon élève avant un cours ou une acti
 ### Story 2.3: Créer une fiche élève manuellement
 
 As a coach,
-I want créer une fiche élève sans compte élève préalable,
-So that je puisse suivre un élève même s’il n’a pas encore rejoint l’application.
+I want créer une fiche élève et provisionner son compte non activé,
+So that je puisse la suivre immédiatement et lui transmettre ensuite un accès sécurisé.
 
 **Acceptance Criteria:**
 
 **Given** un coach connecté
 **When** il ouvre l’action de création manuelle d’élève
-**Then** il peut renseigner nom, téléphone, email, niveau et âge
+**Then** il peut renseigner nom, téléphone, email, niveau, âge et sexe
 **And** il peut sauvegarder la fiche.
 
 **Given** des informations élève valides
 **When** le coach sauvegarde la fiche
-**Then** un profil élève manuel est créé et associé au coach
+**Then** un compte Auth élève, un profil `pending_activation` et la relation coach/élève sont créés
 **And** l’élève apparaît dans la liste du coach.
 
-**Given** des champs requis absents ou invalides
+**Given** un email ou téléphone déjà utilisé
 **When** le coach tente de sauvegarder
 **Then** des erreurs traduites sont affichées
-**And** aucune fiche invalide n’est créée.
+**And** aucun doublon ni compte partiel n’est créé.
 
-**Given** une fiche élève créée manuellement
-**When** l’élève crée plus tard un compte avec une identité correspondante
-**Then** la structure de données ne bloque pas un futur rapprochement produit
-**And** aucun rapprochement automatique non spécifié n’est imposé en P0.
+**Given** un lien d’activation valide
+**When** l’élève définit et confirme son mot de passe
+**Then** son compte passe à `active`
+**And** le lien devient inutilisable.
 
 **Given** un utilisateur non autorisé
-**When** il tente de créer une fiche élève pour le coach
+**When** il tente de provisionner ou activer un compte hors du parcours autorisé
 **Then** l’accès est refusé
-**And** aucune relation coach/élève n’est créée.
+**And** aucun état de compte incohérent n’est créé.
 
 ### Story 2.4: Consulter la fiche élève avec historique
 
@@ -787,6 +791,16 @@ So that je puisse préparer les cours et comprendre l’activité passée.
 **When** la fiche élève est affichée
 **Then** aucun suivi de progression sportive n’est inclus
 **And** l’historique reste centré sur demandes, cours, annulations, modifications et packs.
+
+**Given** un compte élève `pending_activation`
+**When** le coach ouvre la fiche
+**Then** un bouton en haut à droite permet de générer ou régénérer un lien valable 24 heures
+**And** l’expiration et une action copier/partager sont disponibles.
+
+**Given** un compte `active`, `suspended` ou `deleted`
+**When** le coach ouvre la fiche
+**Then** aucun bouton de génération n’est affiché
+**And** la commande serveur refuse aussi toute génération.
 
 ### Story 2.5: Ajouter et modifier une note privée coach
 

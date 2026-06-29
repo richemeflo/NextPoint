@@ -1,6 +1,10 @@
+---
+baseline_commit: db047c77435897589a1d35746f0b00ddddc907b3
+---
+
 # Story 2.6: Attribuer et suivre un pack de cours individuels
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -20,16 +24,16 @@ so that je puisse suivre les crédits sans paiement intégré.
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 2.6 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer packs individuels selon la story (AC: tous)
-  - [ ] Restreindre attribution/consommation au coach.
-  - [ ] Maintenir inclus, utilises, restants avec invariants backend.
-  - [ ] Ne pas presenter achat ou paiement a l'eleve.
-- [ ] Tester decrementation et acces (AC: integrite/securite)
-  - [ ] Couvrir impossibilite de passer sous zero et refus cote eleve.
+- [x] Verifier les preconditions et dependances de Story 2.6 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer packs individuels selon la story (AC: tous)
+  - [x] Restreindre attribution/consommation au coach.
+  - [x] Maintenir inclus, utilises, restants avec invariants backend.
+  - [x] Ne pas presenter achat ou paiement a l'eleve.
+- [x] Tester decrementation et acces (AC: integrite/securite)
+  - [x] Couvrir impossibilite de passer sous zero et refus cote eleve.
 
 ## Interventions utilisateur requises
 
@@ -150,18 +154,70 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Codex GPT-5
+
+### Implementation Plan
+
+- Creer un modele de pack individuel sans colonne financiere.
+- Calculer les cours restants en base et proteger les compteurs par contraintes.
+- Autoriser un seul pack actif par couple coach/eleve.
+- Exposer des commandes SQL coach-only pour attribution et consommation atomique.
+- Afficher attribution, statut et compteurs sur la fiche eleve coach.
+- Laisser l'action UI de consommation a Story 2.7 tout en livrant ses invariants backend.
+- Couvrir contrat, schema, RLS, plancher a zero et refus eleve/non-proprietaire.
 
 ### Debug Log References
+
+- 2026-06-23: Baseline HEAD `db047c77435897589a1d35746f0b00ddddc907b3`; les deux fichiers non commites de Story 2.5 sont conserves sans modification hors integration necessaire.
+- 2026-06-23: Preconditions confirmees: fiche eleve coach, relation active, historique type, commandes SQL securisees et RLS sont disponibles.
+- 2026-06-23: Story 2.6 livre le modele, l'attribution, l'affichage et les invariants de consommation; l'action UI de consommation reste reservee a Story 2.7.
+- 2026-06-23: Tests RED confirmes sur le contrat, l'enum, la table et les commandes de pack absents.
+- 2026-06-23: Migration `0012` appliquee apres reset de la base Supabase locale uniquement; types TypeScript regeneres.
+- 2026-06-23: Le pack stocke inclus/utilises, calcule restants par colonne generee et interdit tout compteur negatif ou superieur au total.
+- 2026-06-23: L'attribution exige le role coach et une relation active; un index partiel interdit deux packs actifs pour le meme eleve.
+- 2026-06-23: La consommation backend est atomique, passe le statut a `exhausted` a zero et refuse toute consommation supplementaire.
+- 2026-06-23: Attribution et consommation publient des evenements dans l'historique eleve existant, sans paiement ni transaction.
+- 2026-06-23: Apres reset local, Kong conservait l'ancienne adresse du conteneur Auth; seul Kong local a ete redemarre, sans mutation de donnees.
+- 2026-06-23: Validation finale: 41 tests TypeScript, 134 assertions SQL, dix integrations Supabase, typecheck, lint et export Expo Web de 21 routes passent.
+- 2026-06-23: Aucun secret reel detecte; validation sur telephone physique non executee.
 
 ### Completion Notes List
 
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+- La fiche eleve affiche une carte de packs individuels avec cours inclus, utilises, restants et statut traduit.
+- Le coach peut attribuer un pack de 1 a 100 cours lorsqu'aucun pack actif n'existe.
+- Un pack actif unique est impose par la base; un nouveau pack peut etre attribue apres epuisement du precedent.
+- Les compteurs ne sont jamais modifiables par CRUD client et le nombre restant est calcule par PostgreSQL.
+- L'eleve peut consulter ses credits mais ne peut ni creer, acheter, s'attribuer ou consommer un pack.
+- Aucune colonne, action ou interface de paiement, prix, facture ou transaction n'est presente.
+- Les commandes de consommation et leurs invariants sont pretes pour Story 2.7; son bouton et ses feedbacks restent hors de cette story.
+- Verification: 41 tests TypeScript, 134 assertions SQL, dix integrations Supabase, typecheck, lint et export Expo Web de 21 routes.
+- Verification restante non bloquante: rendu mobile physique de la carte et du clavier numerique.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/2-6-attribuer-et-suivre-un-pack-de-cours-individuels.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `apps/mobile/src/app/coach/students/[studentId].tsx`
+- `apps/mobile/src/features/lesson-packs/lesson-pack-service.ts`
+- `apps/mobile/src/features/lesson-packs/student-lesson-pack-card.tsx`
+- `apps/mobile/src/i18n/translations.ts`
+- `package.json`
+- `packages/shared/src/contracts/lesson-pack.test.ts`
+- `packages/shared/src/contracts/lesson-pack.ts`
+- `packages/shared/src/index.ts`
+- `packages/shared/src/types/database.types.ts`
+- `scripts/verify-lesson-packs.mjs`
+- `supabase/migrations/0012_lesson_packs.sql`
+- `supabase/tests/database/0010_lesson_packs.sql`
+
+### Change Log
+
+- 2026-06-23: Ajout du modele de packs individuels et des compteurs inclus/utilises/restants.
+- 2026-06-23: Ajout de l'attribution coach-only et des invariants atomiques de consommation.
+- 2026-06-23: Ajout de la carte de suivi des packs sur la fiche eleve, sans paiement integre.
+- 2026-06-23: Ajout des contrats et tests de securite, plancher a zero et historique.
 
 ## Completion Note
 

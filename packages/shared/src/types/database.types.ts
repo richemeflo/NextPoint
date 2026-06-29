@@ -67,6 +67,146 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_packs: {
+        Row: {
+          coach_id: string
+          created_at: string
+          id: string
+          included_sessions: number
+          remaining_sessions: number | null
+          status: Database["public"]["Enums"]["lesson_pack_status"]
+          student_id: string
+          updated_at: string
+          used_sessions: number
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          id?: string
+          included_sessions: number
+          remaining_sessions?: number | null
+          status?: Database["public"]["Enums"]["lesson_pack_status"]
+          student_id: string
+          updated_at?: string
+          used_sessions?: number
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          id?: string
+          included_sessions?: number
+          remaining_sessions?: number | null
+          status?: Database["public"]["Enums"]["lesson_pack_status"]
+          student_id?: string
+          updated_at?: string
+          used_sessions?: number
+        }
+        Relationships: []
+      }
+      pricing_rate_students: {
+        Row: {
+          created_at: string
+          pricing_rate_id: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          pricing_rate_id: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          pricing_rate_id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pricing_rate_students_pricing_rate_id_fkey"
+            columns: ["pricing_rate_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_rates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pricing_rates: {
+        Row: {
+          amount_cents: number
+          applicability_contexts: string[]
+          coach_id: string
+          created_at: string
+          currency: string
+          deleted_at: string | null
+          duration_minutes: number
+          id: string
+          is_active: boolean
+          label: string
+          lesson_type: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          applicability_contexts?: string[]
+          coach_id: string
+          created_at?: string
+          currency?: string
+          deleted_at?: string | null
+          duration_minutes: number
+          id?: string
+          is_active?: boolean
+          label: string
+          lesson_type: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          applicability_contexts?: string[]
+          coach_id?: string
+          created_at?: string
+          currency?: string
+          deleted_at?: string | null
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean
+          label?: string
+          lesson_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      student_activation_tokens: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          revoked_at: string | null
+          student_id: string
+          token_hash: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          created_by: string
+          expires_at: string
+          id?: string
+          revoked_at?: string | null
+          student_id: string
+          token_hash: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          revoked_at?: string | null
+          student_id?: string
+          token_hash?: string
+        }
+        Relationships: []
+      }
       student_coach_relationships: {
         Row: {
           association_method: string
@@ -97,8 +237,75 @@ export type Database = {
         }
         Relationships: []
       }
+      student_history_events: {
+        Row: {
+          coach_id: string
+          created_at: string
+          description: string | null
+          event_type: Database["public"]["Enums"]["student_history_event_type"]
+          id: string
+          occurred_at: string
+          source_id: string | null
+          status: Database["public"]["Enums"]["student_history_event_status"]
+          student_id: string
+          title: string
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          description?: string | null
+          event_type: Database["public"]["Enums"]["student_history_event_type"]
+          id?: string
+          occurred_at: string
+          source_id?: string | null
+          status: Database["public"]["Enums"]["student_history_event_status"]
+          student_id: string
+          title: string
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          description?: string | null
+          event_type?: Database["public"]["Enums"]["student_history_event_type"]
+          id?: string
+          occurred_at?: string
+          source_id?: string | null
+          status?: Database["public"]["Enums"]["student_history_event_status"]
+          student_id?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      student_private_notes: {
+        Row: {
+          coach_id: string
+          content: string
+          created_at: string
+          id: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          coach_id: string
+          content: string
+          created_at?: string
+          id?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       student_profiles: {
         Row: {
+          account_status: Database["public"]["Enums"]["student_account_status"]
           age: number
           created_at: string
           email: string
@@ -106,10 +313,12 @@ export type Database = {
           padel_level: number
           phone: string
           preferred_language: Database["public"]["Enums"]["app_language"]
+          sex: Database["public"]["Enums"]["student_sex"]
           updated_at: string
           user_id: string
         }
         Insert: {
+          account_status?: Database["public"]["Enums"]["student_account_status"]
           age: number
           created_at?: string
           email: string
@@ -117,10 +326,12 @@ export type Database = {
           padel_level: number
           phone: string
           preferred_language?: Database["public"]["Enums"]["app_language"]
+          sex?: Database["public"]["Enums"]["student_sex"]
           updated_at?: string
           user_id: string
         }
         Update: {
+          account_status?: Database["public"]["Enums"]["student_account_status"]
           age?: number
           created_at?: string
           email?: string
@@ -128,6 +339,7 @@ export type Database = {
           padel_level?: number
           phone?: string
           preferred_language?: Database["public"]["Enums"]["app_language"]
+          sex?: Database["public"]["Enums"]["student_sex"]
           updated_at?: string
           user_id?: string
         }
@@ -156,14 +368,212 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_lesson_pack: {
+        Args: { p_included_sessions: number; p_student_id: string }
+        Returns: {
+          coach_id: string
+          created_at: string
+          id: string
+          included_sessions: number
+          remaining_sessions: number | null
+          status: Database["public"]["Enums"]["lesson_pack_status"]
+          student_id: string
+          updated_at: string
+          used_sessions: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "lesson_packs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       assign_student_to_single_coach: {
         Args: { student_user_id: string }
         Returns: undefined
+      }
+      claim_student_activation_token: {
+        Args: { p_token_hash: string }
+        Returns: {
+          consumed_at: string | null
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          revoked_at: string | null
+          student_id: string
+          token_hash: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "student_activation_tokens"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      complete_manual_student_provisioning: {
+        Args: {
+          p_age: number
+          p_coach_id: string
+          p_email: string
+          p_full_name: string
+          p_padel_level: number
+          p_phone: string
+          p_sex: Database["public"]["Enums"]["student_sex"]
+          p_student_id: string
+        }
+        Returns: {
+          account_status: Database["public"]["Enums"]["student_account_status"]
+          age: number
+          created_at: string
+          email: string
+          full_name: string
+          padel_level: number
+          phone: string
+          preferred_language: Database["public"]["Enums"]["app_language"]
+          sex: Database["public"]["Enums"]["student_sex"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "student_profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      consume_lesson_pack_session: {
+        Args: { p_pack_id: string }
+        Returns: {
+          coach_id: string
+          created_at: string
+          id: string
+          included_sessions: number
+          remaining_sessions: number | null
+          status: Database["public"]["Enums"]["lesson_pack_status"]
+          student_id: string
+          updated_at: string
+          used_sessions: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "lesson_packs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      create_student_activation_token: {
+        Args: {
+          p_coach_id: string
+          p_expires_at: string
+          p_student_id: string
+          p_token_hash: string
+        }
+        Returns: {
+          consumed_at: string | null
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          revoked_at: string | null
+          student_id: string
+          token_hash: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "student_activation_tokens"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      delete_pricing_rate: { Args: { p_rate_id: string }; Returns: undefined }
+      finalize_student_activation: {
+        Args: { p_student_id: string; p_token_id: string }
+        Returns: undefined
+      }
+      normalize_student_email: { Args: { value: string }; Returns: string }
+      normalize_student_phone: { Args: { value: string }; Returns: string }
+      rollback_student_activation_claim: {
+        Args: { p_token_id: string }
+        Returns: undefined
+      }
+      save_pricing_rate: {
+        Args: {
+          p_amount_cents: number
+          p_applicability_contexts: string[]
+          p_currency: string
+          p_duration_minutes: number
+          p_is_active: boolean
+          p_label: string
+          p_lesson_type: string
+          p_rate_id: string
+          p_target_student_ids: string[]
+        }
+        Returns: {
+          amount_cents: number
+          applicability_contexts: string[]
+          coach_id: string
+          created_at: string
+          currency: string
+          deleted_at: string | null
+          duration_minutes: number
+          id: string
+          is_active: boolean
+          label: string
+          lesson_type: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "pricing_rates"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      save_student_private_note: {
+        Args: { p_content: string; p_student_id: string }
+        Returns: {
+          coach_id: string
+          content: string
+          created_at: string
+          id: string
+          student_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "student_private_notes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
     }
     Enums: {
       app_language: "fr" | "en" | "es"
       app_role: "coach" | "eleve"
+      lesson_pack_status: "active" | "exhausted"
+      student_account_status:
+        | "pending_activation"
+        | "active"
+        | "suspended"
+        | "deleted"
+      student_history_event_status:
+        | "pending"
+        | "confirmed"
+        | "refused"
+        | "expired"
+        | "cancelled"
+        | "modified"
+        | "active"
+        | "exhausted"
+      student_history_event_type:
+        | "booking_requested"
+        | "lesson_confirmed"
+        | "booking_cancelled"
+        | "booking_modified"
+        | "lesson_pack_assigned"
+        | "lesson_pack_consumed"
+      student_sex: "female" | "male" | "other" | "not_specified"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -296,6 +706,32 @@ export const Constants = {
     Enums: {
       app_language: ["fr", "en", "es"],
       app_role: ["coach", "eleve"],
+      lesson_pack_status: ["active", "exhausted"],
+      student_account_status: [
+        "pending_activation",
+        "active",
+        "suspended",
+        "deleted",
+      ],
+      student_history_event_status: [
+        "pending",
+        "confirmed",
+        "refused",
+        "expired",
+        "cancelled",
+        "modified",
+        "active",
+        "exhausted",
+      ],
+      student_history_event_type: [
+        "booking_requested",
+        "lesson_confirmed",
+        "booking_cancelled",
+        "booking_modified",
+        "lesson_pack_assigned",
+        "lesson_pack_consumed",
+      ],
+      student_sex: ["female", "male", "other", "not_specified"],
     },
   },
 } as const

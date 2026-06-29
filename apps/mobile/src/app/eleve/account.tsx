@@ -3,6 +3,7 @@ import {
   studentProfileSchema,
   toStudentProfileInput,
   type AppLanguage,
+  type StudentSex,
   type StudentProfileFormInput,
 } from '@nextpoint/shared';
 import { Controller, useForm } from 'react-hook-form';
@@ -50,6 +51,7 @@ export default function EleveAccountScreen() {
       email: user?.email ?? '',
       padelLevel: '1',
       age: '',
+      sex: 'not_specified',
       preferredLanguage: locale,
     },
   });
@@ -77,6 +79,15 @@ export default function EleveAccountScreen() {
     { value: 'en', label: t('profile.language.en') },
     { value: 'es', label: t('profile.language.es') },
   ];
+  const sexOptions: { value: StudentSex; label: string }[] = [
+    { value: 'female', label: t('profile.sex.female') },
+    { value: 'male', label: t('profile.sex.male') },
+    { value: 'other', label: t('profile.sex.other') },
+    {
+      value: 'not_specified',
+      label: t('profile.sex.notSpecified'),
+    },
+  ];
 
   useEffect(() => {
     if (!user) return;
@@ -100,6 +111,7 @@ export default function EleveAccountScreen() {
           email: result.data.email,
           padelLevel: String(result.data.padelLevel),
           age: String(result.data.age),
+          sex: result.data.sex,
           preferredLanguage: result.data.preferredLanguage,
         });
       }
@@ -133,6 +145,7 @@ export default function EleveAccountScreen() {
       email: result.data.email,
       padelLevel: String(result.data.padelLevel),
       age: String(result.data.age),
+      sex: result.data.sex,
       preferredLanguage: result.data.preferredLanguage,
     });
     setLocale(result.data.preferredLanguage);
@@ -264,6 +277,18 @@ export default function EleveAccountScreen() {
                 )}
               />
             </View>
+            <Controller
+              control={control}
+              name="sex"
+              render={({ field: { onChange, value } }) => (
+                <ProfileOptionSelector
+                  label={t('profile.sexLabel')}
+                  onChange={onChange}
+                  options={sexOptions}
+                  value={value}
+                />
+              )}
+            />
             <Controller
               control={control}
               name="padelLevel"

@@ -1,6 +1,10 @@
+---
+baseline_commit: e27b1cdb14583f25ffb8ae13368fe0e15b60998c
+---
+
 # Story 2.1: Gérer les tarifs coach visibles par les élèves
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -21,16 +25,16 @@ so that les élèves voient une information fiable avant de demander un cours.
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 2.1 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer tarifs coach et lecture eleve selon la story (AC: tous)
-  - [ ] Representer les montants en `amountCents` + `currency` cote TypeScript.
-  - [ ] Ne jamais introduire paiement, checkout ou vocabulaire d'encaissement.
-  - [ ] Proteger creation/modification/desactivation cote coach uniquement.
-- [ ] Ajouter tests et etats UI (AC: securite/UX)
-  - [ ] Couvrir tarifs actifs/inactifs, duree 1h/1h30, individuel/groupe.
+- [x] Verifier les preconditions et dependances de Story 2.1 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer tarifs coach et lecture eleve selon la story (AC: tous)
+  - [x] Representer les montants en `amountCents` + `currency` cote TypeScript.
+  - [x] Ne jamais introduire paiement, checkout ou vocabulaire d'encaissement.
+  - [x] Proteger creation/modification/desactivation cote coach uniquement.
+- [x] Ajouter tests et etats UI (AC: securite/UX)
+  - [x] Couvrir tarifs actifs/inactifs, duree 1h/1h30, individuel/groupe.
 
 ## Interventions utilisateur requises
 
@@ -151,18 +155,71 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Codex GPT-5
+
+### Implementation Plan
+
+- Ajouter un catalogue tarifaire relationnel en centimes EUR avec commandes transactionnelles coach.
+- Construire l'ecran dedie de gestion et une liste publiee commune aux surfaces publique et eleve.
+- Implementer la selection automatique par type, duree, statut, contextes et ciblage, puis couvrir RLS et suppression logique.
 
 ### Debug Log References
+
+- 2026-06-21: Activation `bmad-dev-story` effectuee; workflow personnalise resolu sans etapes prepend/append.
+- 2026-06-21: Baseline propre confirmee au commit `e27b1cdb14583f25ffb8ae13368fe0e15b60998c`.
+- 2026-06-21: Preconditions confirmees: auth, role coach, profils, association coach/eleve, RLS et surfaces publique/eleve disponibles.
+- 2026-06-21: Tests RED confirmes avant implementation: contrat partage et tables/commandes pricing absents.
+- 2026-06-21: Migration `0007_pricing_rates.sql` appliquee sans reset et types Supabase regeneres.
+- 2026-06-21: `npm run typecheck`, `npm run lint`, `npm test`, `npm run supabase:test:db`, les cinq integrations Supabase et `npx expo install --check` passent.
+- 2026-06-21: Expo Web exporte 19 routes statiques, dont `/`, `/eleve` et `/coach/pricing`.
+- 2026-06-21: Validation physique non executee; Flo devra verifier saisie du prix, scroll, selections et affichage des tarifs sur telephone.
 
 ### Completion Notes List
 
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+- Implementation demarree avec baseline git `e27b1cdb14583f25ffb8ae13368fe0e15b60998c`.
+- Tables `pricing_rates` et `pricing_rate_students` ajoutees avec montant en centimes, devise EUR, duree 60/90, type individuel/groupe, statut et criteres.
+- Creation et modification passent par une commande transactionnelle coach; les ciblages sont remplaces atomiquement et verifies contre les eleves associes.
+- La suppression est logique: le tarif disparait des nouvelles demandes tout en restant disponible pour les futures references historiques.
+- RLS publie uniquement les tarifs actifs non supprimes; les lignes inactives restent visibles au coach et toutes les mutations directes sont interdites.
+- Ecran coach dedie avec creation, edition, activation/desactivation, criteres, ciblage eleve et confirmation de suppression compatible Web/mobile.
+- Le profil coach et la navigation ouvrent maintenant la gestion des tarifs.
+- Les surfaces publique et eleve affichent le meme catalogue actif, sans masquage par eleve ni fonctionnalite d'encaissement.
+- Selecteur partage ajoute pour determiner le tarif applicable selon type, duree, statut, contextes et ciblage.
+- Textes et erreurs externalises en FR/EN/ES.
+- Tests: 21 tests TypeScript, 74 assertions SQL et cinq scenarios d'integration Supabase sans regression.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/2-1-gerer-les-tarifs-coach-visibles-par-les-eleves.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `apps/mobile/src/app/coach/pricing.tsx`
+- `apps/mobile/src/app/coach/profile.tsx`
+- `apps/mobile/src/app/eleve/index.tsx`
+- `apps/mobile/src/app/index.tsx`
+- `apps/mobile/src/components/ui/status-badge.tsx`
+- `apps/mobile/src/features/navigation/role-navigation.tsx`
+- `apps/mobile/src/features/pricing/pricing-multi-selector.tsx`
+- `apps/mobile/src/features/pricing/pricing-service.ts`
+- `apps/mobile/src/features/pricing/published-pricing-list.tsx`
+- `apps/mobile/src/i18n/translations.ts`
+- `package.json`
+- `packages/shared/src/contracts/pricing-rate.test.ts`
+- `packages/shared/src/contracts/pricing-rate.ts`
+- `packages/shared/src/index.ts`
+- `packages/shared/src/types/database.types.ts`
+- `scripts/verify-pricing-rates.mjs`
+- `supabase/migrations/0007_pricing_rates.sql`
+- `supabase/tests/database/0006_pricing_rates.sql`
+- `tsconfig.tests.json`
+
+### Change Log
+
+- 2026-06-21: Ajout du modele tarifaire, des commandes transactionnelles coach, de la suppression logique et des politiques RLS.
+- 2026-06-21: Ajout du contrat monetaire et du selecteur automatique de tarif applicable.
+- 2026-06-21: Ajout de l'ecran Gestion Tarifs et du catalogue actif commun aux surfaces publique et eleve.
+- 2026-06-21: Ajout des traductions FR/EN/ES et des tests contrats, SQL et integration.
 
 ## Completion Note
 

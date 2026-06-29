@@ -42,6 +42,17 @@ Contenu:
 - création compte;
 - connexion;
 - profil minimal: nom, téléphone, email, niveau, âge.
+- si l’email correspond à un compte provisionné, ne pas créer de doublon et demander d’utiliser le lien d’activation.
+
+#### E-STUDENT-002b — Activation du Compte Élève
+
+Objectif: permettre à un élève provisionné par le coach de définir son mot de passe.
+
+Contenu:
+- nouveau mot de passe;
+- confirmation du mot de passe;
+- états lien invalide, expiré, déjà utilisé ou compte non activable;
+- confirmation de succès et retour vers la connexion.
 
 #### E-STUDENT-003 — Accueil Élève / Disponibilités Coach
 
@@ -249,6 +260,9 @@ Contenu:
 - pack de cours individuels donné par le coach: cours inclus, utilisés, restants;
 - action coach pour marquer une session de pack comme consommée;
 - téléphone et email cliquables pour appel/mail.
+- badge d’état du compte;
+- bouton supérieur droit `Générer le lien d’activation` ou `Régénérer le lien` uniquement pour `pending_activation`;
+- action copier/partager et expiration visible après génération.
 
 Décisions:
 - La note privée n’est pas en autosave.

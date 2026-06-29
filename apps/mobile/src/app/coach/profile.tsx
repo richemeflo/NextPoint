@@ -5,7 +5,7 @@ import {
   type AppLanguage,
   type CoachProfileFormInput,
 } from '@nextpoint/shared';
-import { useRouter } from 'expo-router';
+import { useRouter, type Href } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { useEffect, useState } from 'react';
 import {
@@ -292,8 +292,8 @@ export default function CoachProfileScreen() {
                 {t('coachProfile.pricingBody')}
               </ThemedText>
               <Button
-                disabled
-                label={t('coachProfile.comingSoon')}
+                label={t('coachProfile.openPricing')}
+                onPress={() => router.navigate('/coach/pricing' as Href)}
                 variant="secondary"
               />
             </Card>

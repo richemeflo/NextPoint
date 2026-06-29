@@ -52,6 +52,12 @@ Statut: décisions produit structurantes à jour
 - Les statistiques coach priorisent le mois, puis trimestre/année; semaine est secondaire.
 - L’interface doit être préparée pour français, anglais et espagnol.
 - L’identité visuelle suit la direction Roland-Garros premium définie dans `design-tokens.md`.
+- Une fiche élève créée par le coach provisionne un compte Auth `pending_activation`.
+- Le coach peut générer ou régénérer un lien d’activation valable 24 heures tant que le compte n’est pas activé.
+- Le lien permet uniquement à l’élève de définir son mot de passe; la régénération invalide l’ancien lien.
+- Les états de compte élève P0 sont `pending_activation`, `active`, `suspended`, `deleted`.
+- Email ou téléphone déjà présent bloque la création d’un nouvel élève.
+- `deleted` est une suppression logique terminale en P0 et conserve l’identité ainsi que l’historique.
 
 ## Décisions P1 Validées
 
@@ -60,7 +66,6 @@ Statut: décisions produit structurantes à jour
 - Écran coach regroupant les messageries liées aux créneaux/réservations/événements.
 - Notification paramétrable côté élève quand une place se libère sur un cours collectif.
 - Horizon de visibilité des disponibilités côté élève configurable par le coach: 1 semaine, 2 semaines, 3 semaines, 1 mois, 2 mois, 3 mois ou non défini (`pas set`).
-- Lien/code d’invitation coach pour associer un élève dans une évolution future.
 
 ## Décisions V2 Validées
 

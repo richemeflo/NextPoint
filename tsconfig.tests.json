@@ -8,6 +8,8 @@
     "packages/shared/src/contracts/auth.test.ts",
     "packages/shared/src/contracts/coach-profile.ts",
     "packages/shared/src/contracts/coach-profile.test.ts",
+    "packages/shared/src/contracts/pricing-rate.ts",
+    "packages/shared/src/contracts/pricing-rate.test.ts",
     "packages/shared/src/contracts/student-profile.ts",
     "packages/shared/src/contracts/student-profile.test.ts",
     "packages/shared/src/domain/languages.ts",
@@ -15,6 +17,10 @@
     "apps/mobile/src/features/auth/access-policy.ts",
     "apps/mobile/src/features/auth/access-policy.test.ts",
     "apps/mobile/src/features/auth/auth-error.ts",
-    "apps/mobile/src/features/auth/auth-error.test.ts"
+    "apps/mobile/src/features/auth/auth-error.test.ts",
+    "apps/mobile/src/features/students/student-list-filters.ts",
+    "apps/mobile/src/features/students/student-list-filters.test.ts",
+    "apps/mobile/src/features/lesson-packs/lesson-pack-state.ts",
+    "apps/mobile/src/features/lesson-packs/lesson-pack-state.test.ts"
   ]
 }
