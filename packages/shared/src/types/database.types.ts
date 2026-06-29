@@ -607,6 +607,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      delete_availability_slot: {
+        Args: { p_apply_to_series: boolean; p_slot_id: string }
+        Returns: number
+      }
       delete_pricing_rate: { Args: { p_rate_id: string }; Returns: undefined }
       finalize_student_activation: {
         Args: { p_student_id: string; p_token_id: string }
@@ -666,6 +670,35 @@ export type Database = {
           to: "student_private_notes"
           isOneToOne: true
           isSetofReturn: false
+        }
+      }
+      update_availability_slot: {
+        Args: {
+          p_apply_to_series: boolean
+          p_duration_minutes: number
+          p_ends_at: string
+          p_location: string
+          p_slot_id: string
+          p_starts_at: string
+        }
+        Returns: {
+          availability_range_id: string
+          coach_id: string
+          created_at: string
+          deleted_at: string | null
+          duration_minutes: number
+          ends_at: string
+          id: string
+          location: string
+          starts_at: string
+          status: Database["public"]["Enums"]["availability_slot_status"]
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "availability_slots"
+          isOneToOne: false
+          isSetofReturn: true
         }
       }
     }

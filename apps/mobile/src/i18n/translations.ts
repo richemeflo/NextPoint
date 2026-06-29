@@ -58,6 +58,26 @@ export const dictionaries = {
     'nav.eleve.planning': 'Planning / Demandes',
     'nav.eleve.notifications': 'Notifications',
     'nav.eleve.account': 'Compte',
+    'planning.loading': 'Chargement du planning...',
+    'planning.refreshing': 'Mise à jour des créneaux...',
+    'planning.coachTitle': 'Planning coach',
+    'planning.coachBody':
+      'Consultez vos créneaux à venir en vue semaine ou jour.',
+    'planning.display.agenda': 'Agenda',
+    'planning.display.list': 'Liste',
+    'planning.mode.week': 'Semaine',
+    'planning.mode.day': 'Jour',
+    'planning.previousAction': 'Précédent',
+    'planning.todayAction': 'Aujourd’hui',
+    'planning.nextAction': 'Suivant',
+    'planning.weekRange': '{{start}} - {{end}}',
+    'planning.loadErrorTitle': 'Planning indisponible',
+    'planning.loadErrorBody':
+      'Impossible de charger vos créneaux pour cette période.',
+    'planning.emptyDayTitle': 'Aucun créneau',
+    'planning.emptyDayBody': 'Aucune disponibilité visible sur cette journée.',
+    'planning.slotTime': '{{start}}-{{end}}',
+    'planning.slotMeta': '{{duration}} · {{location}}',
     'profile.title': 'Mon profil',
     'profile.subtitle':
       'Renseignez les informations utiles au coach pour organiser vos prochains cours.',
@@ -134,6 +154,19 @@ export const dictionaries = {
     'studentHome.title': 'Votre espace de réservation',
     'studentHome.subtitle':
       'Consultez le profil de votre coach avant de préparer une demande de cours.',
+    'studentAgenda.loading': 'Chargement de l’agenda...',
+    'studentAgenda.title': 'Agenda élève',
+    'studentAgenda.body':
+      'Les créneaux affichés sont disponibles et demandables auprès de votre coach.',
+    'studentAgenda.loadErrorTitle': 'Agenda indisponible',
+    'studentAgenda.loadErrorBody':
+      'Impossible de charger les créneaux demandables pour le moment.',
+    'studentAgenda.emptyDayTitle': 'Aucun créneau demandable',
+    'studentAgenda.emptyDayBody':
+      'Aucun créneau disponible n’est proposé sur cette journée.',
+    'studentAgenda.slotDetail':
+      '{{date}} · {{duration}} · {{location}}',
+    'studentAgenda.requestableStatus': 'Demandable',
     'pricing.loading': 'Chargement des tarifs...',
     'pricing.loadErrorTitle': 'Tarifs indisponibles',
     'pricing.loadErrorBody':
@@ -222,16 +255,29 @@ export const dictionaries = {
       'Complétez une plage cohérente pour afficher l’aperçu.',
     'availability.previewSlot': '{{start}}–{{end}} · {{location}}',
     'availability.createAction': 'Créer la disponibilité',
+    'availability.editAction': 'Modifier',
+    'availability.updateAction': 'Enregistrer',
+    'availability.deleteAction': 'Supprimer',
+    'availability.cancelAction': 'Annuler',
     'availability.saving': 'Enregistrement...',
     'availability.saveSuccessTitle': 'Disponibilité créée',
     'availability.saveSuccessBody':
       'La plage est enregistrée et conserve la durée et le lieu pour la génération des créneaux.',
+    'availability.updateSuccessTitle': 'Créneau modifié',
+    'availability.updateSuccessBody':
+      'La disponibilité sélectionnée a été mise à jour sans conflit.',
+    'availability.deleteSuccessTitle': 'Créneau supprimé',
+    'availability.deleteSuccessBody':
+      'Le créneau n’est plus visible comme disponible.',
     'availability.saveErrorTitle': 'Création impossible',
     'availability.saveErrorBody':
       'Aucune disponibilité n’a été créée. Vérifiez les informations puis réessayez.',
     'availability.conflictTitle': 'Plage en conflit',
     'availability.conflictBody':
       'Cette plage chevauche une disponibilité existante. Ajustez les horaires.',
+    'availability.blockedTitle': 'Modification indisponible',
+    'availability.blockedBody':
+      'Ce créneau contient déjà une demande active ou une réservation confirmée.',
     'availability.forbiddenTitle': 'Accès refusé',
     'availability.forbiddenBody':
       'Seul un compte coach peut créer une disponibilité.',
@@ -250,6 +296,11 @@ export const dictionaries = {
     'availability.slotStatus.available': 'Disponible',
     'availability.slotStatus.booked': 'Réservé',
     'availability.slotStatus.cancelled': 'Annulé',
+    'availability.scopeDialogTitle': 'Appliquer la modification',
+    'availability.scopeDialogBody':
+      'Choisissez si l’action concerne uniquement cette occurrence ou toute la série récurrente.',
+    'availability.scopeOccurrenceAction': 'Cette occurrence',
+    'availability.scopeSeriesAction': 'Toute la série',
     'availability.validation.invalidDate': 'Saisissez une date au format AAAA-MM-JJ.',
     'availability.validation.invalidTime': 'Saisissez une heure au format HH:MM.',
     'availability.validation.endBeforeStart':
@@ -572,6 +623,25 @@ export const dictionaries = {
     'nav.eleve.planning': 'Schedule / Requests',
     'nav.eleve.notifications': 'Notifications',
     'nav.eleve.account': 'Account',
+    'planning.loading': 'Loading planning...',
+    'planning.refreshing': 'Updating slots...',
+    'planning.coachTitle': 'Coach schedule',
+    'planning.coachBody': 'Review upcoming slots by week or day.',
+    'planning.display.agenda': 'Agenda',
+    'planning.display.list': 'List',
+    'planning.mode.week': 'Week',
+    'planning.mode.day': 'Day',
+    'planning.previousAction': 'Previous',
+    'planning.todayAction': 'Today',
+    'planning.nextAction': 'Next',
+    'planning.weekRange': '{{start}} - {{end}}',
+    'planning.loadErrorTitle': 'Schedule unavailable',
+    'planning.loadErrorBody':
+      'Unable to load your slots for this period.',
+    'planning.emptyDayTitle': 'No slots',
+    'planning.emptyDayBody': 'No availability visible on this day.',
+    'planning.slotTime': '{{start}}-{{end}}',
+    'planning.slotMeta': '{{duration}} · {{location}}',
     'profile.title': 'My profile',
     'profile.subtitle':
       'Provide the information your coach needs to organize your upcoming lessons.',
@@ -648,6 +718,19 @@ export const dictionaries = {
     'studentHome.title': 'Your booking space',
     'studentHome.subtitle':
       'Review your coach profile before preparing a lesson request.',
+    'studentAgenda.loading': 'Loading agenda...',
+    'studentAgenda.title': 'Student agenda',
+    'studentAgenda.body':
+      'Visible slots are available and requestable with your coach.',
+    'studentAgenda.loadErrorTitle': 'Agenda unavailable',
+    'studentAgenda.loadErrorBody':
+      'Unable to load requestable slots right now.',
+    'studentAgenda.emptyDayTitle': 'No requestable slots',
+    'studentAgenda.emptyDayBody':
+      'No available slot is offered on this day.',
+    'studentAgenda.slotDetail':
+      '{{date}} · {{duration}} · {{location}}',
+    'studentAgenda.requestableStatus': 'Requestable',
     'pricing.loading': 'Loading pricing...',
     'pricing.loadErrorTitle': 'Pricing unavailable',
     'pricing.loadErrorBody':
@@ -736,16 +819,29 @@ export const dictionaries = {
       'Complete a coherent range to display the preview.',
     'availability.previewSlot': '{{start}}–{{end}} · {{location}}',
     'availability.createAction': 'Create availability',
+    'availability.editAction': 'Edit',
+    'availability.updateAction': 'Save',
+    'availability.deleteAction': 'Delete',
+    'availability.cancelAction': 'Cancel',
     'availability.saving': 'Saving...',
     'availability.saveSuccessTitle': 'Availability created',
     'availability.saveSuccessBody':
       'The range is saved and keeps its duration and location for slot generation.',
+    'availability.updateSuccessTitle': 'Slot updated',
+    'availability.updateSuccessBody':
+      'The selected availability was updated without conflict.',
+    'availability.deleteSuccessTitle': 'Slot deleted',
+    'availability.deleteSuccessBody':
+      'The slot is no longer visible as available.',
     'availability.saveErrorTitle': 'Unable to create',
     'availability.saveErrorBody':
       'No availability was created. Check the information and try again.',
     'availability.conflictTitle': 'Range conflict',
     'availability.conflictBody':
       'This range overlaps an existing availability. Adjust the times.',
+    'availability.blockedTitle': 'Change unavailable',
+    'availability.blockedBody':
+      'This slot already has an active request or confirmed booking.',
     'availability.forbiddenTitle': 'Access denied',
     'availability.forbiddenBody':
       'Only a coach account can create availability.',
@@ -764,6 +860,11 @@ export const dictionaries = {
     'availability.slotStatus.available': 'Available',
     'availability.slotStatus.booked': 'Booked',
     'availability.slotStatus.cancelled': 'Cancelled',
+    'availability.scopeDialogTitle': 'Apply change',
+    'availability.scopeDialogBody':
+      'Choose whether the action applies only to this occurrence or to the recurring series.',
+    'availability.scopeOccurrenceAction': 'This occurrence',
+    'availability.scopeSeriesAction': 'Whole series',
     'availability.validation.invalidDate': 'Enter a date using YYYY-MM-DD.',
     'availability.validation.invalidTime': 'Enter a time using HH:MM.',
     'availability.validation.endBeforeStart':
@@ -1085,6 +1186,26 @@ export const dictionaries = {
     'nav.eleve.planning': 'Planificación / Solicitudes',
     'nav.eleve.notifications': 'Notificaciones',
     'nav.eleve.account': 'Cuenta',
+    'planning.loading': 'Cargando planificación...',
+    'planning.refreshing': 'Actualizando horarios...',
+    'planning.coachTitle': 'Planificación del coach',
+    'planning.coachBody':
+      'Consulta tus próximos horarios en vista semanal o diaria.',
+    'planning.display.agenda': 'Agenda',
+    'planning.display.list': 'Lista',
+    'planning.mode.week': 'Semana',
+    'planning.mode.day': 'Día',
+    'planning.previousAction': 'Anterior',
+    'planning.todayAction': 'Hoy',
+    'planning.nextAction': 'Siguiente',
+    'planning.weekRange': '{{start}} - {{end}}',
+    'planning.loadErrorTitle': 'Planificación no disponible',
+    'planning.loadErrorBody':
+      'No se pueden cargar tus horarios para este periodo.',
+    'planning.emptyDayTitle': 'Sin horarios',
+    'planning.emptyDayBody': 'No hay disponibilidad visible en este día.',
+    'planning.slotTime': '{{start}}-{{end}}',
+    'planning.slotMeta': '{{duration}} · {{location}}',
     'profile.title': 'Mi perfil',
     'profile.subtitle':
       'Indica la información que necesita tu coach para organizar tus próximas clases.',
@@ -1161,6 +1282,19 @@ export const dictionaries = {
     'studentHome.title': 'Tu espacio de reserva',
     'studentHome.subtitle':
       'Consulta el perfil de tu coach antes de preparar una solicitud de clase.',
+    'studentAgenda.loading': 'Cargando agenda...',
+    'studentAgenda.title': 'Agenda del alumno',
+    'studentAgenda.body':
+      'Los horarios visibles están disponibles y se pueden solicitar a tu coach.',
+    'studentAgenda.loadErrorTitle': 'Agenda no disponible',
+    'studentAgenda.loadErrorBody':
+      'No se pueden cargar los horarios solicitables en este momento.',
+    'studentAgenda.emptyDayTitle': 'Sin horarios solicitables',
+    'studentAgenda.emptyDayBody':
+      'No hay horarios disponibles en este día.',
+    'studentAgenda.slotDetail':
+      '{{date}} · {{duration}} · {{location}}',
+    'studentAgenda.requestableStatus': 'Solicitable',
     'pricing.loading': 'Cargando tarifas...',
     'pricing.loadErrorTitle': 'Tarifas no disponibles',
     'pricing.loadErrorBody':
@@ -1249,16 +1383,29 @@ export const dictionaries = {
       'Completa una franja coherente para mostrar la vista previa.',
     'availability.previewSlot': '{{start}}–{{end}} · {{location}}',
     'availability.createAction': 'Crear disponibilidad',
+    'availability.editAction': 'Modificar',
+    'availability.updateAction': 'Guardar',
+    'availability.deleteAction': 'Eliminar',
+    'availability.cancelAction': 'Cancelar',
     'availability.saving': 'Guardando...',
     'availability.saveSuccessTitle': 'Disponibilidad creada',
     'availability.saveSuccessBody':
       'La franja está guardada y conserva la duración y el lugar para generar horarios.',
+    'availability.updateSuccessTitle': 'Horario modificado',
+    'availability.updateSuccessBody':
+      'La disponibilidad seleccionada se actualizó sin conflicto.',
+    'availability.deleteSuccessTitle': 'Horario eliminado',
+    'availability.deleteSuccessBody':
+      'El horario ya no aparece como disponible.',
     'availability.saveErrorTitle': 'No se puede crear',
     'availability.saveErrorBody':
       'No se ha creado ninguna disponibilidad. Revisa la información e inténtalo de nuevo.',
     'availability.conflictTitle': 'Franja en conflicto',
     'availability.conflictBody':
       'Esta franja se solapa con una disponibilidad existente. Ajusta los horarios.',
+    'availability.blockedTitle': 'Modificación no disponible',
+    'availability.blockedBody':
+      'Este horario ya tiene una solicitud activa o una reserva confirmada.',
     'availability.forbiddenTitle': 'Acceso denegado',
     'availability.forbiddenBody':
       'Solo una cuenta de coach puede crear disponibilidad.',
@@ -1277,6 +1424,11 @@ export const dictionaries = {
     'availability.slotStatus.available': 'Disponible',
     'availability.slotStatus.booked': 'Reservado',
     'availability.slotStatus.cancelled': 'Cancelado',
+    'availability.scopeDialogTitle': 'Aplicar el cambio',
+    'availability.scopeDialogBody':
+      'Elige si la acción afecta solo a esta ocurrencia o a toda la serie recurrente.',
+    'availability.scopeOccurrenceAction': 'Esta ocurrencia',
+    'availability.scopeSeriesAction': 'Toda la serie',
     'availability.validation.invalidDate': 'Introduce una fecha con formato AAAA-MM-DD.',
     'availability.validation.invalidTime': 'Introduce una hora con formato HH:MM.',
     'availability.validation.endBeforeStart':

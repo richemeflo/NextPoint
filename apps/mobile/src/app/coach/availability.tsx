@@ -15,6 +15,7 @@ import { Controller, useForm, useWatch } from 'react-hook-form';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   ScrollView,
   StyleSheet,
   View,
@@ -31,8 +32,10 @@ import { useAuth } from '@/features/auth/auth-context';
 import { ProfileOptionSelector } from '@/features/profiles/profile-option-selector';
 import {
   createAvailabilityRange,
+  deleteAvailabilitySlot,
   getCoachAvailabilitySlots,
   getCoachAvailabilityRanges,
+  updateAvailabilitySlot,
   type AvailabilityRange,
   type AvailabilitySlot,
 } from '@/features/scheduling/availability-service';
@@ -44,6 +47,27 @@ function formatLocalDate(date: Date) {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+function formatLocalTime(date: Date) {
+  return `${String(date.getHours()).padStart(2, '0')}:${String(
+    date.getMinutes()
+  ).padStart(2, '0')}`;
+}
+
+function slotToFormInput(slot: AvailabilitySlot): AvailabilityRangeFormInput {
+  const startsAt = new Date(slot.startsAt);
+  const endsAt = new Date(slot.endsAt);
+
+  return {
+    date: formatLocalDate(startsAt),
+    startsAtLocalTime: formatLocalTime(startsAt),
+    endsAtLocalTime: formatLocalTime(endsAt),
+    slotDurationMinutes: String(slot.durationMinutes) as '60' | '90',
+    location: defaultAvailabilityLocation,
+    recurrenceType: 'none',
+    recurrenceEndsOn: '',
+  };
 }
 
 const defaultValues: AvailabilityRangeFormInput = {
@@ -66,8 +90,18 @@ export default function CoachAvailabilityScreen() {
     'loading'
   );
   const [feedback, setFeedback] = useState<
-    'none' | 'saved' | 'conflict' | 'forbidden' | 'error'
+    | 'none'
+    | 'saved'
+    | 'updated'
+    | 'deleted'
+    | 'conflict'
+    | 'blocked'
+    | 'forbidden'
+    | 'error'
   >('none');
+  const [editingSlotId, setEditingSlotId] = useState<string | null>(null);
+  const [editingSlotValues, setEditingSlotValues] =
+    useState<AvailabilityRangeFormInput | null>(null);
   const {
     control,
     handleSubmit,
@@ -197,6 +231,16 @@ export default function CoachAvailabilityScreen() {
     return grouped;
   }, [slots]);
 
+  const rangeById = useMemo(() => {
+    const byId = new Map<string, AvailabilityRange>();
+
+    for (const range of ranges) {
+      byId.set(range.id, range);
+    }
+
+    return byId;
+  }, [ranges]);
+
   const onSubmit = handleSubmit(async (form) => {
     setFeedback('none');
     const result = await createAvailabilityRange(toAvailabilityRangeInput(form));
@@ -216,6 +260,132 @@ export default function CoachAvailabilityScreen() {
     setFeedback('saved');
     await loadRanges();
   });
+
+  const startEditingSlot = (slot: AvailabilitySlot) => {
+    setFeedback('none');
+    setEditingSlotId(slot.id);
+    setEditingSlotValues(slotToFormInput(slot));
+  };
+
+  const cancelEditingSlot = () => {
+    setEditingSlotId(null);
+    setEditingSlotValues(null);
+  };
+
+  const setEditingSlotField = <Key extends keyof AvailabilityRangeFormInput>(
+    key: Key,
+    value: AvailabilityRangeFormInput[Key]
+  ) => {
+    setEditingSlotValues((current) =>
+      current ? { ...current, [key]: value } : current
+    );
+  };
+
+  const canOfferSeriesScope = (slot: AvailabilitySlot) => {
+    const range = rangeById.get(slot.rangeId);
+    if (!range || range.recurrenceType === 'none') return false;
+
+    return (slotsByRangeId.get(slot.rangeId) ?? []).every(
+      (candidate) => candidate.status === 'available'
+    );
+  };
+
+  const setMutationFeedback = (
+    code: 'blocked' | 'conflict' | 'forbidden' | 'invalid' | undefined
+  ) => {
+    setFeedback(
+      code === 'blocked'
+        ? 'blocked'
+        : code === 'conflict'
+          ? 'conflict'
+          : code === 'forbidden'
+            ? 'forbidden'
+            : 'error'
+    );
+  };
+
+  const saveEditedSlot = async (
+    slot: AvailabilitySlot,
+    applyToSeries: boolean
+  ) => {
+    if (!editingSlotValues) return;
+
+    const parsed = availabilityRangeSchema.safeParse(editingSlotValues);
+    if (!parsed.success) {
+      setFeedback('error');
+      return;
+    }
+
+    const input = toAvailabilityRangeInput(parsed.data);
+    const result = await updateAvailabilitySlot({
+      slotId: slot.id,
+      startsAt: input.startsAt,
+      endsAt: input.endsAt,
+      durationMinutes: input.slotDurationMinutes,
+      location: input.location,
+      applyToSeries,
+    });
+
+    if (!result.ok) {
+      setMutationFeedback(result.code);
+      return;
+    }
+
+    setFeedback('updated');
+    cancelEditingSlot();
+    await loadRanges();
+  };
+
+  const deleteSlot = async (slot: AvailabilitySlot, applyToSeries: boolean) => {
+    const result = await deleteAvailabilitySlot(slot.id, applyToSeries);
+
+    if (!result.ok) {
+      setMutationFeedback(result.code);
+      return;
+    }
+
+    setFeedback('deleted');
+    cancelEditingSlot();
+    await loadRanges();
+  };
+
+  const requestMutationScope = (
+    slot: AvailabilitySlot,
+    action: 'save' | 'delete'
+  ) => {
+    const applyOccurrence = () =>
+      action === 'save'
+        ? void saveEditedSlot(slot, false)
+        : void deleteSlot(slot, false);
+    const applySeries = () =>
+      action === 'save'
+        ? void saveEditedSlot(slot, true)
+        : void deleteSlot(slot, true);
+
+    if (!canOfferSeriesScope(slot)) {
+      applyOccurrence();
+      return;
+    }
+
+    Alert.alert(
+      t('availability.scopeDialogTitle'),
+      t('availability.scopeDialogBody'),
+      [
+        {
+          text: t('availability.scopeOccurrenceAction'),
+          onPress: applyOccurrence,
+        },
+        {
+          text: t('availability.scopeSeriesAction'),
+          onPress: applySeries,
+        },
+        {
+          text: t('availability.cancelAction'),
+          style: 'cancel',
+        },
+      ]
+    );
+  };
 
   const durationOptions = availabilitySlotDurations.map((duration) => ({
     value: String(duration) as '60' | '90',
@@ -397,10 +567,31 @@ export default function CoachAvailabilityScreen() {
                 tone="success"
               />
             ) : null}
+            {feedback === 'updated' ? (
+              <Feedback
+                message={t('availability.updateSuccessBody')}
+                title={t('availability.updateSuccessTitle')}
+                tone="success"
+              />
+            ) : null}
+            {feedback === 'deleted' ? (
+              <Feedback
+                message={t('availability.deleteSuccessBody')}
+                title={t('availability.deleteSuccessTitle')}
+                tone="success"
+              />
+            ) : null}
             {feedback === 'conflict' ? (
               <Feedback
                 message={t('availability.conflictBody')}
                 title={t('availability.conflictTitle')}
+                tone="warning"
+              />
+            ) : null}
+            {feedback === 'blocked' ? (
+              <Feedback
+                message={t('availability.blockedBody')}
+                title={t('availability.blockedTitle')}
                 tone="warning"
               />
             ) : null}
@@ -495,6 +686,73 @@ export default function CoachAvailabilityScreen() {
                               `availability.slotStatus.${slot.status}` as TranslationKey
                             )}
                           </ThemedText>
+                          {editingSlotId === slot.id && editingSlotValues ? (
+                            <View style={styles.slotEditPanel}>
+                              <View style={styles.formGrid}>
+                                <TextField
+                                  label={t('availability.dateLabel')}
+                                  onChangeText={(value) =>
+                                    setEditingSlotField('date', value)
+                                  }
+                                  placeholder={t('availability.datePlaceholder')}
+                                  value={editingSlotValues.date}
+                                />
+                                <TextField
+                                  label={t('availability.startsAtLabel')}
+                                  onChangeText={(value) =>
+                                    setEditingSlotField('startsAtLocalTime', value)
+                                  }
+                                  placeholder={t('availability.timePlaceholder')}
+                                  value={editingSlotValues.startsAtLocalTime}
+                                />
+                                <TextField
+                                  label={t('availability.endsAtLabel')}
+                                  onChangeText={(value) =>
+                                    setEditingSlotField('endsAtLocalTime', value)
+                                  }
+                                  placeholder={t('availability.timePlaceholder')}
+                                  value={editingSlotValues.endsAtLocalTime}
+                                />
+                              </View>
+                              <ProfileOptionSelector
+                                label={t('availability.durationLabel')}
+                                onChange={(value) =>
+                                  setEditingSlotField('slotDurationMinutes', value)
+                                }
+                                options={durationOptions}
+                                value={editingSlotValues.slotDurationMinutes}
+                              />
+                              <View style={styles.slotActions}>
+                                <Button
+                                  label={t('availability.updateAction')}
+                                  onPress={() => requestMutationScope(slot, 'save')}
+                                />
+                                <Button
+                                  label={t('availability.deleteAction')}
+                                  onPress={() => requestMutationScope(slot, 'delete')}
+                                  variant="secondary"
+                                />
+                                <Button
+                                  label={t('availability.cancelAction')}
+                                  onPress={cancelEditingSlot}
+                                  variant="secondary"
+                                />
+                              </View>
+                            </View>
+                          ) : (
+                            <View style={styles.slotActions}>
+                              <Button
+                                label={t('availability.editAction')}
+                                onPress={() => startEditingSlot(slot)}
+                                variant="secondary"
+                              />
+                              <Button
+                                label={t('availability.deleteAction')}
+                                onPress={() => requestMutationScope(slot, 'delete')}
+                                variant="secondary"
+                              />
+                            </View>
+                          )}
                         </View>
                       ))}
                     </View>
@@ -570,6 +828,14 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.two,
   },
   slotRow: {
-    gap: Spacing.half,
+    gap: Spacing.two,
+  },
+  slotEditPanel: {
+    gap: Spacing.three,
+  },
+  slotActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
   },
 });

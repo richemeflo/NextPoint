@@ -232,10 +232,13 @@ try {
 
   const studentSlotRead = await student.client
     .from('availability_slots')
-    .select('id')
+    .select('id, status')
     .eq('availability_range_id', created.data.id);
   assert.equal(studentSlotRead.error, null);
-  assert.deepEqual(studentSlotRead.data, []);
+  assert.deepEqual(
+    studentSlotRead.data.map((slot) => slot.status),
+    ['available', 'available', 'available']
+  );
 
   const overlapping = await coach.client.rpc('create_availability_range', {
     p_starts_at: '2026-07-01T17:00:00.000Z',
@@ -340,8 +343,118 @@ try {
   assert.equal(requestableAfterBooked.error, null);
   assert.deepEqual(requestableAfterBooked.data, []);
 
+  const studentRequestableAfterBooked = await student.client
+    .from('availability_slots')
+    .select('id')
+    .eq('id', firstGeneratedSlotId);
+  assert.equal(studentRequestableAfterBooked.error, null);
+  assert.deepEqual(studentRequestableAfterBooked.data, []);
+
+  const blockedUpdate = await coach.client.rpc('update_availability_slot', {
+    p_slot_id: firstGeneratedSlotId,
+    p_starts_at: '2026-07-01T18:00:00.000Z',
+    p_ends_at: '2026-07-01T19:30:00.000Z',
+    p_duration_minutes: 90,
+    p_location: 'Les Bruyères Centre Sportif',
+    p_apply_to_series: false,
+  });
+  assert.notEqual(blockedUpdate.error, null);
+  assert.equal(blockedUpdate.error.code, '55000');
+
+  const availableSlot = generatedSlots.data[1];
+  const updatedOccurrence = await coach.client.rpc('update_availability_slot', {
+    p_slot_id: availableSlot.id,
+    p_starts_at: '2026-07-08T18:00:00.000Z',
+    p_ends_at: '2026-07-08T19:30:00.000Z',
+    p_duration_minutes: 90,
+    p_location: 'Les Bruyères Centre Sportif',
+    p_apply_to_series: false,
+  });
+  assert.equal(updatedOccurrence.error, null);
+  assert.equal(updatedOccurrence.data[0].starts_at, '2026-07-08T18:00:00+00:00');
+
+  const seriesCreated = await coach.client.rpc('create_availability_range', {
+    p_starts_at: '2026-09-02T16:00:00.000Z',
+    p_ends_at: '2026-09-02T17:00:00.000Z',
+    p_slot_duration_minutes: 60,
+    p_location: 'Les Bruyères Centre Sportif',
+    p_recurrence_type: 'weekly',
+    p_recurrence_ends_on: '2026-09-16',
+  });
+  assert.equal(seriesCreated.error, null);
+  createdRangeIds.push(seriesCreated.data.id);
+
+  const seriesSlotsBefore = await coach.client
+    .from('availability_slots')
+    .select('id, starts_at')
+    .eq('availability_range_id', seriesCreated.data.id)
+    .order('starts_at', { ascending: true });
+  assert.equal(seriesSlotsBefore.error, null);
+  assert.equal(seriesSlotsBefore.data.length, 3);
+
+  const seriesUpdate = await coach.client.rpc('update_availability_slot', {
+    p_slot_id: seriesSlotsBefore.data[0].id,
+    p_starts_at: '2026-09-02T17:00:00.000Z',
+    p_ends_at: '2026-09-02T18:00:00.000Z',
+    p_duration_minutes: 60,
+    p_location: 'Les Bruyères Centre Sportif',
+    p_apply_to_series: true,
+  });
+  assert.equal(seriesUpdate.error, null);
+
+  const seriesSlotsAfter = await coach.client
+    .from('availability_slots')
+    .select('starts_at, ends_at')
+    .eq('availability_range_id', seriesCreated.data.id)
+    .order('starts_at', { ascending: true });
+  assert.equal(seriesSlotsAfter.error, null);
+  assert.deepEqual(seriesSlotsAfter.data, [
+    {
+      starts_at: '2026-09-02T17:00:00+00:00',
+      ends_at: '2026-09-02T18:00:00+00:00',
+    },
+    {
+      starts_at: '2026-09-09T17:00:00+00:00',
+      ends_at: '2026-09-09T18:00:00+00:00',
+    },
+    {
+      starts_at: '2026-09-16T17:00:00+00:00',
+      ends_at: '2026-09-16T18:00:00+00:00',
+    },
+  ]);
+
+  const deletedOccurrence = await coach.client.rpc('delete_availability_slot', {
+    p_slot_id: seriesSlotsBefore.data[1].id,
+    p_apply_to_series: false,
+  });
+  assert.equal(deletedOccurrence.error, null);
+  assert.equal(deletedOccurrence.data, 1);
+
+  const visibleAfterOccurrenceDelete = await coach.client
+    .from('availability_slots')
+    .select('id')
+    .eq('availability_range_id', seriesCreated.data.id)
+    .is('deleted_at', null);
+  assert.equal(visibleAfterOccurrenceDelete.error, null);
+  assert.equal(visibleAfterOccurrenceDelete.data.length, 2);
+
+  const deletedSeries = await coach.client.rpc('delete_availability_slot', {
+    p_slot_id: seriesSlotsBefore.data[0].id,
+    p_apply_to_series: true,
+  });
+  assert.equal(deletedSeries.error, null);
+  assert.equal(deletedSeries.data, 2);
+
+  const visibleAfterSeriesDelete = await coach.client
+    .from('availability_slots')
+    .select('id')
+    .eq('availability_range_id', seriesCreated.data.id)
+    .is('deleted_at', null);
+  assert.equal(visibleAfterSeriesDelete.error, null);
+  assert.deepEqual(visibleAfterSeriesDelete.data, []);
+
   console.log(
-    'AVAILABILITY_RANGES_INTEGRATION_OK atomic range and recurring slot generation, complete-slot truncation, coach read, non-coach refusal, direct mutation/update/delete refusal, overlap guard, duration/location/recurrence constraints, booked slots hidden from requestable reads'
+    'AVAILABILITY_RANGES_INTEGRATION_OK atomic range and recurring slot generation, complete-slot truncation, coach read, associated student requestable read, direct mutation/update/delete refusal, safe occurrence and series updates/deletes, overlap guard, duration/location/recurrence constraints, booked slots hidden from requestable reads'
   );
 } finally {
   for (const rangeId of createdRangeIds) {

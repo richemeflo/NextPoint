@@ -1,6 +1,6 @@
 begin;
 
-select plan(22);
+select plan(28);
 
 select ok(
   to_regtype('public.availability_slot_status') is not null,
@@ -123,6 +123,34 @@ select has_function(
   array['timestamptz', 'timestamptz', 'integer', 'text', 'availability_recurrence_type', 'date'],
   'availability creation command still exists after slot generation'
 );
+select has_function(
+  'public',
+  'update_availability_slot',
+  array['uuid', 'timestamptz', 'timestamptz', 'integer', 'text', 'boolean'],
+  'coach-only availability slot update command exists'
+);
+select ok(
+  has_function_privilege(
+    'authenticated',
+    'public.update_availability_slot(uuid,timestamptz,timestamptz,integer,text,boolean)',
+    'execute'
+  ),
+  'authenticated coach can call availability slot update command'
+);
+select has_function(
+  'public',
+  'delete_availability_slot',
+  array['uuid', 'boolean'],
+  'coach-only availability slot delete command exists'
+);
+select ok(
+  has_function_privilege(
+    'authenticated',
+    'public.delete_availability_slot(uuid,boolean)',
+    'execute'
+  ),
+  'authenticated coach can call availability slot delete command'
+);
 select ok(
   exists (
     select 1
@@ -141,6 +169,25 @@ select ok(
 select ok(
   has_table_privilege('service_role', 'public.availability_slots', 'update'),
   'trusted server execution can later block confirmed slots'
+);
+select ok(
+  exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'availability_slots'
+      and policyname = 'availability_slots_select_associated_student_requestable'
+  ),
+  'associated students can read requestable slots'
+);
+select ok(
+  exists (
+    select 1
+    from pg_indexes
+    where schemaname = 'public'
+      and indexname = 'availability_slots_requestable_idx'
+  ),
+  'student agenda uses the requestable slot index'
 );
 
 select * from finish();
