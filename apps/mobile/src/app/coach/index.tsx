@@ -174,6 +174,38 @@ export default function CoachPlanningScreen() {
   const bookingStatusKey = (status: Booking['status']) =>
     `status.${status}` as TranslationKey;
 
+  const getBookingStatusStyle = (status: Booking['status'] | undefined) => {
+    if (status === 'pending') {
+      return { backgroundColor: theme.warningSurface, borderColor: theme.warning };
+    }
+
+    if (status === 'confirmed' || status === 'modified') {
+      return { backgroundColor: theme.successSurface, borderColor: theme.success };
+    }
+
+    if (status === 'refused') {
+      return { backgroundColor: theme.errorSurface, borderColor: theme.error };
+    }
+
+    return undefined;
+  };
+
+  const bookingStatusThemeColor = (
+    status: Booking['status']
+  ): 'warning' | 'success' | 'error' | 'primary' => {
+    if (status === 'pending') return 'warning';
+    if (status === 'confirmed' || status === 'modified') return 'success';
+    if (status === 'refused') return 'error';
+    return 'primary';
+  };
+
+  const getHighlightedSlotBooking = (slotBookings: Booking[]) =>
+    slotBookings.find(
+      (booking) => booking.status === 'confirmed' || booking.status === 'modified'
+    ) ??
+    slotBookings.find((booking) => booking.status === 'pending') ??
+    slotBookings.find((booking) => booking.status === 'refused');
+
   const studentName = (studentId: string) =>
     students.find((student) => student.userId === studentId)?.fullName ??
     t('booking.unknownStudent');
@@ -247,6 +279,25 @@ export default function CoachPlanningScreen() {
     return grouped;
   }, [slots]);
 
+  const bookingsBySlotId = useMemo(() => {
+    const grouped = new Map<string, Booking[]>();
+
+    for (const booking of bookings) {
+      if (!booking.availabilitySlotId) continue;
+
+      const current = grouped.get(booking.availabilitySlotId) ?? [];
+      current.push(booking);
+      grouped.set(booking.availabilitySlotId, current);
+    }
+
+    return grouped;
+  }, [bookings]);
+
+  const getSlotBookingStyle = (slotId: string) =>
+    getBookingStatusStyle(
+      getHighlightedSlotBooking(bookingsBySlotId.get(slotId) ?? [])?.status
+    );
+
   const renderSlotContent = (slot: AvailabilitySlot) => (
     <>
       <ThemedText type="smallBold">
@@ -266,7 +317,7 @@ export default function CoachPlanningScreen() {
       <ThemedText type="smallBold" themeColor="primary">
         {t(`availability.slotStatus.${slot.status}` as TranslationKey)}
       </ThemedText>
-      {bookings.filter((booking) => booking.availabilitySlotId === slot.id).map((booking) => (
+      {(bookingsBySlotId.get(slot.id) ?? []).map((booking) => (
         <ThemedText key={booking.id} type="small" themeColor="textMuted">
           {t('booking.inlineRequest', {
             student: studentName(booking.studentId),
@@ -279,20 +330,21 @@ export default function CoachPlanningScreen() {
 
   const renderAgendaSlotContent = (slot: AvailabilitySlot) => (
     <>
-      <ThemedText type="smallBold">
+      <ThemedText numberOfLines={1} type="smallBold">
         {t('planning.slotTime', {
           start: formatTime(slot.startsAt),
           end: formatTime(slot.endsAt),
         })}
       </ThemedText>
-      <ThemedText type="small" themeColor="textMuted">
-        {slot.location}
-      </ThemedText>
-      <ThemedText type="smallBold" themeColor="primary">
+      <ThemedText numberOfLines={1} type="smallBold" themeColor="primary">
         {t(`availability.slotStatus.${slot.status}` as TranslationKey)}
       </ThemedText>
-      {bookings.filter((booking) => booking.availabilitySlotId === slot.id).map((booking) => (
-        <ThemedText key={booking.id} type="small" themeColor="textMuted">
+      {(bookingsBySlotId.get(slot.id) ?? []).map((booking) => (
+        <ThemedText
+          key={booking.id}
+          numberOfLines={1}
+          type="small"
+          themeColor="textMuted">
           {t('booking.inlineRequest', {
             student: studentName(booking.studentId),
             status: t(bookingStatusKey(booking.status)),
@@ -473,6 +525,7 @@ export default function CoachPlanningScreen() {
             <AgendaGrid
               days={window.days}
               formatDay={formatDay}
+              getSlotStyle={(slot) => getSlotBookingStyle(slot.id)}
               renderSlot={renderAgendaSlotContent}
               slots={slots}
             />
@@ -493,7 +546,9 @@ export default function CoachPlanningScreen() {
                     ) : (
                       <View style={styles.slotGrid}>
                         {daySlots.map((slot) => (
-                          <Card key={slot.id} style={styles.slotCard}>
+                          <Card
+                            key={slot.id}
+                            style={[styles.slotCard, getSlotBookingStyle(slot.id)]}>
                             {renderSlotContent(slot)}
                           </Card>
                         ))}
@@ -520,7 +575,12 @@ export default function CoachPlanningScreen() {
                   const refusalComment = refusalComments[booking.id] ?? '';
 
                   return (
-                    <Card key={booking.id} style={styles.bookingCard}>
+                    <Card
+                      key={booking.id}
+                      style={[
+                        styles.bookingCard,
+                        getBookingStatusStyle(booking.status),
+                      ]}>
                       <ThemedText type="smallBold">
                         {studentName(booking.studentId)}
                       </ThemedText>
@@ -544,7 +604,9 @@ export default function CoachPlanningScreen() {
                           {t('booking.priceLabel', { price })}
                         </ThemedText>
                       ) : null}
-                      <ThemedText type="smallBold" themeColor="primary">
+                      <ThemedText
+                        type="smallBold"
+                        themeColor={bookingStatusThemeColor(booking.status)}>
                         {t(bookingStatusKey(booking.status))}
                       </ThemedText>
                       {booking.expiresAt && booking.status === 'pending' ? (

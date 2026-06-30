@@ -6,7 +6,6 @@ import { AnimatedIcon } from '@/components/animated-icon';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/ui/button';
-import { Feedback } from '@/components/ui/feedback';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/auth-context';
 import { PublicCoachCard } from '@/features/coaches/public-coach-card';
@@ -54,12 +53,6 @@ export default function PublicScreen() {
             <PublicCoachCard />
             <PublishedPricingList />
           </View>
-
-          <Feedback
-            message={t('public.noAvailabilityBody')}
-            title={t('public.noAvailabilityTitle')}
-            tone="info"
-          />
         </SafeAreaView>
       </ScrollView>
     </ThemedView>
