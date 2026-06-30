@@ -1,6 +1,10 @@
+---
+baseline_commit: e685136c8b6023dbc73a4899953d3cd80eedf3db
+---
+
 # Story 4.2: Appliquer les limites et conflits de demandes
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -20,16 +24,16 @@ so that les créneaux ne puissent pas être surdemandés ou double-bookés.
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 4.2 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer la commande/lecture booking selon la story (AC: tous)
-  - [ ] Passer par Edge Function ou fonction serveur transactionnelle; pas de CRUD client direct.
-  - [ ] Respecter le format `{ ok: true, data }` / `{ ok: false, error }`.
-  - [ ] Invalider les query keys TanStack Query ciblees apres mutation.
-- [ ] Tester invariants critiques (AC: integrite/securite)
-  - [ ] Couvrir 2 pending max par creneau, 10 pending max par eleve, reservation confirmee unique, expiration/annulation/modification selon la story.
+- [x] Verifier les preconditions et dependances de Story 4.2 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer la commande/lecture booking selon la story (AC: tous)
+  - [x] Passer par Edge Function ou fonction serveur transactionnelle; pas de CRUD client direct.
+  - [x] Respecter le format `{ ok: true, data }` / `{ ok: false, error }`.
+  - [x] Invalider les query keys TanStack Query ciblees apres mutation.
+- [x] Tester invariants critiques (AC: integrite/securite)
+  - [x] Couvrir 2 pending max par creneau, 10 pending max par eleve, reservation confirmee unique, expiration/annulation/modification selon la story.
 
 ## Interventions utilisateur requises
 
@@ -150,18 +154,44 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Codex GPT-5
 
 ### Debug Log References
 
+- 2026-06-29: Implementation Epic 4 via booking contracts, Supabase transactional RPCs, mobile coach/student booking surfaces.
+- Validations: npm test, npm run typecheck, npm run lint.
+
 ### Completion Notes List
 
+- Post-review UX adjustments: student Planning page now shows only pending requests and approved lessons; requestable slots stay on student home; slot tap opens the request form; mobile role navigation moves to bottom; bookings no longer fail when no matching pricing rate exists.
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+
+- Epic 4 implementation completed: booking lifecycle, pending limits, approval/refusal, expiration, group participants, direct coach creation, weekly recurrence, cancellation/modification, and student booking overview.
+- TanStack Query is not installed in this repo; targeted reloads are used after mutations following the existing service pattern.
+- Supabase Cloud/local DB reset was not run; migration 0019 was applied to the local database with `npx supabase migration up --local` and types were regenerated from local DB.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/4-2-appliquer-les-limites-et-conflits-de-demandes.md`
+- `apps/mobile/src/app/coach/index.tsx`
+- `apps/mobile/src/app/eleve/planning.tsx`
+- `apps/mobile/src/features/bookings/booking-service.ts`
+- `apps/mobile/src/features/navigation/role-navigation.tsx`
+- `apps/mobile/src/features/scheduling/student-agenda.tsx`
+- `apps/mobile/src/i18n/translations.ts`
+- `package.json`
+- `packages/shared/src/contracts/booking.test.ts`
+- `packages/shared/src/contracts/booking.ts`
+- `packages/shared/src/index.ts`
+- `packages/shared/src/types/database.types.ts`
+- `supabase/migrations/0019_bookings.sql`
+- `supabase/migrations/0020_optional_booking_pricing.sql`
+
+### Change Log
+
+- 2026-06-29: Implemented Epic 4 booking workflows and moved story to review.
+- 2026-06-30: Addressed post-review UX and pricing feedback for student booking flow and role navigation.
 
 ## Completion Note
 

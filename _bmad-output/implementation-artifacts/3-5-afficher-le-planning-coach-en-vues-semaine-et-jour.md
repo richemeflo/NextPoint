@@ -1,6 +1,10 @@
+---
+baseline_commit: db3a736cf15779dbcf2f764b627b214480e879d2
+---
+
 # Story 3.5: Afficher le planning coach en vues semaine et jour
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -20,16 +24,16 @@ so that je puisse comprendre rapidement mes créneaux à venir.
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 3.5 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer disponibilites/planning selon la story (AC: tous)
-  - [ ] Utiliser date/heure API en ISO 8601 UTC; timezone locale seulement a la frontiere UI.
-  - [ ] Garder durees 1h/1h30, lieu initial `Les Bruyeres Centre Sportif` et recurrence P0 limitee.
-  - [ ] Ne pas dupliquer les commandes de booking de l'Epic 4.
-- [ ] Tester conflits, recurrence et affichage (AC: integrite/UX)
-  - [ ] Couvrir modification/suppression sans demande active ni reservation confirmee selon la story.
+- [x] Verifier les preconditions et dependances de Story 3.5 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer disponibilites/planning selon la story (AC: tous)
+  - [x] Utiliser date/heure API en ISO 8601 UTC; timezone locale seulement a la frontiere UI.
+  - [x] Garder durees 1h/1h30, lieu initial `Les Bruyeres Centre Sportif` et recurrence P0 limitee.
+  - [x] Ne pas dupliquer les commandes de booking de l'Epic 4.
+- [x] Tester conflits, recurrence et affichage (AC: integrite/UX)
+  - [x] Couvrir modification/suppression sans demande active ni reservation confirmee selon la story.
 
 ## Interventions utilisateur requises
 
@@ -150,18 +154,50 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Codex GPT-5
+
+### Implementation Plan
+
+- Remplacer le placeholder `/coach` par le planning coach reel.
+- Ajouter un module testable de fenetre planning semaine/jour et charger les slots par periode visible.
+- Conserver les donnees visibles pendant le refetch via un etat `refreshing` distinct du chargement initial.
 
 ### Debug Log References
+
+- 2026-06-29: Activation `bmad-dev-story` deja chargee pour l'enchainement Epic 3; workflow personnalise resolu sans etapes prepend/append.
+- 2026-06-29: Preconditions confirmees: Story 3.4 en review, route coach `/coach` existante comme placeholder planning, service scheduling et slots disponibles.
+- 2026-06-29: Documentation Expo SDK 56 consultee avant modifications mobile, conformement a `apps/mobile/AGENTS.md`.
+- 2026-06-29: Tests de fenetre planning ajoutes pour vues semaine/jour, navigation de periode et groupement par date.
+- 2026-06-29: `npm test`, `npm run typecheck`, `npm run lint`, `npm run supabase:test:db`, `npm run test:availability-ranges`, `npx expo install --check` depuis `apps/mobile` et `git diff --check` passent.
 
 ### Completion Notes List
 
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+- Implementation demarree avec baseline git `db3a736cf15779dbcf2f764b627b214480e879d2`.
+- Aucune dependance bloquante manquante: les slots generes et les garde-fous de mutation des stories 3.2 a 3.4 sont disponibles.
+- La route `/coach` affiche maintenant le planning coach par defaut en vue semaine.
+- Le coach peut basculer semaine/jour et naviguer precedent/aujourd'hui/suivant.
+- Les slots affichent heure, duree, lieu et statut avec des cartes de dimensions stables.
+- Les refetchs conservent les donnees visibles et affichent `refreshing` au lieu de vider l'ecran.
+- L'acces non coach reste gere par la navigation/route protegee existante et les politiques RLS des slots.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/3-5-afficher-le-planning-coach-en-vues-semaine-et-jour.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `apps/mobile/src/app/coach/index.tsx`
+- `apps/mobile/src/features/scheduling/availability-service.ts`
+- `apps/mobile/src/features/scheduling/planning-window.test.ts`
+- `apps/mobile/src/features/scheduling/planning-window.ts`
+- `apps/mobile/src/i18n/translations.ts`
+- `package.json`
+
+### Change Log
+
+- 2026-06-29: Ajout du planning coach semaine/jour sur `/coach`.
+- 2026-06-29: Ajout du module `planning-window` et de ses tests.
+- 2026-06-29: Ajout de la lecture de slots par fenetre temporelle.
 
 ## Completion Note
 

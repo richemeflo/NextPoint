@@ -1,6 +1,10 @@
+---
+baseline_commit: db3a736cf15779dbcf2f764b627b214480e879d2
+---
+
 # Story 3.4: Modifier ou supprimer une disponibilité sans conflit
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -21,16 +25,16 @@ so that mon planning reste fiable pour les élèves et les réservations.
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 3.4 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer disponibilites/planning selon la story (AC: tous)
-  - [ ] Utiliser date/heure API en ISO 8601 UTC; timezone locale seulement a la frontiere UI.
-  - [ ] Garder durees 1h/1h30, lieu initial `Les Bruyeres Centre Sportif` et recurrence P0 limitee.
-  - [ ] Ne pas dupliquer les commandes de booking de l'Epic 4.
-- [ ] Tester conflits, recurrence et affichage (AC: integrite/UX)
-  - [ ] Couvrir modification/suppression sans demande active ni reservation confirmee selon la story.
+- [x] Verifier les preconditions et dependances de Story 3.4 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer disponibilites/planning selon la story (AC: tous)
+  - [x] Utiliser date/heure API en ISO 8601 UTC; timezone locale seulement a la frontiere UI.
+  - [x] Garder durees 1h/1h30, lieu initial `Les Bruyeres Centre Sportif` et recurrence P0 limitee.
+  - [x] Ne pas dupliquer les commandes de booking de l'Epic 4.
+- [x] Tester conflits, recurrence et affichage (AC: integrite/UX)
+  - [x] Couvrir modification/suppression sans demande active ni reservation confirmee selon la story.
 
 ## Interventions utilisateur requises
 
@@ -151,18 +155,53 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Codex GPT-5
+
+### Implementation Plan
+
+- Ajouter des RPC transactionnelles coach-only pour modifier ou soft-delete un slot de disponibilite.
+- Refuser les mutations sur slots non disponibles (`booked`/`cancelled`) et sur series contenant un slot bloque.
+- Câbler l'ecran coach pour modifier/supprimer une occurrence, avec confirmation occurrence/serie seulement quand la serie est applicable.
 
 ### Debug Log References
+
+- 2026-06-29: Activation `bmad-dev-story` effectuee; workflow personnalise resolu sans etapes prepend/append.
+- 2026-06-29: Preconditions confirmees: stories 3.1, 3.2 et 3.3 en review, plages/slots/recurences, contrat shared, service mobile, tests DB et script d'integration presents.
+- 2026-06-29: Documentation Expo SDK 56 consultee avant modifications mobile, conformement a `apps/mobile/AGENTS.md`.
+- 2026-06-29: Tests RED confirmes: fonctions `update_availability_slot` et `delete_availability_slot` absentes.
+- 2026-06-29: Migrations `0016_availability_slot_mutations.sql` et `0017_fix_availability_slot_update_constraint_scope.sql` appliquees localement; types Supabase regeneres.
+- 2026-06-29: `npm test`, `npm run typecheck`, `npm run lint`, `npm run supabase:test:db`, `npm run test:availability-ranges`, `npx expo install --check` depuis `apps/mobile` et `git diff --check` passent.
 
 ### Completion Notes List
 
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+- Implementation demarree avec baseline git `db3a736cf15779dbcf2f764b627b214480e879d2`.
+- Aucune dependance bloquante manquante: les stories 3.1 a 3.3 fournissent les plages, slots, recurrence et affichage coach necessaires.
+- Les modifications/suppressions passent par RPC security-definer; le CRUD direct client reste refuse par RLS/grants.
+- Une occurrence disponible peut etre modifiee ou supprimee seule; une serie recurrente peut etre modifiee/supprimee seulement si tous ses slots actifs sont disponibles.
+- Les slots `booked` bloquent modification/suppression et servent de garde-fou P0 pour reservation confirmee tant que les vraies demandes/reservations Epic 4 ne sont pas livrees.
+- L'interface demande de choisir occurrence ou serie uniquement pour une recurrence sans slot bloque; sinon elle applique l'occurrence selectionnee ou affiche le refus serveur.
+- La suppression est un soft-delete: le slot n'est plus visible comme disponible ni lisible dans les listes coach standard.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/3-4-modifier-ou-supprimer-une-disponibilite-sans-conflit.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `apps/mobile/src/app/coach/availability.tsx`
+- `apps/mobile/src/features/scheduling/availability-service.ts`
+- `apps/mobile/src/i18n/translations.ts`
+- `packages/shared/src/types/database.types.ts`
+- `scripts/verify-availability-ranges.mjs`
+- `supabase/migrations/0016_availability_slot_mutations.sql`
+- `supabase/migrations/0017_fix_availability_slot_update_constraint_scope.sql`
+- `supabase/tests/database/0012_availability_slots.sql`
+
+### Change Log
+
+- 2026-06-29: Ajout des RPC `update_availability_slot` et `delete_availability_slot`.
+- 2026-06-29: Ajout des tests de modification/suppression occurrence et serie, avec refus des slots bloques.
+- 2026-06-29: Ajout de l'edition/suppression inline dans l'ecran Disponibilites coach.
 
 ## Completion Note
 

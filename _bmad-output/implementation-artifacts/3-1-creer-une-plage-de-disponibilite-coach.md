@@ -1,6 +1,10 @@
+---
+baseline_commit: 453b5c086f915c1d21ed5e5fae4cefbf48dcd976
+---
+
 # Story 3.1: Créer une plage de disponibilité coach
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -20,16 +24,16 @@ so that le système puisse proposer des créneaux réservables à mes élèves.
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 3.1 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer disponibilites/planning selon la story (AC: tous)
-  - [ ] Utiliser date/heure API en ISO 8601 UTC; timezone locale seulement a la frontiere UI.
-  - [ ] Garder durees 1h/1h30, lieu initial `Les Bruyeres Centre Sportif` et recurrence P0 limitee.
-  - [ ] Ne pas dupliquer les commandes de booking de l'Epic 4.
-- [ ] Tester conflits, recurrence et affichage (AC: integrite/UX)
-  - [ ] Couvrir modification/suppression sans demande active ni reservation confirmee selon la story.
+- [x] Verifier les preconditions et dependances de Story 3.1 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer disponibilites/planning selon la story (AC: tous)
+  - [x] Utiliser date/heure API en ISO 8601 UTC; timezone locale seulement a la frontiere UI.
+  - [x] Garder durees 1h/1h30, lieu initial `Les Bruyeres Centre Sportif` et recurrence P0 limitee.
+  - [x] Ne pas dupliquer les commandes de booking de l'Epic 4.
+- [x] Tester conflits, recurrence et affichage (AC: integrite/UX)
+  - [x] Couvrir modification/suppression sans demande active ni reservation confirmee selon la story.
 
 ## Interventions utilisateur requises
 
@@ -150,18 +154,60 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Codex GPT-5
+
+### Implementation Plan
+
+- Ajouter le contrat partage de plage de disponibilite avec validation locale, conversion UTC et apercu de creneaux.
+- Ajouter le modele Supabase `availability_ranges`, RLS lecture coach, commande transactionnelle coach-only et contrainte de non-chevauchement.
+- Remplacer l'ecran placeholder par l'ecran dedie Gestion Disponibilites, avec erreurs i18n FR/EN/ES et preview mobile/web.
 
 ### Debug Log References
+
+- 2026-06-29: Activation `bmad-dev-story` effectuee; workflow personnalise resolu sans etapes prepend/append.
+- 2026-06-29: Preconditions confirmees: roles/guards coach, profil coach, tarifs et patterns RPC/RLS existent dans les stories precedentes; aucun contrat scheduling existant avant 3.1.
+- 2026-06-29: Documentation Expo SDK 56 consultee avant modification mobile, conformement a `apps/mobile/AGENTS.md`.
+- 2026-06-29: Tests RED confirmes: contrat `availability-range` absent et table/RPC `availability_ranges` absents.
+- 2026-06-29: Migration `0013_availability_ranges.sql` appliquee localement via `npx supabase migration up`; types Supabase regeneres.
+- 2026-06-29: `npm test`, `npm run typecheck`, `npm run lint`, `npm run supabase:test:db`, `npm run test:availability-ranges` et `npx expo install --check` passent.
+- 2026-06-29: Expo Web demarre et `/coach/availability` repond HTTP 200 sur `http://localhost:8081/coach/availability`.
+- 2026-06-29: Captures Playwright mobile/desktop non authentifiees et avec storage injecte realisees; elles atteignent la page publique/session mais pas l'ecran coach authentifie. Validation visuelle authentifiee complete a faire dans une session navigateur/app connectee.
 
 ### Completion Notes List
 
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+- Implementation demarree avec baseline git `453b5c086f915c1d21ed5e5fae4cefbf48dcd976`.
+- Contrat `availabilityRangeSchema` ajoute avec date, heure debut/fin, duree 60/90, lieu initial `Les Bruyeres Centre Sportif`, recurrence limitee `none/daily/weekly`, conversion ISO 8601 UTC et preview de creneaux.
+- Table `availability_ranges` ajoutee avec source de verite Supabase, `snake_case`, RLS, commande RPC `create_availability_range` et mutation directe client interdite.
+- Creation de disponibilite reservee au coach par RPC transactionnelle; un utilisateur eleve/non coach est refuse et aucune disponibilite n'est creee.
+- Conflits de plages actives bloques par contrainte d'exclusion PostgreSQL; `deleted_at` prepare la suppression future sans exposer la commande de Story 3.4.
+- Ecran Gestion Disponibilites remplace le placeholder coach avec formulaire dedie, duree 1h30 par defaut, lieu initial, recurrence limitee, feedback traduit et liste des plages.
+- Les commandes de booking Epic 4 ne sont pas dupliquees; aucune demande/reservation n'est creee par cette story.
+- Validation visuelle authentifiee complete non confirmee par Playwright car le contexte injecte a redirige vers la page publique; le serveur local repond toutefois sans ecran rouge/page blanche.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/3-1-creer-une-plage-de-disponibilite-coach.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `apps/mobile/src/app/coach/availability.tsx`
+- `apps/mobile/src/features/scheduling/availability-service.ts`
+- `apps/mobile/src/i18n/translations.ts`
+- `package.json`
+- `packages/shared/src/contracts/availability-range.test.ts`
+- `packages/shared/src/contracts/availability-range.ts`
+- `packages/shared/src/index.ts`
+- `packages/shared/src/types/database.types.ts`
+- `scripts/verify-availability-ranges.mjs`
+- `supabase/migrations/0013_availability_ranges.sql`
+- `supabase/tests/database/0011_availability_ranges.sql`
+- `tsconfig.tests.json`
+
+### Change Log
+
+- 2026-06-29: Ajout du modele de plages de disponibilite, de la RPC coach-only, des contraintes RLS/non-chevauchement et des tests SQL/integration.
+- 2026-06-29: Ajout du contrat partage de disponibilite avec conversion UTC et preview de creneaux.
+- 2026-06-29: Remplacement de l'ecran Disponibilites par un formulaire dedie avec i18n FR/EN/ES.
 
 ## Completion Note
 

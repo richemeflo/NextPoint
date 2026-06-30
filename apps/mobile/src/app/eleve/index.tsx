@@ -5,6 +5,7 @@ import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { PublicCoachCard } from '@/features/coaches/public-coach-card';
 import { PublishedPricingList } from '@/features/pricing/published-pricing-list';
+import { StudentAgenda } from '@/features/scheduling/student-agenda';
 import { useTranslation } from '@/i18n';
 
 export default function EleveHomeScreen() {
@@ -24,6 +25,7 @@ export default function EleveHomeScreen() {
             </ThemedText>
           </View>
           <PublishedPricingList />
+          <StudentAgenda />
           <PublicCoachCard />
         </View>
       </ScrollView>

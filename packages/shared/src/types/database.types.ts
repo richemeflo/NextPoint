@@ -34,6 +34,211 @@ export type Database = {
   }
   public: {
     Tables: {
+      availability_ranges: {
+        Row: {
+          coach_id: string
+          created_at: string
+          deleted_at: string | null
+          ends_at: string
+          id: string
+          location: string
+          recurrence_ends_on: string | null
+          recurrence_type: Database["public"]["Enums"]["availability_recurrence_type"]
+          slot_duration_minutes: number
+          starts_at: string
+          updated_at: string
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          deleted_at?: string | null
+          ends_at: string
+          id?: string
+          location: string
+          recurrence_ends_on?: string | null
+          recurrence_type?: Database["public"]["Enums"]["availability_recurrence_type"]
+          slot_duration_minutes: number
+          starts_at: string
+          updated_at?: string
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          ends_at?: string
+          id?: string
+          location?: string
+          recurrence_ends_on?: string | null
+          recurrence_type?: Database["public"]["Enums"]["availability_recurrence_type"]
+          slot_duration_minutes?: number
+          starts_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      availability_slots: {
+        Row: {
+          availability_range_id: string
+          coach_id: string
+          created_at: string
+          deleted_at: string | null
+          duration_minutes: number
+          ends_at: string
+          id: string
+          location: string
+          starts_at: string
+          status: Database["public"]["Enums"]["availability_slot_status"]
+          updated_at: string
+        }
+        Insert: {
+          availability_range_id: string
+          coach_id: string
+          created_at?: string
+          deleted_at?: string | null
+          duration_minutes: number
+          ends_at: string
+          id?: string
+          location: string
+          starts_at: string
+          status?: Database["public"]["Enums"]["availability_slot_status"]
+          updated_at?: string
+        }
+        Update: {
+          availability_range_id?: string
+          coach_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          duration_minutes?: number
+          ends_at?: string
+          id?: string
+          location?: string
+          starts_at?: string
+          status?: Database["public"]["Enums"]["availability_slot_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "availability_slots_availability_range_id_fkey"
+            columns: ["availability_range_id"]
+            isOneToOne: false
+            referencedRelation: "availability_ranges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      booking_participants: {
+        Row: {
+          booking_id: string
+          created_at: string
+          student_id: string
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string
+          student_id: string
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_participants_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bookings: {
+        Row: {
+          availability_slot_id: string | null
+          cancelled_at: string | null
+          coach_id: string
+          coach_refusal_comment: string | null
+          created_at: string
+          decided_at: string | null
+          duration_minutes: number
+          ends_at: string
+          expired_at: string | null
+          expires_at: string | null
+          id: string
+          lesson_type: string
+          location: string
+          modified_at: string | null
+          origin: Database["public"]["Enums"]["booking_origin"]
+          pricing_rate_id: string | null
+          starts_at: string
+          status: Database["public"]["Enums"]["booking_status"]
+          student_comment: string | null
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          availability_slot_id?: string | null
+          cancelled_at?: string | null
+          coach_id: string
+          coach_refusal_comment?: string | null
+          created_at?: string
+          decided_at?: string | null
+          duration_minutes: number
+          ends_at: string
+          expired_at?: string | null
+          expires_at?: string | null
+          id?: string
+          lesson_type: string
+          location: string
+          modified_at?: string | null
+          origin?: Database["public"]["Enums"]["booking_origin"]
+          pricing_rate_id?: string | null
+          starts_at: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          student_comment?: string | null
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          availability_slot_id?: string | null
+          cancelled_at?: string | null
+          coach_id?: string
+          coach_refusal_comment?: string | null
+          created_at?: string
+          decided_at?: string | null
+          duration_minutes?: number
+          ends_at?: string
+          expired_at?: string | null
+          expires_at?: string | null
+          id?: string
+          lesson_type?: string
+          location?: string
+          modified_at?: string | null
+          origin?: Database["public"]["Enums"]["booking_origin"]
+          pricing_rate_id?: string | null
+          starts_at?: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          student_comment?: string | null
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_availability_slot_id_fkey"
+            columns: ["availability_slot_id"]
+            isOneToOne: false
+            referencedRelation: "availability_slots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_pricing_rate_id_fkey"
+            columns: ["pricing_rate_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_rates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_profiles: {
         Row: {
           bio: string
@@ -368,6 +573,60 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_booking_history: {
+        Args: {
+          p_booking: Database["public"]["Tables"]["bookings"]["Row"]
+          p_description: string
+          p_event_type: Database["public"]["Enums"]["student_history_event_type"]
+          p_status: Database["public"]["Enums"]["student_history_event_status"]
+          p_title: string
+        }
+        Returns: undefined
+      }
+      add_booking_participants: {
+        Args: {
+          p_booking_id: string
+          p_participant_ids: string[]
+          p_requester_id: string
+        }
+        Returns: undefined
+      }
+      approve_booking: {
+        Args: { p_booking_id: string }
+        Returns: {
+          availability_slot_id: string | null
+          cancelled_at: string | null
+          coach_id: string
+          coach_refusal_comment: string | null
+          created_at: string
+          decided_at: string | null
+          duration_minutes: number
+          ends_at: string
+          expired_at: string | null
+          expires_at: string | null
+          id: string
+          lesson_type: string
+          location: string
+          modified_at: string | null
+          origin: Database["public"]["Enums"]["booking_origin"]
+          pricing_rate_id: string | null
+          starts_at: string
+          status: Database["public"]["Enums"]["booking_status"]
+          student_comment: string | null
+          student_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      assert_active_student_for_coach: {
+        Args: { p_coach_id: string; p_student_id: string }
+        Returns: undefined
+      }
       assign_lesson_pack: {
         Args: { p_included_sessions: number; p_student_id: string }
         Returns: {
@@ -391,6 +650,38 @@ export type Database = {
       assign_student_to_single_coach: {
         Args: { student_user_id: string }
         Returns: undefined
+      }
+      cancel_booking: {
+        Args: { p_booking_id: string }
+        Returns: {
+          availability_slot_id: string | null
+          cancelled_at: string | null
+          coach_id: string
+          coach_refusal_comment: string | null
+          created_at: string
+          decided_at: string | null
+          duration_minutes: number
+          ends_at: string
+          expired_at: string | null
+          expires_at: string | null
+          id: string
+          lesson_type: string
+          location: string
+          modified_at: string | null
+          origin: Database["public"]["Enums"]["booking_origin"]
+          pricing_rate_id: string | null
+          starts_at: string
+          status: Database["public"]["Enums"]["booking_status"]
+          student_comment: string | null
+          student_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       claim_student_activation_token: {
         Args: { p_token_hash: string }
@@ -462,6 +753,74 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_availability_range: {
+        Args: {
+          p_ends_at: string
+          p_location: string
+          p_recurrence_ends_on: string
+          p_recurrence_type: Database["public"]["Enums"]["availability_recurrence_type"]
+          p_slot_duration_minutes: number
+          p_starts_at: string
+        }
+        Returns: {
+          coach_id: string
+          created_at: string
+          deleted_at: string | null
+          ends_at: string
+          id: string
+          location: string
+          recurrence_ends_on: string | null
+          recurrence_type: Database["public"]["Enums"]["availability_recurrence_type"]
+          slot_duration_minutes: number
+          starts_at: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "availability_ranges"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      create_coach_booking: {
+        Args: {
+          p_duration_minutes: number
+          p_lesson_type: string
+          p_location: string
+          p_recurrence_ends_on: string
+          p_starts_at: string
+          p_student_ids: string[]
+        }
+        Returns: {
+          availability_slot_id: string | null
+          cancelled_at: string | null
+          coach_id: string
+          coach_refusal_comment: string | null
+          created_at: string
+          decided_at: string | null
+          duration_minutes: number
+          ends_at: string
+          expired_at: string | null
+          expires_at: string | null
+          id: string
+          lesson_type: string
+          location: string
+          modified_at: string | null
+          origin: Database["public"]["Enums"]["booking_origin"]
+          pricing_rate_id: string | null
+          starts_at: string
+          status: Database["public"]["Enums"]["booking_status"]
+          student_comment: string | null
+          student_id: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       create_student_activation_token: {
         Args: {
           p_coach_id: string
@@ -486,13 +845,146 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      delete_availability_slot: {
+        Args: { p_apply_to_series: boolean; p_slot_id: string }
+        Returns: number
+      }
       delete_pricing_rate: { Args: { p_rate_id: string }; Returns: undefined }
+      expire_pending_bookings: { Args: never; Returns: number }
       finalize_student_activation: {
         Args: { p_student_id: string; p_token_id: string }
         Returns: undefined
       }
+      get_requestable_booking_participants: {
+        Args: never
+        Returns: {
+          account_status: Database["public"]["Enums"]["student_account_status"]
+          age: number
+          created_at: string
+          email: string
+          full_name: string
+          padel_level: number
+          phone: string
+          preferred_language: Database["public"]["Enums"]["app_language"]
+          sex: Database["public"]["Enums"]["student_sex"]
+          updated_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "student_profiles"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      modify_booking: {
+        Args: {
+          p_booking_id: string
+          p_duration_minutes: number
+          p_location: string
+          p_starts_at: string
+        }
+        Returns: {
+          availability_slot_id: string | null
+          cancelled_at: string | null
+          coach_id: string
+          coach_refusal_comment: string | null
+          created_at: string
+          decided_at: string | null
+          duration_minutes: number
+          ends_at: string
+          expired_at: string | null
+          expires_at: string | null
+          id: string
+          lesson_type: string
+          location: string
+          modified_at: string | null
+          origin: Database["public"]["Enums"]["booking_origin"]
+          pricing_rate_id: string | null
+          starts_at: string
+          status: Database["public"]["Enums"]["booking_status"]
+          student_comment: string | null
+          student_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       normalize_student_email: { Args: { value: string }; Returns: string }
       normalize_student_phone: { Args: { value: string }; Returns: string }
+      refuse_booking: {
+        Args: { p_booking_id: string; p_refusal_comment: string }
+        Returns: {
+          availability_slot_id: string | null
+          cancelled_at: string | null
+          coach_id: string
+          coach_refusal_comment: string | null
+          created_at: string
+          decided_at: string | null
+          duration_minutes: number
+          ends_at: string
+          expired_at: string | null
+          expires_at: string | null
+          id: string
+          lesson_type: string
+          location: string
+          modified_at: string | null
+          origin: Database["public"]["Enums"]["booking_origin"]
+          pricing_rate_id: string | null
+          starts_at: string
+          status: Database["public"]["Enums"]["booking_status"]
+          student_comment: string | null
+          student_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      request_booking: {
+        Args: {
+          p_lesson_type: string
+          p_participant_ids: string[]
+          p_slot_id: string
+          p_student_comment: string
+        }
+        Returns: {
+          availability_slot_id: string | null
+          cancelled_at: string | null
+          coach_id: string
+          coach_refusal_comment: string | null
+          created_at: string
+          decided_at: string | null
+          duration_minutes: number
+          ends_at: string
+          expired_at: string | null
+          expires_at: string | null
+          id: string
+          lesson_type: string
+          location: string
+          modified_at: string | null
+          origin: Database["public"]["Enums"]["booking_origin"]
+          pricing_rate_id: string | null
+          starts_at: string
+          status: Database["public"]["Enums"]["booking_status"]
+          student_comment: string | null
+          student_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       rollback_student_activation_claim: {
         Args: { p_token_id: string }
         Returns: undefined
@@ -547,10 +1039,77 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      select_booking_pricing_rate: {
+        Args: {
+          p_coach_id: string
+          p_duration_minutes: number
+          p_lesson_type: string
+          p_student_id: string
+        }
+        Returns: {
+          amount_cents: number
+          applicability_contexts: string[]
+          coach_id: string
+          created_at: string
+          currency: string
+          deleted_at: string | null
+          duration_minutes: number
+          id: string
+          is_active: boolean
+          label: string
+          lesson_type: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "pricing_rates"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      update_availability_slot: {
+        Args: {
+          p_apply_to_series: boolean
+          p_duration_minutes: number
+          p_ends_at: string
+          p_location: string
+          p_slot_id: string
+          p_starts_at: string
+        }
+        Returns: {
+          availability_range_id: string
+          coach_id: string
+          created_at: string
+          deleted_at: string | null
+          duration_minutes: number
+          ends_at: string
+          id: string
+          location: string
+          starts_at: string
+          status: Database["public"]["Enums"]["availability_slot_status"]
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "availability_slots"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
     }
     Enums: {
       app_language: "fr" | "en" | "es"
       app_role: "coach" | "eleve"
+      availability_recurrence_type: "none" | "daily" | "weekly"
+      availability_slot_status: "available" | "booked" | "cancelled"
+      booking_origin: "student_request" | "coach_created"
+      booking_status:
+        | "pending"
+        | "confirmed"
+        | "refused"
+        | "expired"
+        | "cancelled"
+        | "modified"
       lesson_pack_status: "active" | "exhausted"
       student_account_status:
         | "pending_activation"
@@ -706,6 +1265,17 @@ export const Constants = {
     Enums: {
       app_language: ["fr", "en", "es"],
       app_role: ["coach", "eleve"],
+      availability_recurrence_type: ["none", "daily", "weekly"],
+      availability_slot_status: ["available", "booked", "cancelled"],
+      booking_origin: ["student_request", "coach_created"],
+      booking_status: [
+        "pending",
+        "confirmed",
+        "refused",
+        "expired",
+        "cancelled",
+        "modified",
+      ],
       lesson_pack_status: ["active", "exhausted"],
       student_account_status: [
         "pending_activation",
@@ -735,4 +1305,3 @@ export const Constants = {
     },
   },
 } as const
-

@@ -1,6 +1,12 @@
 import type { AppRole } from '@nextpoint/shared';
 import { Link, Slot, usePathname, type Href } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -39,7 +45,50 @@ export function RoleNavigation({ role }: { role: AppRole }) {
   const { signOut, user } = useAuth();
   const { t } = useTranslation();
   const theme = useTheme();
+  const { width } = useWindowDimensions();
   const items = role === 'coach' ? coachItems : eleveItems;
+  const isMobile = width < 768;
+  const navigation = (
+    <ScrollView
+      contentContainerStyle={[
+        styles.navigationContent,
+        isMobile ? styles.navigationContentMobile : null,
+      ]}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={[
+        isMobile ? styles.navigationMobile : styles.navigationDesktop,
+        { borderColor: theme.border },
+      ]}>
+      {items.map((item) => {
+        const href = typeof item.href === 'string' ? item.href : item.href.pathname;
+        const selected =
+          pathname === href || (href !== `/${role}` && pathname.startsWith(`${href}/`));
+
+        return (
+          <Link asChild href={item.href} key={String(href)}>
+            <Pressable
+              style={StyleSheet.flatten([
+                styles.navigationItem,
+                isMobile ? styles.navigationItemMobile : null,
+                {
+                  backgroundColor: selected
+                    ? theme.backgroundSelected
+                    : theme.surface,
+                },
+              ])}>
+              <ThemedText
+                numberOfLines={1}
+                type="smallBold"
+                themeColor={selected ? 'primary' : 'textMuted'}>
+                {t(item.labelKey)}
+              </ThemedText>
+            </Pressable>
+          </Link>
+        );
+      })}
+    </ScrollView>
+  );
 
   return (
     <ThemedView style={styles.shell}>
@@ -64,42 +113,21 @@ export function RoleNavigation({ role }: { role: AppRole }) {
             />
           </View>
         </View>
-        <ScrollView
-          contentContainerStyle={styles.navigationContent}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={[styles.navigation, { borderColor: theme.border }]}>
-          {items.map((item) => {
-            const href = typeof item.href === 'string' ? item.href : item.href.pathname;
-            const selected =
-              pathname === href || (href !== `/${role}` && pathname.startsWith(`${href}/`));
-
-            return (
-              <Link asChild href={item.href} key={String(href)}>
-                <Pressable
-                  style={StyleSheet.flatten([
-                    styles.navigationItem,
-                    {
-                      backgroundColor: selected
-                        ? theme.backgroundSelected
-                        : theme.surface,
-                    },
-                  ])}>
-                  <ThemedText
-                    numberOfLines={1}
-                    type="smallBold"
-                    themeColor={selected ? 'primary' : 'textMuted'}>
-                    {t(item.labelKey)}
-                  </ThemedText>
-                </Pressable>
-              </Link>
-            );
-          })}
-        </ScrollView>
+        {isMobile ? null : navigation}
       </SafeAreaView>
       <View style={styles.content}>
         <Slot />
       </View>
+      {isMobile ? (
+        <SafeAreaView
+          edges={['bottom']}
+          style={[
+            styles.safeBottomNavigation,
+            { backgroundColor: theme.surface, borderColor: theme.border },
+          ]}>
+          {navigation}
+        </SafeAreaView>
+      ) : null}
     </ThemedView>
   );
 }
@@ -130,11 +158,21 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     gap: Spacing.one,
   },
-  navigation: {
+  navigationDesktop: {
     borderBottomWidth: 1,
+  },
+  navigationMobile: {
+    borderTopWidth: 1,
+    width: '100%',
   },
   navigationContent: {
     gap: Spacing.two,
+    paddingBottom: Spacing.two,
+  },
+  navigationContentMobile: {
+    minWidth: '100%',
+    paddingHorizontal: Spacing.four,
+    paddingTop: Spacing.two,
     paddingBottom: Spacing.two,
   },
   navigationItem: {
@@ -143,7 +181,16 @@ const styles = StyleSheet.create({
     borderRadius: Radii.small,
     paddingHorizontal: Spacing.three,
   },
+  navigationItemMobile: {
+    minHeight: 48,
+    flexGrow: 1,
+    alignItems: 'center',
+  },
   content: {
     flex: 1,
+  },
+  safeBottomNavigation: {
+    width: '100%',
+    borderTopWidth: 1,
   },
 });

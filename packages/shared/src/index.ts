@@ -1,6 +1,18 @@
 export { Constants } from './types/database.types';
 export { signInSchema, signUpSchema } from './contracts/auth';
 export {
+  availabilityLocations,
+  availabilityRangeSchema,
+  availabilityRecurrenceTypes,
+  availabilitySlotStatuses,
+  availabilitySlotDurations,
+  buildAvailabilityPreviewSlots,
+  defaultAvailabilityLocation,
+  getDefaultAvailabilityRecurrenceEndsOn,
+  isAvailabilitySlotRequestable,
+  toAvailabilityRangeInput,
+} from './contracts/availability-range';
+export {
   activateStudentAccountSchema,
   isStudentAccountStatus,
   studentAccountStatuses,
@@ -30,6 +42,26 @@ export {
   toPricingRateInput,
 } from './contracts/pricing-rate';
 export {
+  bookingActionSchema,
+  bookingErrorCodes,
+  bookingOrigins,
+  bookingPendingTtlDays,
+  bookingStatuses,
+  canApproveBooking,
+  canCancelBooking,
+  canCreatePendingBooking,
+  canRefuseBooking,
+  coachCreateBookingSchema,
+  coachModifyBookingSchema,
+  isBookingExpired,
+  maxGroupBookingParticipants,
+  maxPendingBookingsPerSlot,
+  maxPendingBookingsPerStudent,
+  normalizeParticipantIds,
+  refuseBookingSchema,
+  requestBookingSchema,
+} from './contracts/booking';
+export {
   manualStudentProfileSchema,
   studentSexes,
   studentProfileSchema,
@@ -39,6 +71,16 @@ export {
 export { appLanguages } from './domain/languages';
 export { appRoles, isAppRole } from './domain/roles';
 export type { SignInInput, SignUpInput } from './contracts/auth';
+export type {
+  AvailabilityLocation,
+  AvailabilityPreviewSlot,
+  AvailabilityRangeFormInput,
+  AvailabilityRangeInput,
+  AvailabilityRecurrenceType,
+  AvailabilitySlotDuration,
+  AvailabilitySlotRequestabilityCandidate,
+  AvailabilitySlotStatus,
+} from './contracts/availability-range';
 export type {
   ActivateStudentAccountInput,
   StudentAccountStatus,
@@ -69,6 +111,18 @@ export type {
   PricingRateCandidate,
   PricingSelectionContext,
 } from './contracts/pricing-rate';
+export type {
+  BookingActionInput,
+  BookingErrorCode,
+  BookingOrigin,
+  BookingRuleResult,
+  BookingStatus,
+  CoachCreateBookingInput,
+  CoachModifyBookingInput,
+  PendingBookingCandidate,
+  RefuseBookingInput,
+  RequestBookingInput,
+} from './contracts/booking';
 export type {
   ManualStudentProfileFormInput,
   ManualStudentProfileInput,
