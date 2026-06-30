@@ -55,7 +55,7 @@ export const dictionaries = {
     'nav.coach.messaging': 'Messagerie',
     'nav.coach.profile': 'Profil',
     'nav.eleve.home': 'Accueil',
-    'nav.eleve.planning': 'Planning / Demandes',
+    'nav.eleve.planning': 'Demandes',
     'nav.eleve.notifications': 'Notifications',
     'nav.eleve.account': 'Compte',
     'planning.loading': 'Chargement du planning...',
@@ -462,6 +462,75 @@ export const dictionaries = {
     'lessonPack.consumeErrorTitle': 'Consommation impossible',
     'lessonPack.consumeErrorBody':
       'Aucun cours restant n’a été modifié. Le pack est peut-être épuisé ou l’accès refusé.',
+    'booking.openRequestAction': 'Demander',
+    'booking.requestAction': 'Envoyer la demande',
+    'booking.lessonTypeLabel': 'Type de cours',
+    'booking.commentLabel': 'Commentaire',
+    'booking.commentPlaceholder': 'Précisez votre besoin ou vos disponibilités.',
+    'booking.participantsLabel': 'Participants',
+    'booking.requesterIncluded': 'Vous êtes inclus',
+    'booking.unknownStudent': 'Élève',
+    'booking.priceLabel': 'Tarif : {{price}}',
+    'booking.studentPageTitle': 'Demandes en cours et cours validés',
+    'booking.studentPageBody':
+      'Suivez uniquement vos demandes en attente et vos cours validés.',
+    'booking.studentListTitle': 'Vos demandes en cours et cours validés',
+    'booking.studentListBody':
+      'Aucun créneau disponible n’est affiché ici. Les nouvelles demandes se font depuis l’accueil.',
+    'booking.studentEmptyTitle': 'Aucune demande',
+    'booking.studentEmptyBody':
+      'Vos demandes envoyées et cours confirmés apparaîtront ici.',
+    'booking.coachListTitle': 'Demandes et cours',
+    'booking.coachEmptyTitle': 'Aucune demande à traiter',
+    'booking.coachEmptyBody':
+      'Les demandes élèves et cours planifiés apparaîtront ici.',
+    'booking.coachCreateTitle': 'Créer un cours',
+    'booking.studentLabel': 'Élève',
+    'booking.recurrenceEndsOnLabel': 'Récurrence hebdomadaire jusqu’au',
+    'booking.recurrenceEndsOnPlaceholder': 'AAAA-MM-JJ, optionnel',
+    'booking.createAction': 'Créer le cours',
+    'booking.approveAction': 'Valider',
+    'booking.refuseAction': 'Refuser',
+    'booking.refusalCommentLabel': 'Commentaire de refus',
+    'booking.refusalCommentPlaceholder': 'Message optionnel pour l’élève',
+    'booking.cancelAction': 'Annuler la réservation',
+    'booking.modifyAction': 'Modifier',
+    'booking.expiresAt': 'Expire le {{date}}',
+    'booking.participantNames': 'Participants : {{names}}',
+    'booking.inlineRequest': '{{student}} · {{status}}',
+    'booking.requestSuccessTitle': 'Demande envoyée',
+    'booking.requestSuccessBody':
+      'Le coach peut maintenant valider ou refuser la demande.',
+    'booking.approveSuccessTitle': 'Demande validée',
+    'booking.approveSuccessBody':
+      'Le cours est confirmé et le créneau n’est plus demandable.',
+    'booking.refuseSuccessTitle': 'Demande refusée',
+    'booking.refuseSuccessBody':
+      'Le statut et le commentaire sont visibles côté élève.',
+    'booking.createSuccessTitle': 'Cours créé',
+    'booking.createSuccessBody':
+      'Le cours confirmé est visible dans les plannings.',
+    'booking.cancelSuccessTitle': 'Réservation annulée',
+    'booking.cancelSuccessBody':
+      'Le statut est mis à jour et la disponibilité est libérée si applicable.',
+    'booking.modifySuccessTitle': 'Réservation modifiée',
+    'booking.modifySuccessBody':
+      'La nouvelle date ou durée est visible dans les plannings.',
+    'booking.errorTitle': 'Action impossible',
+    'booking.slotUnavailable':
+      'Ce créneau n’est plus disponible. Essayez un autre créneau.',
+    'booking.pendingLimit':
+      'Ce créneau a déjà atteint la limite de demandes en attente.',
+    'booking.studentPendingLimit':
+      'Vous avez déjà 10 demandes en attente auprès du coach.',
+    'booking.alreadyProcessed': 'Cette demande a déjà été traitée.',
+    'booking.pastBooking': 'Un cours passé ne peut plus être annulé par l’élève.',
+    'booking.invalidParticipants':
+      'La sélection de participants n’est pas autorisée.',
+    'booking.pricingMissing':
+      'Aucun tarif actif ne correspond au type et à la durée du cours.',
+    'booking.unauthorized': 'Votre rôle ne permet pas cette action.',
+    'booking.unknownError': 'Vérifiez votre connexion puis réessayez.',
     'auth.signInTitle': 'Retrouvez votre espace.',
     'auth.signInSubtitle':
       'Connectez-vous avec votre email et votre mot de passe pour accéder à NextPoint.',
@@ -620,7 +689,7 @@ export const dictionaries = {
     'nav.coach.messaging': 'Messages',
     'nav.coach.profile': 'Profile',
     'nav.eleve.home': 'Home',
-    'nav.eleve.planning': 'Schedule / Requests',
+    'nav.eleve.planning': 'Requests',
     'nav.eleve.notifications': 'Notifications',
     'nav.eleve.account': 'Account',
     'planning.loading': 'Loading planning...',
@@ -1025,6 +1094,72 @@ export const dictionaries = {
     'lessonPack.consumeErrorTitle': 'Unable to mark used',
     'lessonPack.consumeErrorBody':
       'No remaining lesson was changed. The pack may be exhausted or access denied.',
+    'booking.openRequestAction': 'Request',
+    'booking.requestAction': 'Send request',
+    'booking.lessonTypeLabel': 'Lesson type',
+    'booking.commentLabel': 'Comment',
+    'booking.commentPlaceholder': 'Add your goal or scheduling context.',
+    'booking.participantsLabel': 'Participants',
+    'booking.requesterIncluded': 'You are included',
+    'booking.unknownStudent': 'Student',
+    'booking.priceLabel': 'Price: {{price}}',
+    'booking.studentPageTitle': 'Pending requests and approved lessons',
+    'booking.studentPageBody':
+      'Track only your pending requests and approved lessons.',
+    'booking.studentListTitle': 'Your pending requests and approved lessons',
+    'booking.studentListBody':
+      'No available slots are shown here. New requests start from the home page.',
+    'booking.studentEmptyTitle': 'No requests',
+    'booking.studentEmptyBody':
+      'Sent requests and confirmed lessons will appear here.',
+    'booking.coachListTitle': 'Requests and lessons',
+    'booking.coachEmptyTitle': 'No requests to handle',
+    'booking.coachEmptyBody':
+      'Student requests and planned lessons will appear here.',
+    'booking.coachCreateTitle': 'Create a lesson',
+    'booking.studentLabel': 'Student',
+    'booking.recurrenceEndsOnLabel': 'Weekly recurrence until',
+    'booking.recurrenceEndsOnPlaceholder': 'YYYY-MM-DD, optional',
+    'booking.createAction': 'Create lesson',
+    'booking.approveAction': 'Approve',
+    'booking.refuseAction': 'Refuse',
+    'booking.refusalCommentLabel': 'Refusal comment',
+    'booking.refusalCommentPlaceholder': 'Optional message for the student',
+    'booking.cancelAction': 'Cancel booking',
+    'booking.modifyAction': 'Modify',
+    'booking.expiresAt': 'Expires on {{date}}',
+    'booking.participantNames': 'Participants: {{names}}',
+    'booking.inlineRequest': '{{student}} · {{status}}',
+    'booking.requestSuccessTitle': 'Request sent',
+    'booking.requestSuccessBody':
+      'The coach can now approve or refuse the request.',
+    'booking.approveSuccessTitle': 'Request approved',
+    'booking.approveSuccessBody':
+      'The lesson is confirmed and the slot is no longer requestable.',
+    'booking.refuseSuccessTitle': 'Request refused',
+    'booking.refuseSuccessBody':
+      'The status and comment are visible to the student.',
+    'booking.createSuccessTitle': 'Lesson created',
+    'booking.createSuccessBody':
+      'The confirmed lesson is visible in schedules.',
+    'booking.cancelSuccessTitle': 'Booking cancelled',
+    'booking.cancelSuccessBody':
+      'The status was updated and the slot is released when applicable.',
+    'booking.modifySuccessTitle': 'Booking modified',
+    'booking.modifySuccessBody':
+      'The new date or duration is visible in schedules.',
+    'booking.errorTitle': 'Action unavailable',
+    'booking.slotUnavailable': 'This slot is no longer available. Try another slot.',
+    'booking.pendingLimit': 'This slot already reached its pending request limit.',
+    'booking.studentPendingLimit':
+      'You already have 10 pending requests with the coach.',
+    'booking.alreadyProcessed': 'This request has already been processed.',
+    'booking.pastBooking': 'A past lesson can no longer be cancelled by the student.',
+    'booking.invalidParticipants': 'The participant selection is not allowed.',
+    'booking.pricingMissing':
+      'No active rate matches this lesson type and duration.',
+    'booking.unauthorized': 'Your role cannot perform this action.',
+    'booking.unknownError': 'Check your connection and try again.',
     'auth.signInTitle': 'Return to your space.',
     'auth.signInSubtitle':
       'Sign in with your email and password to access NextPoint.',
@@ -1183,7 +1318,7 @@ export const dictionaries = {
     'nav.coach.messaging': 'Mensajes',
     'nav.coach.profile': 'Perfil',
     'nav.eleve.home': 'Inicio',
-    'nav.eleve.planning': 'Planificación / Solicitudes',
+    'nav.eleve.planning': 'Solicitudes',
     'nav.eleve.notifications': 'Notificaciones',
     'nav.eleve.account': 'Cuenta',
     'planning.loading': 'Cargando planificación...',
@@ -1591,6 +1726,76 @@ export const dictionaries = {
     'lessonPack.consumeErrorTitle': 'No se puede consumir',
     'lessonPack.consumeErrorBody':
       'No se ha modificado ninguna clase restante. Puede que el pack esté agotado o que el acceso esté denegado.',
+    'booking.openRequestAction': 'Solicitar',
+    'booking.requestAction': 'Enviar solicitud',
+    'booking.lessonTypeLabel': 'Tipo de clase',
+    'booking.commentLabel': 'Comentario',
+    'booking.commentPlaceholder': 'Añade tu objetivo o disponibilidad.',
+    'booking.participantsLabel': 'Participantes',
+    'booking.requesterIncluded': 'Tú estás incluido',
+    'booking.unknownStudent': 'Alumno',
+    'booking.priceLabel': 'Tarifa: {{price}}',
+    'booking.studentPageTitle': 'Solicitudes en curso y clases validadas',
+    'booking.studentPageBody':
+      'Consulta solo tus solicitudes pendientes y tus clases validadas.',
+    'booking.studentListTitle': 'Tus solicitudes en curso y clases validadas',
+    'booking.studentListBody':
+      'Aquí no se muestran horarios disponibles. Las nuevas solicitudes se hacen desde el inicio.',
+    'booking.studentEmptyTitle': 'Sin solicitudes',
+    'booking.studentEmptyBody':
+      'Tus solicitudes enviadas y clases confirmadas aparecerán aquí.',
+    'booking.coachListTitle': 'Solicitudes y clases',
+    'booking.coachEmptyTitle': 'Sin solicitudes pendientes',
+    'booking.coachEmptyBody':
+      'Las solicitudes de alumnos y clases planificadas aparecerán aquí.',
+    'booking.coachCreateTitle': 'Crear una clase',
+    'booking.studentLabel': 'Alumno',
+    'booking.recurrenceEndsOnLabel': 'Recurrencia semanal hasta',
+    'booking.recurrenceEndsOnPlaceholder': 'AAAA-MM-DD, opcional',
+    'booking.createAction': 'Crear clase',
+    'booking.approveAction': 'Validar',
+    'booking.refuseAction': 'Rechazar',
+    'booking.refusalCommentLabel': 'Comentario de rechazo',
+    'booking.refusalCommentPlaceholder': 'Mensaje opcional para el alumno',
+    'booking.cancelAction': 'Cancelar reserva',
+    'booking.modifyAction': 'Modificar',
+    'booking.expiresAt': 'Caduca el {{date}}',
+    'booking.participantNames': 'Participantes: {{names}}',
+    'booking.inlineRequest': '{{student}} · {{status}}',
+    'booking.requestSuccessTitle': 'Solicitud enviada',
+    'booking.requestSuccessBody':
+      'El coach puede validar o rechazar la solicitud.',
+    'booking.approveSuccessTitle': 'Solicitud validada',
+    'booking.approveSuccessBody':
+      'La clase queda confirmada y el horario ya no se puede solicitar.',
+    'booking.refuseSuccessTitle': 'Solicitud rechazada',
+    'booking.refuseSuccessBody':
+      'El estado y el comentario son visibles para el alumno.',
+    'booking.createSuccessTitle': 'Clase creada',
+    'booking.createSuccessBody':
+      'La clase confirmada es visible en los calendarios.',
+    'booking.cancelSuccessTitle': 'Reserva cancelada',
+    'booking.cancelSuccessBody':
+      'El estado se actualizó y el horario se libera si aplica.',
+    'booking.modifySuccessTitle': 'Reserva modificada',
+    'booking.modifySuccessBody':
+      'La nueva fecha o duración es visible en los calendarios.',
+    'booking.errorTitle': 'Acción no disponible',
+    'booking.slotUnavailable':
+      'Este horario ya no está disponible. Prueba con otro.',
+    'booking.pendingLimit':
+      'Este horario ya alcanzó el límite de solicitudes pendientes.',
+    'booking.studentPendingLimit':
+      'Ya tienes 10 solicitudes pendientes con el coach.',
+    'booking.alreadyProcessed': 'Esta solicitud ya ha sido tratada.',
+    'booking.pastBooking':
+      'Una clase pasada ya no puede ser cancelada por el alumno.',
+    'booking.invalidParticipants':
+      'La selección de participantes no está permitida.',
+    'booking.pricingMissing':
+      'No hay una tarifa activa para este tipo y duración de clase.',
+    'booking.unauthorized': 'Tu rol no permite esta acción.',
+    'booking.unknownError': 'Revisa tu conexión e inténtalo de nuevo.',
     'auth.signInTitle': 'Vuelve a tu espacio.',
     'auth.signInSubtitle':
       'Inicia sesión con tu email y contraseña para acceder a NextPoint.',

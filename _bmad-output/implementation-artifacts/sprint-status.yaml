@@ -1,5 +1,5 @@
 # generated: 2026-06-21T12:16:42+02:00
-# last_updated: 2026-06-29T17:50:00+02:00
+# last_updated: 2026-06-29T18:56:30+02:00
 # project: NextPoint
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review in a fresh context.
 
 generated: 2026-06-21T12:16:42+02:00
-last_updated: 2026-06-29T17:50:00+02:00
+last_updated: 2026-06-29T18:56:30+02:00
 project: NextPoint
 project_key: NOKEY
 tracking_system: file-system
@@ -73,17 +73,17 @@ development_status:
   epic-3-retrospective: optional
 
   epic-4: in-progress
-  4-1-demander-un-creneau-individuel-disponible: ready-for-dev
-  4-2-appliquer-les-limites-et-conflits-de-demandes: ready-for-dev
-  4-3-afficher-les-demandes-nouvelles-dans-le-planning-coach: ready-for-dev
-  4-4-valider-une-demande-de-reservation: ready-for-dev
-  4-5-refuser-une-demande-avec-commentaire-optionnel: ready-for-dev
-  4-6-expirer-automatiquement-les-demandes-pending: ready-for-dev
-  4-7-demander-un-cours-collectif-avec-joueurs-selectionnes: ready-for-dev
-  4-8-creer-un-cours-individuel-ou-collectif-par-le-coach: ready-for-dev
-  4-9-creer-un-cours-individuel-recurrent-hebdomadaire-par-le-coach: ready-for-dev
-  4-10-annuler-ou-modifier-une-reservation-confirmee: ready-for-dev
-  4-11-consulter-les-demandes-et-reservations-cote-eleve: ready-for-dev
+  4-1-demander-un-creneau-individuel-disponible: review
+  4-2-appliquer-les-limites-et-conflits-de-demandes: review
+  4-3-afficher-les-demandes-nouvelles-dans-le-planning-coach: review
+  4-4-valider-une-demande-de-reservation: review
+  4-5-refuser-une-demande-avec-commentaire-optionnel: review
+  4-6-expirer-automatiquement-les-demandes-pending: review
+  4-7-demander-un-cours-collectif-avec-joueurs-selectionnes: review
+  4-8-creer-un-cours-individuel-ou-collectif-par-le-coach: review
+  4-9-creer-un-cours-individuel-recurrent-hebdomadaire-par-le-coach: review
+  4-10-annuler-ou-modifier-une-reservation-confirmee: review
+  4-11-consulter-les-demandes-et-reservations-cote-eleve: review
   epic-4-retrospective: optional
 
   epic-5: in-progress

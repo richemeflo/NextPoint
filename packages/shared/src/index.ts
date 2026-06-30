@@ -42,6 +42,26 @@ export {
   toPricingRateInput,
 } from './contracts/pricing-rate';
 export {
+  bookingActionSchema,
+  bookingErrorCodes,
+  bookingOrigins,
+  bookingPendingTtlDays,
+  bookingStatuses,
+  canApproveBooking,
+  canCancelBooking,
+  canCreatePendingBooking,
+  canRefuseBooking,
+  coachCreateBookingSchema,
+  coachModifyBookingSchema,
+  isBookingExpired,
+  maxGroupBookingParticipants,
+  maxPendingBookingsPerSlot,
+  maxPendingBookingsPerStudent,
+  normalizeParticipantIds,
+  refuseBookingSchema,
+  requestBookingSchema,
+} from './contracts/booking';
+export {
   manualStudentProfileSchema,
   studentSexes,
   studentProfileSchema,
@@ -91,6 +111,18 @@ export type {
   PricingRateCandidate,
   PricingSelectionContext,
 } from './contracts/pricing-rate';
+export type {
+  BookingActionInput,
+  BookingErrorCode,
+  BookingOrigin,
+  BookingRuleResult,
+  BookingStatus,
+  CoachCreateBookingInput,
+  CoachModifyBookingInput,
+  PendingBookingCandidate,
+  RefuseBookingInput,
+  RequestBookingInput,
+} from './contracts/booking';
 export type {
   ManualStudentProfileFormInput,
   ManualStudentProfileInput,

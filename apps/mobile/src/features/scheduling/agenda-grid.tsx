@@ -1,9 +1,14 @@
 import type { ReactNode } from 'react';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import {
+  StyleSheet,
+  useWindowDimensions,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { BorderWidth, Radii, Spacing } from '@/constants/theme';
-import type { AvailabilitySlot } from '@/features/scheduling/availability-service';
 import {
   agendaHourMarks,
   getAgendaSlotPosition,
@@ -12,24 +17,32 @@ import {
 } from '@/features/scheduling/planning-window';
 import { useTheme } from '@/hooks/use-theme';
 
-type AgendaGridProps = {
-  days: PlanningDay[];
-  formatDay: (date: string) => string;
-  renderSlot: (slot: AvailabilitySlot) => ReactNode;
-  slots: AvailabilitySlot[];
+type AgendaGridItem = {
+  id: string;
+  startsAt: string;
+  endsAt: string;
 };
 
-export function AgendaGrid({
+type AgendaGridProps<TItem extends AgendaGridItem> = {
+  days: PlanningDay[];
+  formatDay: (date: string) => string;
+  getSlotStyle?: (slot: TItem) => StyleProp<ViewStyle>;
+  renderSlot: (slot: TItem) => ReactNode;
+  slots: TItem[];
+};
+
+export function AgendaGrid<TItem extends AgendaGridItem>({
   days,
   formatDay,
+  getSlotStyle,
   renderSlot,
   slots,
-}: AgendaGridProps) {
+}: AgendaGridProps<TItem>) {
   const theme = useTheme();
   const { width } = useWindowDimensions();
   const compact = width < 760;
 
-  const slotsByDay = new Map<string, AvailabilitySlot[]>();
+  const slotsByDay = new Map<string, TItem[]>();
   for (const slot of slots) {
     const key = getSlotDateKey(slot.startsAt);
     const current = slotsByDay.get(key) ?? [];
@@ -81,6 +94,7 @@ export function AgendaGrid({
                           backgroundColor: theme.surfaceElevated,
                           borderColor: theme.primary,
                         },
+                        getSlotStyle?.(slot),
                       ]}>
                       {renderSlot(slot)}
                     </View>
@@ -149,6 +163,7 @@ export function AgendaGrid({
                       backgroundColor: theme.surfaceElevated,
                       borderColor: theme.primary,
                     },
+                    getSlotStyle?.(slot),
                   ]}>
                   {renderSlot(slot)}
                 </View>
@@ -237,5 +252,6 @@ const styles = StyleSheet.create({
     padding: Spacing.two,
     justifyContent: 'center',
     minHeight: 52,
+    overflow: 'hidden',
   },
 });

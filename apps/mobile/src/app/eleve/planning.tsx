@@ -17,9 +17,12 @@ export default function ElevePlanningScreen() {
             <ThemedText type="smallBold" themeColor="primary">
               {t('role.eleveLabel')}
             </ThemedText>
-            <ThemedText type="title">{t('nav.eleve.planning')}</ThemedText>
+            <ThemedText type="title">{t('booking.studentPageTitle')}</ThemedText>
+            <ThemedText type="default" themeColor="textMuted">
+              {t('booking.studentPageBody')}
+            </ThemedText>
           </View>
-          <StudentAgenda />
+          <StudentAgenda surface="bookings" />
         </View>
       </ScrollView>
     </ThemedView>
