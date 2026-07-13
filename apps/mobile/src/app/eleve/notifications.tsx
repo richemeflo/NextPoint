@@ -1,5 +1,5 @@
-import { RoleScreen } from '@/features/navigation/role-screen';
+import { NotificationCenterScreen } from '@/features/notifications/notification-center-screen';
 
 export default function EleveNotificationsScreen() {
-  return <RoleScreen role="eleve" titleKey="nav.eleve.notifications" />;
+  return <NotificationCenterScreen role="eleve" />;
 }

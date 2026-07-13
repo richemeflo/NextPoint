@@ -1,6 +1,10 @@
+---
+baseline_commit: 2394e5eebd254df02a8af3d4d4f038e28fa10407
+---
+
 # Story 5.2: Gérer les permissions et jetons de notification push
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -20,16 +24,16 @@ so that l’application respecte mes préférences tout en gardant l’historiqu
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 5.2 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer permissions et jetons push (AC: tous)
-  - [ ] Utiliser le fournisseur push retenu seulement apres decision explicite si absent.
-  - [ ] Stocker les jetons associes a l'utilisateur courant sans secret cote client.
-  - [ ] Garder l'in-app fonctionnelle si permission push refusee.
-- [ ] Tester acceptation/refus/changement de jeton (AC: securite/UX)
-  - [ ] Couvrir appareil compatible et environnement web si push non disponible.
+- [x] Verifier les preconditions et dependances de Story 5.2 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer permissions et jetons push (AC: tous)
+  - [x] Utiliser le fournisseur push retenu seulement apres decision explicite si absent.
+  - [x] Stocker les jetons associes a l'utilisateur courant sans secret cote client.
+  - [x] Garder l'in-app fonctionnelle si permission push refusee.
+- [x] Tester acceptation/refus/changement de jeton (AC: securite/UX)
+  - [x] Couvrir appareil compatible et environnement web si push non disponible.
 
 ## Interventions utilisateur requises
 
@@ -139,18 +143,53 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+GPT-5 Codex
 
 ### Debug Log References
+
+- `rtk npm run shared:typecheck`
+- `rtk npm run mobile:typecheck`
+- `rtk npm run test:auth`
+- `rtk npm run mobile:lint`
+- `rtk npm run supabase:db:reset`
+- `rtk npm run supabase:test:db`
 
 ### Completion Notes List
 
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+- Preferences push et jetons sont geres par RPC serveur sans exposer de secret ni lecture directe des jetons cote client.
+- Le client natif utilise Expo Notifications pour demander la permission et enregistrer un Expo push token; le web reste en preference sans token natif.
+- Une Edge Function Supabase envoie les tentatives push `pending` vers l'API Expo apres les mutations booking.
+- Le refus push desactive les jetons et ne bloque jamais les notifications in-app.
+- Validation: typecheck shared/mobile, tests Node, lint Expo, reset DB local et tests Supabase DB passent.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/5-2-gerer-les-permissions-et-jetons-de-notification-push.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `apps/mobile/app.json`
+- `apps/mobile/package.json`
+- `apps/mobile/src/app/_layout.tsx`
+- `apps/mobile/src/features/notifications/notification-center-screen.tsx`
+- `apps/mobile/src/features/notifications/notification-service.ts`
+- `apps/mobile/src/features/notifications/push-notification-handler.ts`
+- `apps/mobile/src/features/notifications/push-permission.ts`
+- `apps/mobile/src/i18n/translations.ts`
+- `package-lock.json`
+- `package.json`
+- `packages/shared/src/contracts/notification.test.ts`
+- `packages/shared/src/contracts/notification.ts`
+- `packages/shared/src/index.ts`
+- `packages/shared/src/types/database.types.ts`
+- `supabase/config.toml`
+- `supabase/functions/send-pending-push-notifications/index.ts`
+- `supabase/migrations/0023_notifications.sql`
+- `supabase/tests/database/0013_notifications.sql`
+
+### Change Log
+
+- 2026-06-30: Implementation preferences/jetons push Expo, sender Supabase et fallback in-app.
 
 ## Completion Note
 

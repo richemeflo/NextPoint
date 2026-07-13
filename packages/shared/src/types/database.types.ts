@@ -239,6 +239,76 @@ export type Database = {
           },
         ]
       }
+      coach_message_threads: {
+        Row: {
+          booking_id: string
+          coach_id: string
+          coach_read_at: string | null
+          created_at: string
+          id: string
+          last_message_at: string
+          updated_at: string
+        }
+        Insert: {
+          booking_id: string
+          coach_id: string
+          coach_read_at?: string | null
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          updated_at?: string
+        }
+        Update: {
+          booking_id?: string
+          coach_id?: string
+          coach_read_at?: string | null
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_message_threads_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coach_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          sender_id: string
+          thread_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          sender_id: string
+          thread_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "coach_message_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_profiles: {
         Row: {
           bio: string
@@ -307,6 +377,173 @@ export type Database = {
           used_sessions?: number
         }
         Relationships: []
+      }
+      notification_push_delivery_attempts: {
+        Row: {
+          created_at: string
+          error_code: string | null
+          id: string
+          notification_id: string
+          provider: Database["public"]["Enums"]["push_provider"] | null
+          push_token_id: string | null
+          recipient_id: string
+          status: Database["public"]["Enums"]["push_delivery_status"]
+        }
+        Insert: {
+          created_at?: string
+          error_code?: string | null
+          id?: string
+          notification_id: string
+          provider?: Database["public"]["Enums"]["push_provider"] | null
+          push_token_id?: string | null
+          recipient_id: string
+          status: Database["public"]["Enums"]["push_delivery_status"]
+        }
+        Update: {
+          created_at?: string
+          error_code?: string | null
+          id?: string
+          notification_id?: string
+          provider?: Database["public"]["Enums"]["push_provider"] | null
+          push_token_id?: string | null
+          recipient_id?: string
+          status?: Database["public"]["Enums"]["push_delivery_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_push_delivery_attempts_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_push_delivery_attempts_push_token_id_fkey"
+            columns: ["push_token_id"]
+            isOneToOne: false
+            referencedRelation: "notification_push_tokens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_push_preferences: {
+        Row: {
+          created_at: string
+          permission_status: Database["public"]["Enums"]["push_permission_status"]
+          provider: Database["public"]["Enums"]["push_provider"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          permission_status?: Database["public"]["Enums"]["push_permission_status"]
+          provider?: Database["public"]["Enums"]["push_provider"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          permission_status?: Database["public"]["Enums"]["push_permission_status"]
+          provider?: Database["public"]["Enums"]["push_provider"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notification_push_tokens: {
+        Row: {
+          created_at: string
+          device_id: string
+          id: string
+          is_active: boolean
+          last_seen_at: string
+          provider: Database["public"]["Enums"]["push_provider"]
+          token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_id?: string
+          id?: string
+          is_active?: boolean
+          last_seen_at?: string
+          provider: Database["public"]["Enums"]["push_provider"]
+          token: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_id?: string
+          id?: string
+          is_active?: boolean
+          last_seen_at?: string
+          provider?: Database["public"]["Enums"]["push_provider"]
+          token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string
+          booking_id: string | null
+          created_at: string
+          id: string
+          link_id: string | null
+          link_type:
+            | Database["public"]["Enums"]["notification_link_type"]
+            | null
+          metadata: Json
+          read_at: string | null
+          recipient_id: string
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+          link_id?: string | null
+          link_type?:
+            | Database["public"]["Enums"]["notification_link_type"]
+            | null
+          metadata?: Json
+          read_at?: string | null
+          recipient_id: string
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          booking_id?: string | null
+          created_at?: string
+          id?: string
+          link_id?: string | null
+          link_type?:
+            | Database["public"]["Enums"]["notification_link_type"]
+            | null
+          metadata?: Json
+          read_at?: string | null
+          recipient_id?: string
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pricing_rate_students: {
         Row: {
@@ -753,6 +990,40 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_app_notification: {
+        Args: {
+          p_body: string
+          p_booking_id: string
+          p_link_id: string
+          p_link_type: Database["public"]["Enums"]["notification_link_type"]
+          p_metadata?: Json
+          p_recipient_id: string
+          p_title: string
+          p_type: Database["public"]["Enums"]["notification_type"]
+        }
+        Returns: {
+          body: string
+          booking_id: string | null
+          created_at: string
+          id: string
+          link_id: string | null
+          link_type:
+            | Database["public"]["Enums"]["notification_link_type"]
+            | null
+          metadata: Json
+          read_at: string | null
+          recipient_id: string
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "notifications"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_availability_range: {
         Args: {
           p_ends_at: string
@@ -875,6 +1146,50 @@ export type Database = {
           to: "student_profiles"
           isOneToOne: false
           isSetofReturn: true
+        }
+      }
+      mark_all_notifications_read: { Args: never; Returns: number }
+      mark_coach_message_thread_read: {
+        Args: { p_thread_id: string }
+        Returns: {
+          booking_id: string
+          coach_id: string
+          coach_read_at: string | null
+          created_at: string
+          id: string
+          last_message_at: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "coach_message_threads"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      mark_notification_read: {
+        Args: { p_notification_id: string }
+        Returns: {
+          body: string
+          booking_id: string | null
+          created_at: string
+          id: string
+          link_id: string | null
+          link_type:
+            | Database["public"]["Enums"]["notification_link_type"]
+            | null
+          metadata: Json
+          read_at: string | null
+          recipient_id: string
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "notifications"
+          isOneToOne: true
+          isSetofReturn: false
         }
       }
       modify_booking: {
@@ -1067,6 +1382,22 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      send_coach_message: {
+        Args: { p_body: string; p_thread_id: string }
+        Returns: {
+          body: string
+          created_at: string
+          id: string
+          sender_id: string
+          thread_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "coach_messages"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       update_availability_slot: {
         Args: {
           p_apply_to_series: boolean
@@ -1096,6 +1427,27 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      update_push_notification_preference: {
+        Args: {
+          p_device_id: string
+          p_permission_status: Database["public"]["Enums"]["push_permission_status"]
+          p_provider: Database["public"]["Enums"]["push_provider"]
+          p_token: string
+        }
+        Returns: {
+          created_at: string
+          permission_status: Database["public"]["Enums"]["push_permission_status"]
+          provider: Database["public"]["Enums"]["push_provider"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "notification_push_preferences"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       app_language: "fr" | "en" | "es"
@@ -1111,6 +1463,20 @@ export type Database = {
         | "cancelled"
         | "modified"
       lesson_pack_status: "active" | "exhausted"
+      notification_link_type: "booking"
+      notification_type:
+        | "booking_requested"
+        | "booking_approved"
+        | "booking_refused"
+        | "booking_cancelled"
+        | "booking_modified"
+      push_delivery_status: "pending" | "sent" | "failed" | "skipped"
+      push_permission_status:
+        | "granted"
+        | "denied"
+        | "undetermined"
+        | "unavailable"
+      push_provider: "expo" | "web" | "none"
       student_account_status:
         | "pending_activation"
         | "active"
@@ -1277,6 +1643,22 @@ export const Constants = {
         "modified",
       ],
       lesson_pack_status: ["active", "exhausted"],
+      notification_link_type: ["booking"],
+      notification_type: [
+        "booking_requested",
+        "booking_approved",
+        "booking_refused",
+        "booking_cancelled",
+        "booking_modified",
+      ],
+      push_delivery_status: ["pending", "sent", "failed", "skipped"],
+      push_permission_status: [
+        "granted",
+        "denied",
+        "undetermined",
+        "unavailable",
+      ],
+      push_provider: ["expo", "web", "none"],
       student_account_status: [
         "pending_activation",
         "active",

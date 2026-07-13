@@ -1,5 +1,5 @@
 # generated: 2026-06-21T12:16:42+02:00
-# last_updated: 2026-06-29T18:56:30+02:00
+# last_updated: 2026-07-13T17:24:41+02:00
 # project: NextPoint
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review in a fresh context.
 
 generated: 2026-06-21T12:16:42+02:00
-last_updated: 2026-06-29T18:56:30+02:00
+last_updated: 2026-07-13T17:24:41+02:00
 project: NextPoint
 project_key: NOKEY
 tracking_system: file-system
@@ -87,13 +87,13 @@ development_status:
   epic-4-retrospective: optional
 
   epic-5: in-progress
-  5-1-creer-le-modele-et-le-centre-de-notifications-in-app: ready-for-dev
-  5-2-gerer-les-permissions-et-jetons-de-notification-push: ready-for-dev
-  5-3-notifier-le-coach-lors-dune-nouvelle-demande: ready-for-dev
-  5-4-notifier-leleve-apres-validation-ou-refus: ready-for-dev
-  5-5-notifier-lautre-partie-lors-dune-annulation-ou-modification: ready-for-dev
-  5-6-gerer-letat-lu-non-lu-et-les-liens-de-notifications: ready-for-dev
-  5-7-utiliser-la-messagerie-coach-liee-aux-creneaux: ready-for-dev
+  5-1-creer-le-modele-et-le-centre-de-notifications-in-app: review
+  5-2-gerer-les-permissions-et-jetons-de-notification-push: review
+  5-3-notifier-le-coach-lors-dune-nouvelle-demande: review
+  5-4-notifier-leleve-apres-validation-ou-refus: review
+  5-5-notifier-lautre-partie-lors-dune-annulation-ou-modification: review
+  5-6-gerer-letat-lu-non-lu-et-les-liens-de-notifications: review
+  5-7-utiliser-la-messagerie-coach-liee-aux-creneaux: review
   epic-5-retrospective: optional
 
   epic-6: in-progress

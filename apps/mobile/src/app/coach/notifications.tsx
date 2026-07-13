@@ -1,5 +1,5 @@
-import { RoleScreen } from '@/features/navigation/role-screen';
+import { NotificationCenterScreen } from '@/features/notifications/notification-center-screen';
 
 export default function CoachNotificationsScreen() {
-  return <RoleScreen role="coach" titleKey="nav.coach.notifications" />;
+  return <NotificationCenterScreen role="coach" />;
 }

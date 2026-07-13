@@ -1,6 +1,10 @@
+---
+baseline_commit: 2394e5eebd254df02a8af3d4d4f038e28fa10407
+---
+
 # Story 5.7: Utiliser la messagerie coach liée aux créneaux
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -20,16 +24,16 @@ so that je puisse retrouver les échanges de planning sans ouvrir chaque écran 
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 5.7 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer messagerie coach liee aux evenements (AC: tous)
-  - [ ] Limiter les discussions aux creneaux, demandes, reservations ou evenements autorises.
-  - [ ] Autoriser la reponse coach; refuser message vide ou utilisateur non coach.
-  - [ ] Ne pas creer messagerie generale hors contexte.
-- [ ] Tester acces et liens de contexte (AC: securite/UX)
-  - [ ] Couvrir coach autorise, eleve non autorise et objet lie inaccessible.
+- [x] Verifier les preconditions et dependances de Story 5.7 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer messagerie coach liee aux evenements (AC: tous)
+  - [x] Limiter les discussions aux creneaux, demandes, reservations ou evenements autorises.
+  - [x] Autoriser la reponse coach; refuser message vide ou utilisateur non coach.
+  - [x] Ne pas creer messagerie generale hors contexte.
+- [x] Tester acces et liens de contexte (AC: securite/UX)
+  - [x] Couvrir coach autorise, eleve non autorise et objet lie inaccessible.
 
 ## Interventions utilisateur requises
 
@@ -150,18 +154,51 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+GPT-5 Codex
 
 ### Debug Log References
+
+- Plan d'implementation: contrat Zod teste en premier, migration transactionnelle avec RLS/RPC coach-only, service mobile type, puis interface liste/detail responsive et liens vers le planning.
+- `rtk npx tsx --test packages/shared/src/contracts/messaging.test.ts` (RED puis GREEN)
+- `rtk npm run supabase:db:reset` (base locale uniquement)
+- `rtk npm run supabase:test:db`
+- `rtk npm test`
+- `rtk npm run typecheck`
+- `rtk proxy ../../node_modules/.bin/eslint .` depuis `apps/mobile`
+- `rtk proxy ../../node_modules/.bin/expo export --platform web --output-dir /tmp/nextpoint-story-5-7-web3 --clear`
 
 ### Completion Notes List
 
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+- Preconditions verifiees: bookings/creneaux, roles, profils, notifications et navigation coach existent; aucune dependance bloquante manquante.
+- Un fil coach est cree automatiquement pour chaque booking; le commentaire initial eleve alimente le fil sans ouvrir de messagerie generale.
+- Les lectures et mutations sont protegees par RLS et RPC transactionnelles: seul le coach proprietaire du booking peut lister, lire, marquer lu et repondre.
+- L'ecran Messagerie propose liste/detail responsive, etats lu/non lu, validation des reponses et traductions FR/EN/ES.
+- Le lien de contexte ouvre la semaine concernee dans le planning coach et surligne la reservation ciblee; un objet absent affiche un avertissement traduit.
+- Validation reussie: 75 tests Node, 236 assertions pgTAP, typecheck complet, lint complet sans erreur et `git diff --check`.
+- Le bundle Metro web compile. La validation visuelle navigateur/appareil n'a pas pu etre terminee: Expo echoue ensuite sur les modules internes absents `expo-router/build/utils/url` et `expo-router/_ctx-shared` de la combinaison de dependances deja installee. Aucune dependance hors story n'a ete modifiee.
+- Verification secrets: les exemples d'environnement contiennent uniquement des placeholders et aucun secret n'a ete ajoute par la story.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/5-7-utiliser-la-messagerie-coach-liee-aux-creneaux.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `apps/mobile/src/app/coach/index.tsx`
+- `apps/mobile/src/app/coach/messaging.tsx`
+- `apps/mobile/src/features/messaging/coach-messaging-service.ts`
+- `apps/mobile/src/i18n/translations.ts`
+- `package.json`
+- `packages/shared/src/contracts/messaging.test.ts`
+- `packages/shared/src/contracts/messaging.ts`
+- `packages/shared/src/index.ts`
+- `packages/shared/src/types/database.types.ts`
+- `supabase/migrations/0024_coach_messaging.sql`
+- `supabase/tests/database/0014_coach_messaging.sql`
+
+### Change Log
+
+- 2026-07-13: Messagerie coach contextuelle avec RLS/RPC, etat lu/non lu, reponses validees, interface responsive et retour cible vers le planning.
 
 ## Completion Note
 

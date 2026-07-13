@@ -62,6 +62,26 @@ export {
   requestBookingSchema,
 } from './contracts/booking';
 export {
+  canMarkNotificationRead,
+  getNotificationReadState,
+  notificationBodyMaxLength,
+  notificationLinkTypes,
+  notificationMarkReadSchema,
+  notificationReadStates,
+  notificationTitleMaxLength,
+  notificationTypes,
+  pushPermissionStatuses,
+  pushPreferenceSchema,
+  pushProviders,
+  resolveNotificationLink,
+} from './contracts/notification';
+export {
+  canAccessCoachMessageThread,
+  coachMessageReplySchema,
+  isCoachMessageThreadUnread,
+  messageBodyMaxLength,
+} from './contracts/messaging';
+export {
   manualStudentProfileSchema,
   studentSexes,
   studentProfileSchema,
@@ -123,6 +143,21 @@ export type {
   RefuseBookingInput,
   RequestBookingInput,
 } from './contracts/booking';
+export type {
+  NotificationLinkType,
+  NotificationMarkReadInput,
+  NotificationReadCandidate,
+  NotificationReadState,
+  NotificationType,
+  PushPermissionStatus,
+  PushPreferenceInput,
+  PushProvider,
+} from './contracts/notification';
+export type {
+  CoachMessageReplyInput,
+  CoachMessageThreadAccessCandidate,
+  CoachMessageThreadReadCandidate,
+} from './contracts/messaging';
 export type {
   ManualStudentProfileFormInput,
   ManualStudentProfileInput,

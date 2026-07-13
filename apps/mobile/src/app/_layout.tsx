@@ -9,6 +9,7 @@ import { Spacing } from '@/constants/theme';
 import { getAuthRouteAccess } from '@/features/auth/access-policy';
 import { AuthProvider } from '@/features/auth/auth-provider';
 import { useAuth } from '@/features/auth/auth-context';
+import '@/features/notifications/push-notification-handler';
 import { ProfileLocaleSync } from '@/features/profiles/profile-locale-sync';
 import { useTheme } from '@/hooks/use-theme';
 import { I18nProvider, useTranslation } from '@/i18n';

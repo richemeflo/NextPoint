@@ -9,6 +9,7 @@ import type {
   Tables,
 } from '@nextpoint/shared';
 
+import { processPendingPushNotifications } from '@/features/notifications/notification-service';
 import { supabase } from '@/lib/supabase/client';
 
 type BookingRow = Tables<'bookings'>;
@@ -280,6 +281,7 @@ export async function requestBooking(
   }
 
   const [booking] = await hydrateBookings([data]);
+  void processPendingPushNotifications();
   return { ok: true, data: booking };
 }
 
@@ -295,6 +297,7 @@ export async function approveBooking(bookingId: string): Promise<BookingResult> 
   }
 
   const [booking] = await hydrateBookings([data]);
+  void processPendingPushNotifications();
   return { ok: true, data: booking };
 }
 
@@ -314,6 +317,7 @@ export async function refuseBooking(
   }
 
   const [booking] = await hydrateBookings([data]);
+  void processPendingPushNotifications();
   return { ok: true, data: booking };
 }
 
@@ -346,7 +350,9 @@ export async function createCoachBooking(
     return { ok: false, error: mapBookingError(error?.code, error?.message) };
   }
 
-  return { ok: true, data: await hydrateBookings(data) };
+  const bookings = await hydrateBookings(data);
+  void processPendingPushNotifications();
+  return { ok: true, data: bookings };
 }
 
 export async function cancelBooking(bookingId: string): Promise<BookingResult> {
@@ -361,6 +367,7 @@ export async function cancelBooking(bookingId: string): Promise<BookingResult> {
   }
 
   const [booking] = await hydrateBookings([data]);
+  void processPendingPushNotifications();
   return { ok: true, data: booking };
 }
 
@@ -381,5 +388,6 @@ export async function modifyBooking(
   }
 
   const [booking] = await hydrateBookings([data]);
+  void processPendingPushNotifications();
   return { ok: true, data: booking };
 }

@@ -1,6 +1,10 @@
+---
+baseline_commit: 2394e5eebd254df02a8af3d4d4f038e28fa10407
+---
+
 # Story 5.1: Créer le modèle et le centre de notifications in-app
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -20,16 +24,16 @@ so that je retrouve les événements importants même sans notification push sys
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 5.1 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer modele/flux notification selon la story (AC: tous)
-  - [ ] Creer une notification in-app miroir pour chaque evenement fonctionnel.
-  - [ ] Lier notification a demande/reservation/evenement si applicable.
-  - [ ] Proteger lecture et etat lu/non lu par utilisateur destinataire.
-- [ ] Tester fallback sans push (AC: robustesse)
-  - [ ] Verifier que l'in-app reste creee meme si la livraison push echoue ou est refusee.
+- [x] Verifier les preconditions et dependances de Story 5.1 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer modele/flux notification selon la story (AC: tous)
+  - [x] Creer une notification in-app miroir pour chaque evenement fonctionnel.
+  - [x] Lier notification a demande/reservation/evenement si applicable.
+  - [x] Proteger lecture et etat lu/non lu par utilisateur destinataire.
+- [x] Tester fallback sans push (AC: robustesse)
+  - [x] Verifier que l'in-app reste creee meme si la livraison push echoue ou est refusee.
 
 ## Interventions utilisateur requises
 
@@ -150,18 +154,54 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+GPT-5 Codex
 
 ### Debug Log References
+
+- `rtk npm run shared:typecheck`
+- `rtk npm run mobile:typecheck`
+- `rtk npm run test:auth`
+- `rtk npm run mobile:lint`
+- `rtk npm run supabase:db:reset`
+- `rtk npm run supabase:test:db`
 
 ### Completion Notes List
 
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+- Modele Supabase ajoute pour notifications in-app, preferences push, jetons push et journal de tentative push.
+- Centre de notifications coach/eleve remplace les placeholders et reste utilisable sans autorisation push systeme.
+- RLS et RPC protegent la lecture et les mutations de notification par destinataire.
+- Validation: typecheck shared/mobile, tests Node, lint Expo, reset DB local et tests Supabase DB passent.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/5-1-creer-le-modele-et-le-centre-de-notifications-in-app.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `apps/mobile/app.json`
+- `apps/mobile/package.json`
+- `apps/mobile/src/app/_layout.tsx`
+- `apps/mobile/src/app/coach/notifications.tsx`
+- `apps/mobile/src/app/eleve/notifications.tsx`
+- `apps/mobile/src/features/notifications/notification-center-screen.tsx`
+- `apps/mobile/src/features/notifications/notification-service.ts`
+- `apps/mobile/src/features/notifications/push-notification-handler.ts`
+- `apps/mobile/src/features/notifications/push-permission.ts`
+- `apps/mobile/src/i18n/translations.ts`
+- `package-lock.json`
+- `package.json`
+- `packages/shared/src/contracts/notification.test.ts`
+- `packages/shared/src/contracts/notification.ts`
+- `packages/shared/src/index.ts`
+- `packages/shared/src/types/database.types.ts`
+- `supabase/config.toml`
+- `supabase/functions/send-pending-push-notifications/index.ts`
+- `supabase/migrations/0023_notifications.sql`
+- `supabase/tests/database/0013_notifications.sql`
+
+### Change Log
+
+- 2026-06-30: Implementation du modele notifications in-app, du centre UI et des validations associees.
 
 ## Completion Note
 

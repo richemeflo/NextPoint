@@ -58,6 +58,78 @@ export const dictionaries = {
     'nav.eleve.planning': 'Demandes',
     'nav.eleve.notifications': 'Notifications',
     'nav.eleve.account': 'Compte',
+    'notifications.loading': 'Chargement des notifications...',
+    'notifications.title': 'Notifications',
+    'notifications.subtitle':
+      'Retrouvez les demandes, validations, refus et changements de réservation.',
+    'notifications.pushTitle': 'Notifications push',
+    'notifications.pushBody':
+      'État système : {{status}}. Le centre in-app reste disponible dans tous les cas.',
+    'notifications.pushAcceptAction': 'Autoriser',
+    'notifications.pushRefuseAction': 'Refuser',
+    'notifications.pushStatus.granted': 'autorisées',
+    'notifications.pushStatus.denied': 'refusées',
+    'notifications.pushStatus.undetermined': 'non défini',
+    'notifications.pushStatus.unavailable': 'indisponible',
+    'notifications.listTitle': 'Récentes',
+    'notifications.unreadCount': '{{count}} non lue(s)',
+    'notifications.markAllReadAction': 'Tout marquer comme lu',
+    'notifications.emptyTitle': 'Aucune notification',
+    'notifications.emptyBody':
+      'Les événements importants apparaîtront ici même si le push système est refusé.',
+    'notifications.read': 'Lu',
+    'notifications.unread': 'Non lu',
+    'notifications.loadErrorTitle': 'Notifications indisponibles',
+    'notifications.loadErrorBody':
+      'Impossible de charger vos notifications pour le moment.',
+    'notifications.saveErrorTitle': 'Action impossible',
+    'notifications.saveErrorBody':
+      'Le changement n’a pas été enregistré. Vérifiez votre connexion puis réessayez.',
+    'notifications.linkMissingTitle': 'Lien indisponible',
+    'notifications.linkMissingBody':
+      'L’événement lié n’est plus accessible ou n’existe plus.',
+    'messaging.loading': 'Chargement des discussions...',
+    'messaging.title': 'Messagerie',
+    'messaging.subtitle':
+      'Retrouvez les échanges rattachés à vos créneaux, demandes et réservations.',
+    'messaging.listTitle': 'Discussions de planning',
+    'messaging.emptyTitle': 'Aucune discussion',
+    'messaging.emptyBody':
+      'Les discussions apparaîtront ici lorsqu’une demande ou une réservation existera.',
+    'messaging.read': 'Lu',
+    'messaging.unread': 'Non lu',
+    'messaging.unknownStudent': 'Élève',
+    'messaging.noMessages': 'Aucun message dans cette discussion.',
+    'messaging.responseLabel': 'Votre réponse',
+    'messaging.responsePlaceholder':
+      'Répondez au sujet de ce créneau ou de cette réservation.',
+    'messaging.sendAction': 'Envoyer',
+    'messaging.sending': 'Envoi...',
+    'messaging.backAction': 'Retour aux discussions',
+    'messaging.openContextAction': 'Voir dans le planning',
+    'messaging.linkedContextTitle': 'Événement lié',
+    'messaging.linkedContextBody':
+      'La réservation de {{student}} est ciblée dans le planning.',
+    'messaging.coachAuthor': 'Coach',
+    'messaging.studentAuthor': 'Élève',
+    'messaging.selectThreadTitle': 'Sélectionnez une discussion',
+    'messaging.selectThreadBody':
+      'Ouvrez une discussion pour consulter son contexte et répondre.',
+    'messaging.loadErrorTitle': 'Messagerie indisponible',
+    'messaging.loadErrorBody':
+      'Impossible de charger vos discussions pour le moment.',
+    'messaging.saveErrorTitle': 'Action impossible',
+    'messaging.saveErrorBody':
+      'La réponse ou l’état de lecture n’a pas été enregistré. Réessayez.',
+    'messaging.invalidMessageTitle': 'Message invalide',
+    'messaging.invalidMessageBody':
+      'Saisissez un message non vide de 1 000 caractères maximum.',
+    'messaging.contextUnavailableTitle': 'Événement inaccessible',
+    'messaging.contextUnavailableBody':
+      'Le créneau ou la réservation liée n’est plus accessible.',
+    'messaging.accessDeniedTitle': 'Accès refusé',
+    'messaging.accessDeniedBody':
+      'La messagerie de planning est réservée au coach.',
     'planning.loading': 'Chargement du planning...',
     'planning.refreshing': 'Mise à jour des créneaux...',
     'planning.coachTitle': 'Planning coach',
@@ -692,6 +764,78 @@ export const dictionaries = {
     'nav.eleve.planning': 'Requests',
     'nav.eleve.notifications': 'Notifications',
     'nav.eleve.account': 'Account',
+    'notifications.loading': 'Loading notifications...',
+    'notifications.title': 'Notifications',
+    'notifications.subtitle':
+      'Find requests, approvals, refusals and booking changes.',
+    'notifications.pushTitle': 'Push notifications',
+    'notifications.pushBody':
+      'System status: {{status}}. The in-app center remains available either way.',
+    'notifications.pushAcceptAction': 'Allow',
+    'notifications.pushRefuseAction': 'Refuse',
+    'notifications.pushStatus.granted': 'allowed',
+    'notifications.pushStatus.denied': 'refused',
+    'notifications.pushStatus.undetermined': 'not set',
+    'notifications.pushStatus.unavailable': 'unavailable',
+    'notifications.listTitle': 'Recent',
+    'notifications.unreadCount': '{{count}} unread',
+    'notifications.markAllReadAction': 'Mark all read',
+    'notifications.emptyTitle': 'No notifications',
+    'notifications.emptyBody':
+      'Important events will appear here even when system push is refused.',
+    'notifications.read': 'Read',
+    'notifications.unread': 'Unread',
+    'notifications.loadErrorTitle': 'Notifications unavailable',
+    'notifications.loadErrorBody':
+      'Your notifications cannot be loaded right now.',
+    'notifications.saveErrorTitle': 'Action unavailable',
+    'notifications.saveErrorBody':
+      'The change was not saved. Check your connection and try again.',
+    'notifications.linkMissingTitle': 'Link unavailable',
+    'notifications.linkMissingBody':
+      'The linked event is no longer accessible or no longer exists.',
+    'messaging.loading': 'Loading discussions...',
+    'messaging.title': 'Messages',
+    'messaging.subtitle':
+      'Find conversations attached to your slots, requests, and bookings.',
+    'messaging.listTitle': 'Schedule discussions',
+    'messaging.emptyTitle': 'No discussions',
+    'messaging.emptyBody':
+      'Discussions will appear here when a request or booking exists.',
+    'messaging.read': 'Read',
+    'messaging.unread': 'Unread',
+    'messaging.unknownStudent': 'Student',
+    'messaging.noMessages': 'No messages in this discussion.',
+    'messaging.responseLabel': 'Your reply',
+    'messaging.responsePlaceholder':
+      'Reply about this slot or booking.',
+    'messaging.sendAction': 'Send',
+    'messaging.sending': 'Sending...',
+    'messaging.backAction': 'Back to discussions',
+    'messaging.openContextAction': 'View in schedule',
+    'messaging.linkedContextTitle': 'Linked event',
+    'messaging.linkedContextBody':
+      '{{student}}’s booking is highlighted in the schedule.',
+    'messaging.coachAuthor': 'Coach',
+    'messaging.studentAuthor': 'Student',
+    'messaging.selectThreadTitle': 'Select a discussion',
+    'messaging.selectThreadBody':
+      'Open a discussion to review its context and reply.',
+    'messaging.loadErrorTitle': 'Messages unavailable',
+    'messaging.loadErrorBody':
+      'Your discussions cannot be loaded right now.',
+    'messaging.saveErrorTitle': 'Action unavailable',
+    'messaging.saveErrorBody':
+      'The reply or read state was not saved. Try again.',
+    'messaging.invalidMessageTitle': 'Invalid message',
+    'messaging.invalidMessageBody':
+      'Enter a non-empty message of no more than 1,000 characters.',
+    'messaging.contextUnavailableTitle': 'Event unavailable',
+    'messaging.contextUnavailableBody':
+      'The linked slot or booking is no longer accessible.',
+    'messaging.accessDeniedTitle': 'Access denied',
+    'messaging.accessDeniedBody':
+      'Schedule messaging is reserved for the coach.',
     'planning.loading': 'Loading planning...',
     'planning.refreshing': 'Updating slots...',
     'planning.coachTitle': 'Coach schedule',
@@ -1321,6 +1465,78 @@ export const dictionaries = {
     'nav.eleve.planning': 'Solicitudes',
     'nav.eleve.notifications': 'Notificaciones',
     'nav.eleve.account': 'Cuenta',
+    'notifications.loading': 'Cargando notificaciones...',
+    'notifications.title': 'Notificaciones',
+    'notifications.subtitle':
+      'Encuentra solicitudes, validaciones, rechazos y cambios de reserva.',
+    'notifications.pushTitle': 'Notificaciones push',
+    'notifications.pushBody':
+      'Estado del sistema: {{status}}. El centro in-app sigue disponible en todos los casos.',
+    'notifications.pushAcceptAction': 'Permitir',
+    'notifications.pushRefuseAction': 'Rechazar',
+    'notifications.pushStatus.granted': 'permitidas',
+    'notifications.pushStatus.denied': 'rechazadas',
+    'notifications.pushStatus.undetermined': 'sin definir',
+    'notifications.pushStatus.unavailable': 'no disponible',
+    'notifications.listTitle': 'Recientes',
+    'notifications.unreadCount': '{{count}} sin leer',
+    'notifications.markAllReadAction': 'Marcar todo como leído',
+    'notifications.emptyTitle': 'Sin notificaciones',
+    'notifications.emptyBody':
+      'Los eventos importantes aparecerán aquí aunque el push del sistema esté rechazado.',
+    'notifications.read': 'Leída',
+    'notifications.unread': 'Sin leer',
+    'notifications.loadErrorTitle': 'Notificaciones no disponibles',
+    'notifications.loadErrorBody':
+      'No se pueden cargar tus notificaciones en este momento.',
+    'notifications.saveErrorTitle': 'Acción no disponible',
+    'notifications.saveErrorBody':
+      'No se guardó el cambio. Revisa tu conexión e inténtalo de nuevo.',
+    'notifications.linkMissingTitle': 'Enlace no disponible',
+    'notifications.linkMissingBody':
+      'El evento vinculado ya no es accesible o ya no existe.',
+    'messaging.loading': 'Cargando conversaciones...',
+    'messaging.title': 'Mensajes',
+    'messaging.subtitle':
+      'Encuentra los intercambios vinculados a tus horarios, solicitudes y reservas.',
+    'messaging.listTitle': 'Conversaciones de planificación',
+    'messaging.emptyTitle': 'Sin conversaciones',
+    'messaging.emptyBody':
+      'Las conversaciones aparecerán cuando exista una solicitud o reserva.',
+    'messaging.read': 'Leído',
+    'messaging.unread': 'Sin leer',
+    'messaging.unknownStudent': 'Alumno',
+    'messaging.noMessages': 'No hay mensajes en esta conversación.',
+    'messaging.responseLabel': 'Tu respuesta',
+    'messaging.responsePlaceholder':
+      'Responde sobre este horario o esta reserva.',
+    'messaging.sendAction': 'Enviar',
+    'messaging.sending': 'Enviando...',
+    'messaging.backAction': 'Volver a conversaciones',
+    'messaging.openContextAction': 'Ver en planificación',
+    'messaging.linkedContextTitle': 'Evento vinculado',
+    'messaging.linkedContextBody':
+      'La reserva de {{student}} está resaltada en la planificación.',
+    'messaging.coachAuthor': 'Coach',
+    'messaging.studentAuthor': 'Alumno',
+    'messaging.selectThreadTitle': 'Selecciona una conversación',
+    'messaging.selectThreadBody':
+      'Abre una conversación para consultar su contexto y responder.',
+    'messaging.loadErrorTitle': 'Mensajes no disponibles',
+    'messaging.loadErrorBody':
+      'No se pueden cargar tus conversaciones en este momento.',
+    'messaging.saveErrorTitle': 'Acción no disponible',
+    'messaging.saveErrorBody':
+      'La respuesta o el estado de lectura no se guardó. Inténtalo de nuevo.',
+    'messaging.invalidMessageTitle': 'Mensaje no válido',
+    'messaging.invalidMessageBody':
+      'Introduce un mensaje no vacío de 1.000 caracteres como máximo.',
+    'messaging.contextUnavailableTitle': 'Evento no disponible',
+    'messaging.contextUnavailableBody':
+      'El horario o la reserva vinculada ya no es accesible.',
+    'messaging.accessDeniedTitle': 'Acceso denegado',
+    'messaging.accessDeniedBody':
+      'La mensajería de planificación está reservada al coach.',
     'planning.loading': 'Cargando planificación...',
     'planning.refreshing': 'Actualizando horarios...',
     'planning.coachTitle': 'Planificación del coach',
