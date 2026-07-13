@@ -9,7 +9,7 @@
   "scripts": {
     "postinstall": "patch-package",
     "lint": "npm run mobile:lint",
-    "mobile": "npm --prefix apps/mobile run start",
+    "mobile": "npm --prefix apps/mobile run start --",
     "mobile:web": "npm --prefix apps/mobile run web",
     "mobile:lint": "npm --prefix apps/mobile run lint",
     "mobile:typecheck": "node node_modules/typescript/bin/tsc --project apps/mobile/tsconfig.json --noEmit",
@@ -41,7 +41,18 @@
     "@types/node": "^26.0.0",
     "eslint": "^9.39.4",
     "eslint-config-expo": "~56.0.4",
+    "expo": "56.0.12",
+    "expo-constants": "56.0.20",
+    "expo-font": "56.0.7",
+    "expo-router": "56.2.11",
     "patch-package": "^8.0.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native-gesture-handler": "2.31.2",
+    "react-native-reanimated": "4.3.1",
+    "react-native-safe-area-context": "5.7.0",
+    "react-native-screens": "4.25.2",
+    "react-native-worklets": "0.8.3",
     "supabase": "^2.107.0",
     "tsx": "^4.22.4"
   }
