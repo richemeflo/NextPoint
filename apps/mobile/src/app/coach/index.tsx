@@ -1,4 +1,5 @@
 import type { PricingLessonType } from '@nextpoint/shared';
+import { useLocalSearchParams } from 'expo-router';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -51,6 +52,13 @@ function formatLocalDate(date: Date) {
 
 const today = () => formatLocalDate(new Date());
 
+function getLinkedAnchorDate(value: string | undefined) {
+  if (!value) return today();
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? today() : formatLocalDate(date);
+}
+
 function localDateTimeToIso(date: string, time: string) {
   const [year, month, day] = date.split('-').map(Number);
   const [hours, minutes] = time.split(':').map(Number);
@@ -68,12 +76,16 @@ function formatPrice(booking: Booking, locale: string) {
 }
 
 export default function CoachPlanningScreen() {
+  const { bookingId: linkedBookingId, startsAt: linkedStartsAt } =
+    useLocalSearchParams<{ bookingId?: string; startsAt?: string }>();
   const { user } = useAuth();
   const { locale, t } = useTranslation();
   const theme = useTheme();
   const [mode, setMode] = useState<PlanningViewMode>('week');
   const [displayMode, setDisplayMode] = useState<'agenda' | 'list'>('agenda');
-  const [anchorDate, setAnchorDate] = useState(today);
+  const [anchorDate, setAnchorDate] = useState(() =>
+    getLinkedAnchorDate(linkedStartsAt)
+  );
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [students, setStudents] = useState<AssociatedStudent[]>([]);
@@ -292,6 +304,10 @@ export default function CoachPlanningScreen() {
 
     return grouped;
   }, [bookings]);
+
+  const linkedBooking = linkedBookingId
+    ? bookings.find((booking) => booking.id === linkedBookingId) ?? null
+    : null;
 
   const getSlotBookingStyle = (slotId: string) =>
     getBookingStatusStyle(
@@ -562,6 +578,21 @@ export default function CoachPlanningScreen() {
 
           <View style={styles.days}>
             <ThemedText type="subtitle">{t('booking.coachListTitle')}</ThemedText>
+            {linkedBooking ? (
+              <Feedback
+                message={t('messaging.linkedContextBody', {
+                  student: studentName(linkedBooking.studentId),
+                })}
+                title={t('messaging.linkedContextTitle')}
+                tone="success"
+              />
+            ) : linkedBookingId && loadState === 'ready' ? (
+              <Feedback
+                message={t('messaging.contextUnavailableBody')}
+                title={t('messaging.contextUnavailableTitle')}
+                tone="warning"
+              />
+            ) : null}
             {bookings.length === 0 ? (
               <Feedback
                 title={t('booking.coachEmptyTitle')}
@@ -580,6 +611,12 @@ export default function CoachPlanningScreen() {
                       style={[
                         styles.bookingCard,
                         getBookingStatusStyle(booking.status),
+                        booking.id === linkedBookingId
+                          ? {
+                              backgroundColor: theme.backgroundSelected,
+                              borderColor: theme.primary,
+                            }
+                          : null,
                       ]}>
                       <ThemedText type="smallBold">
                         {studentName(booking.studentId)}
