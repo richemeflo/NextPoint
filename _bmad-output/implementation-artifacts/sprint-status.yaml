@@ -1,5 +1,5 @@
 # generated: 2026-06-21T12:16:42+02:00
-# last_updated: 2026-07-13T17:24:41+02:00
+# last_updated: 2026-07-13T18:27:01+02:00
 # project: NextPoint
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review in a fresh context.
 
 generated: 2026-06-21T12:16:42+02:00
-last_updated: 2026-07-13T17:24:41+02:00
+last_updated: 2026-07-13T18:27:01+02:00
 project: NextPoint
 project_key: NOKEY
 tracking_system: file-system
@@ -97,7 +97,7 @@ development_status:
   epic-5-retrospective: optional
 
   epic-6: in-progress
-  6-1-creer-le-read-model-des-statistiques-coach: ready-for-dev
-  6-2-afficher-les-indicateurs-p0-de-statistiques-coach: ready-for-dev
-  6-3-filtrer-les-statistiques-par-periode-et-afficher-les-eleves-actifs: ready-for-dev
+  6-1-creer-le-read-model-des-statistiques-coach: review
+  6-2-afficher-les-indicateurs-p0-de-statistiques-coach: review
+  6-3-filtrer-les-statistiques-par-periode-et-afficher-les-eleves-actifs: review
   epic-6-retrospective: optional

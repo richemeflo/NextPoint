@@ -1126,6 +1126,19 @@ export type Database = {
         Args: { p_student_id: string; p_token_id: string }
         Returns: undefined
       }
+      get_coach_stats: {
+        Args: { p_period_end: string; p_period_start: string }
+        Returns: {
+          active_students: Json
+          completed_courses: number
+          completed_minutes: number
+          currency: string
+          estimated_revenue_cents: number
+          generated_at: string
+          period_end: string
+          period_start: string
+        }[]
+      }
       get_requestable_booking_participants: {
         Args: never
         Returns: {

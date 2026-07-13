@@ -1,6 +1,10 @@
+---
+baseline_commit: 33328ed046deb7484224d1d5144c879ac7de1c7b
+---
+
 # Story 6.3: Filtrer les statistiques par période et afficher les élèves actifs
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -20,16 +24,16 @@ so that je puisse comprendre mon activité sans tableau analytique complexe.
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 6.3 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer read model/affichage stats selon la story (AC: tous)
-  - [ ] Calculer depuis reservations confirmees et tarifs disponibles uniquement.
-  - [ ] Utiliser le libelle exact `revenu estime` dans les traductions sans suggerer paiement.
-  - [ ] Garder la page legere et mobile-first.
-- [ ] Tester periode, autorisation et donnees vides (AC: securite/UX)
-  - [ ] Couvrir coach connecte, utilisateur non coach et absence de donnees.
+- [x] Verifier les preconditions et dependances de Story 6.3 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer read model/affichage stats selon la story (AC: tous)
+  - [x] Calculer depuis reservations confirmees et tarifs disponibles uniquement.
+  - [x] Utiliser le libelle exact `revenu estime` dans les traductions sans suggerer paiement.
+  - [x] Garder la page legere et mobile-first.
+- [x] Tester periode, autorisation et donnees vides (AC: securite/UX)
+  - [x] Couvrir coach connecte, utilisateur non coach et absence de donnees.
 
 ## Interventions utilisateur requises
 
@@ -150,18 +154,50 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Codex GPT-5
+
+### Implementation Plan
+
+- Ajouter un sélecteur accessible limité à mois, trimestre et année, avec mois sélectionné par défaut et aucune période semaine P0.
+- Recharger le read model à chaque changement en conservant un état de chargement explicite et en ignorant les réponses devenues obsolètes.
+- Afficher au maximum cinq élèves actifs issus des cours de la période, avec un état discret quand la liste est vide.
 
 ### Debug Log References
+
+- 2026-07-13: Story 6.2 relue intégralement; écran P0, service, périodes et données `activeStudents` disponibles.
+- 2026-07-13: Baseline enregistrée au commit `33328ed046deb7484224d1d5144c879ac7de1c7b`; story passée à `in-progress`.
+- 2026-07-13: Aucune dépendance bloquante manquante; la semaine est explicitement hors affichage initial conformément à l'AC 4.
+- 2026-07-13: Test RED confirmé avant implémentation: options de période et présentation d'élève actif absentes.
+- 2026-07-13: Sélecteur mois/trimestre/année et liste des élèves actifs ajoutés; les réponses obsolètes sont ignorées lors d'un changement rapide.
+- 2026-07-13: Gate final validé: 84 tests TypeScript, 246 assertions pgTAP, tous les typechecks, ESLint sans erreur ni avertissement, export Android et `git diff --check` passent.
 
 ### Completion Notes List
 
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+- Préconditions validées: périodes month/quarter/year, recalcul RPC et top élèves sont déjà supportés par le read model 6.1.
+- Le mois est sélectionné par défaut; trimestre et année déclenchent chacun un recalcul borné par le service existant.
+- La semaine reste volontairement hors affichage initial, conformément à sa priorité secondaire P0.
+- Le chargement remplace les indicateurs pendant le changement de période et les réponses devenues obsolètes ne peuvent pas écraser la sélection courante.
+- Jusqu'à cinq élèves actifs sont affichés par nombre de cours sur la période; aucun indicateur de progression sportive n'est introduit.
+- L'absence d'élèves actifs affiche une phrase discrète dans la carte, jamais une erreur.
+- Export Android final validé. Le bundle Web avait compilé lors de la 6.2; le rendu statique reste bloqué par le décalage de versions Expo préexistant documenté dans cette story précédente.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/6-3-filtrer-les-statistiques-par-periode-et-afficher-les-eleves-actifs.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `apps/mobile/src/app/coach/stats.tsx`
+- `apps/mobile/src/features/stats/coach-stats-view.test.ts`
+- `apps/mobile/src/features/stats/coach-stats-view.ts`
+- `apps/mobile/src/i18n/translations.ts`
+- `package.json`
+- `tsconfig.tests.json`
+
+### Change Log
+
+- 2026-07-13: Ajout du filtre mois/trimestre/année avec recalcul et chargement cohérent.
+- 2026-07-13: Ajout de la liste légère des élèves actifs et de son état sans données.
 
 ## Completion Note
 

@@ -62,6 +62,14 @@ export {
   requestBookingSchema,
 } from './contracts/booking';
 export {
+  coachStatsActiveStudentSchema,
+  coachStatsPeriodSchema,
+  coachStatsPeriods,
+  coachStatsReadModelSchema,
+  getCoachStatsPeriodRange,
+  hasCoachStatsData,
+} from './contracts/coach-stats';
+export {
   canMarkNotificationRead,
   getNotificationReadState,
   notificationBodyMaxLength,
@@ -143,6 +151,11 @@ export type {
   RefuseBookingInput,
   RequestBookingInput,
 } from './contracts/booking';
+export type {
+  CoachStatsActiveStudent,
+  CoachStatsPeriod,
+  CoachStatsReadModel,
+} from './contracts/coach-stats';
 export type {
   NotificationLinkType,
   NotificationMarkReadInput,

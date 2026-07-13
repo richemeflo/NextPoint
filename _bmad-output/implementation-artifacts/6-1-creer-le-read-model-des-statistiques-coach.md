@@ -1,6 +1,10 @@
+---
+baseline_commit: 33328ed046deb7484224d1d5144c879ac7de1c7b
+---
+
 # Story 6.1: Créer le read model des statistiques coach
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation optionnelle. Lancer validate-create-story pour controle qualite avant dev-story. -->
 
@@ -20,16 +24,16 @@ so that les chiffres reflètent mon activité réelle sans dépendre d’un paie
 
 ## Tasks / Subtasks
 
-- [ ] Verifier les preconditions et dependances de Story 6.1 (AC: tous)
-  - [ ] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
-  - [ ] Identifier les fichiers UPDATE avant modification et les lire completement.
-  - [ ] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
-- [ ] Implementer read model/affichage stats selon la story (AC: tous)
-  - [ ] Calculer depuis reservations confirmees et tarifs disponibles uniquement.
-  - [ ] Utiliser le libelle exact `revenu estime` dans les traductions sans suggerer paiement.
-  - [ ] Garder la page legere et mobile-first.
-- [ ] Tester periode, autorisation et donnees vides (AC: securite/UX)
-  - [ ] Couvrir coach connecte, utilisateur non coach et absence de donnees.
+- [x] Verifier les preconditions et dependances de Story 6.1 (AC: tous)
+  - [x] Relire les stories precedentes pertinentes et confirmer que leurs fichiers/contrats existent reellement.
+  - [x] Identifier les fichiers UPDATE avant modification et les lire completement.
+  - [x] Noter toute dependance manquante dans le Dev Agent Record avant de coder.
+- [x] Implementer read model/affichage stats selon la story (AC: tous)
+  - [x] Calculer depuis reservations confirmees et tarifs disponibles uniquement.
+  - [x] Utiliser le libelle exact `revenu estime` dans les traductions sans suggerer paiement.
+  - [x] Garder la page legere et mobile-first.
+- [x] Tester periode, autorisation et donnees vides (AC: securite/UX)
+  - [x] Couvrir coach connecte, utilisateur non coach et absence de donnees.
 
 ## Interventions utilisateur requises
 
@@ -150,18 +154,58 @@ Les derniers commits connus sont documentaires et ne fournissent pas encore de p
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Codex GPT-5
+
+### Implementation Plan
+
+- Ajouter un read model PostgreSQL borné par période qui agrège uniquement les cours confirmés ou confirmés puis modifiés du coach connecté, terminés au moment de la lecture.
+- Exposer un contrat Zod partagé et un service client léger qui normalise les erreurs d'autorisation, de période et de chargement.
+- Couvrir par tests TypeScript et pgTAP l'agrégation, les périodes, les données vides et l'isolation coach-only avant de construire l'interface des stories suivantes.
 
 ### Debug Log References
+
+- 2026-07-13: Activation `bmad-dev-story` terminée; workflow personnalisé résolu sans étapes prepend/append.
+- 2026-07-13: Baseline propre confirmée au commit `33328ed046deb7484224d1d5144c879ac7de1c7b`; story passée à `in-progress`.
+- 2026-07-13: Préconditions confirmées dans les stories 2.1, 4.1 et 4.4 ainsi que dans les migrations: rôles, réservations, participants et tarifs appliqués existent.
+- 2026-07-13: Aucune dépendance bloquante manquante; les réservations modifiées restent des cours confirmés dans le cycle métier et seront comptabilisées, contrairement aux statuts pending/refused/expired/cancelled.
+- 2026-07-13: Tests RED confirmés avant implémentation: contrat, normalisation client et RPC `get_coach_stats` absents.
+- 2026-07-13: Migration `0025_coach_stats_read_model.sql` appliquée uniquement à la base locale, sans reset ni action Cloud; types Supabase régénérés.
+- 2026-07-13: GREEN et régression validées: 80 tests TypeScript, 246 assertions pgTAP, typechecks shared/mobile/tests, lint Expo et `git diff --check` passent.
 
 ### Completion Notes List
 
 - Story creee par generation BMAD create-story le 2026-06-21.
 - Analyse de contexte: epics, architecture, PRD, UX, design tokens, sprint status et story precedente disponible.
+- Implémentation démarrée avec la baseline Git `33328ed046deb7484224d1d5144c879ac7de1c7b`.
+- Préconditions validées: le modèle de réservation, les tarifs appliqués, les participants, l'authentification coach et la RLS existent; aucune dépendance bloquante n'est absente.
+- RPC coach-only ajouté avec période explicite, isolation par `auth.uid()`, validation des bornes et refus des utilisateurs non coach.
+- Le calcul compte les cours terminés aux statuts `confirmed` ou `modified`; pending, refused, expired et cancelled sont exclus. Une réservation modifiée reste confirmée dans le cycle métier.
+- Le revenu est une estimation en centimes EUR issue du tarif appliqué encore disponible; aucune table, donnée ou formulation de paiement n'est utilisée.
+- Contrat Zod partagé, périodes mois/trimestre/année, état vide et top 5 des élèves actifs ajoutés au read model.
+- Service client léger ajouté avec validation stricte de la réponse et erreurs normalisées, traduites en FR/EN/ES.
+- Validation visuelle non requise pour cette story de read model; la page visible est livrée par les stories 6.2 et 6.3.
 
 ### File List
 
 - `_bmad-output/implementation-artifacts/6-1-creer-le-read-model-des-statistiques-coach.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `apps/mobile/src/features/stats/coach-stats-error.test.ts`
+- `apps/mobile/src/features/stats/coach-stats-error.ts`
+- `apps/mobile/src/features/stats/coach-stats-service.ts`
+- `apps/mobile/src/i18n/translations.ts`
+- `package.json`
+- `packages/shared/src/contracts/coach-stats.test.ts`
+- `packages/shared/src/contracts/coach-stats.ts`
+- `packages/shared/src/index.ts`
+- `packages/shared/src/types/database.types.ts`
+- `supabase/migrations/0025_coach_stats_read_model.sql`
+- `supabase/tests/database/0015_coach_stats.sql`
+- `tsconfig.tests.json`
+
+### Change Log
+
+- 2026-07-13: Ajout du read model SQL coach-only, de ses règles documentées et des tests d'autorisation/agrégation.
+- 2026-07-13: Ajout du contrat partagé, des périodes statistiques, du service client et des erreurs traduites FR/EN/ES.
 
 ## Completion Note
 
