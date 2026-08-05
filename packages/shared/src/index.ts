@@ -44,6 +44,7 @@ export {
 } from './contracts/pricing-rate';
 export {
   bookingActionSchema,
+  bookingCancellationMessageMaxLength,
   bookingErrorCodes,
   bookingOrigins,
   bookingPendingTtlDays,
@@ -61,6 +62,7 @@ export {
   normalizeParticipantIds,
   refuseBookingSchema,
   requestBookingSchema,
+  studentCancelBookingSchema,
 } from './contracts/booking';
 export {
   coachStatsActiveStudentSchema,
@@ -151,6 +153,7 @@ export type {
   PendingBookingCandidate,
   RefuseBookingInput,
   RequestBookingInput,
+  StudentCancelBookingInput,
 } from './contracts/booking';
 export type {
   CoachStatsActiveStudent,

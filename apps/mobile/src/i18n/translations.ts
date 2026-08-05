@@ -568,15 +568,15 @@ export const dictionaries = {
     'booking.requesterIncluded': 'Vous êtes inclus',
     'booking.unknownStudent': 'Élève',
     'booking.priceLabel': 'Tarif : {{price}}',
-    'booking.studentPageTitle': 'Demandes en cours et cours validés',
+    'booking.studentPageTitle': 'Demandes et cours',
     'booking.studentPageBody':
-      'Suivez uniquement vos demandes en attente et vos cours validés.',
-    'booking.studentListTitle': 'Vos demandes en cours et cours validés',
+      'Suivez le statut de vos demandes et cours, y compris après une annulation.',
+    'booking.studentListTitle': 'Vos demandes et cours',
     'booking.studentListBody':
       'Aucun créneau disponible n’est affiché ici. Les nouvelles demandes se font depuis l’accueil.',
     'booking.studentEmptyTitle': 'Aucune demande',
     'booking.studentEmptyBody':
-      'Vos demandes envoyées et cours confirmés apparaîtront ici.',
+      'Vos demandes envoyées et l’historique de vos cours apparaîtront ici.',
     'booking.coachListTitle': 'Demandes et cours',
     'booking.coachEmptyTitle': 'Aucune demande à traiter',
     'booking.coachEmptyBody':
@@ -590,7 +590,21 @@ export const dictionaries = {
     'booking.refuseAction': 'Refuser',
     'booking.refusalCommentLabel': 'Commentaire de refus',
     'booking.refusalCommentPlaceholder': 'Message optionnel pour l’élève',
-    'booking.cancelAction': 'Annuler la réservation',
+    'booking.cancelAction': 'Annuler la demande ou le cours',
+    'booking.cancellationTitle': 'Annuler la demande ou le cours',
+    'booking.cancellationBody':
+      'Expliquez la raison de l’annulation. Ce message sera transmis au coach.',
+    'booking.cancellationMessageLabel': 'Message au coach',
+    'booking.cancellationMessagePlaceholder':
+      'Indiquez la raison de votre annulation.',
+    'booking.cancellationMessageCount': '{{count}} / {{max}} caractères',
+    'booking.cancellationMessageRequired':
+      'Un message au coach est obligatoire.',
+    'booking.cancellationMessageTooLong':
+      'Le message ne peut pas dépasser 500 caractères.',
+    'booking.cancellationConfirmAction': 'Confirmer l’annulation',
+    'booking.cancellationSubmitting': 'Annulation...',
+    'booking.cancellationCloseAction': 'Fermer la fenêtre d’annulation',
     'booking.modifyAction': 'Modifier',
     'booking.expiresAt': 'Expire le {{date}}',
     'booking.participantNames': 'Participants : {{names}}',
@@ -610,6 +624,9 @@ export const dictionaries = {
     'booking.cancelSuccessTitle': 'Réservation annulée',
     'booking.cancelSuccessBody':
       'Le statut est mis à jour et la disponibilité est libérée si applicable.',
+    'booking.studentCancelSuccessTitle': 'Réservation annulée',
+    'booking.studentCancelSuccessBody':
+      'Le statut est mis à jour et votre message a été transmis au coach.',
     'booking.modifySuccessTitle': 'Réservation modifiée',
     'booking.modifySuccessBody':
       'La nouvelle date ou durée est visible dans les plannings.',
@@ -624,6 +641,8 @@ export const dictionaries = {
     'booking.pastBooking': 'Un cours passé ne peut plus être annulé par l’élève.',
     'booking.invalidParticipants':
       'La sélection de participants n’est pas autorisée.',
+    'booking.invalidInput':
+      'Le message d’annulation est obligatoire et limité à 500 caractères.',
     'booking.pricingMissing':
       'Aucun tarif actif ne correspond au type et à la durée du cours.',
     'booking.unauthorized': 'Votre rôle ne permet pas cette action.',
@@ -1295,15 +1314,15 @@ export const dictionaries = {
     'booking.requesterIncluded': 'You are included',
     'booking.unknownStudent': 'Student',
     'booking.priceLabel': 'Price: {{price}}',
-    'booking.studentPageTitle': 'Pending requests and approved lessons',
+    'booking.studentPageTitle': 'Requests and lessons',
     'booking.studentPageBody':
-      'Track only your pending requests and approved lessons.',
-    'booking.studentListTitle': 'Your pending requests and approved lessons',
+      'Track the status of your requests and lessons, including after cancellation.',
+    'booking.studentListTitle': 'Your requests and lessons',
     'booking.studentListBody':
       'No available slots are shown here. New requests start from the home page.',
     'booking.studentEmptyTitle': 'No requests',
     'booking.studentEmptyBody':
-      'Sent requests and confirmed lessons will appear here.',
+      'Sent requests and your lesson history will appear here.',
     'booking.coachListTitle': 'Requests and lessons',
     'booking.coachEmptyTitle': 'No requests to handle',
     'booking.coachEmptyBody':
@@ -1317,7 +1336,21 @@ export const dictionaries = {
     'booking.refuseAction': 'Refuse',
     'booking.refusalCommentLabel': 'Refusal comment',
     'booking.refusalCommentPlaceholder': 'Optional message for the student',
-    'booking.cancelAction': 'Cancel booking',
+    'booking.cancelAction': 'Cancel request or lesson',
+    'booking.cancellationTitle': 'Cancel request or lesson',
+    'booking.cancellationBody':
+      'Explain why you are cancelling. This message will be sent to your coach.',
+    'booking.cancellationMessageLabel': 'Message to the coach',
+    'booking.cancellationMessagePlaceholder':
+      'Enter the reason for your cancellation.',
+    'booking.cancellationMessageCount': '{{count}} / {{max}} characters',
+    'booking.cancellationMessageRequired':
+      'A message to the coach is required.',
+    'booking.cancellationMessageTooLong':
+      'The message cannot exceed 500 characters.',
+    'booking.cancellationConfirmAction': 'Confirm cancellation',
+    'booking.cancellationSubmitting': 'Cancelling...',
+    'booking.cancellationCloseAction': 'Close cancellation dialog',
     'booking.modifyAction': 'Modify',
     'booking.expiresAt': 'Expires on {{date}}',
     'booking.participantNames': 'Participants: {{names}}',
@@ -1337,6 +1370,9 @@ export const dictionaries = {
     'booking.cancelSuccessTitle': 'Booking cancelled',
     'booking.cancelSuccessBody':
       'The status was updated and the slot is released when applicable.',
+    'booking.studentCancelSuccessTitle': 'Booking cancelled',
+    'booking.studentCancelSuccessBody':
+      'The status was updated and your message was sent to the coach.',
     'booking.modifySuccessTitle': 'Booking modified',
     'booking.modifySuccessBody':
       'The new date or duration is visible in schedules.',
@@ -1348,6 +1384,8 @@ export const dictionaries = {
     'booking.alreadyProcessed': 'This request has already been processed.',
     'booking.pastBooking': 'A past lesson can no longer be cancelled by the student.',
     'booking.invalidParticipants': 'The participant selection is not allowed.',
+    'booking.invalidInput':
+      'The cancellation message is required and limited to 500 characters.',
     'booking.pricingMissing':
       'No active rate matches this lesson type and duration.',
     'booking.unauthorized': 'Your role cannot perform this action.',
@@ -2024,15 +2062,15 @@ export const dictionaries = {
     'booking.requesterIncluded': 'Tú estás incluido',
     'booking.unknownStudent': 'Alumno',
     'booking.priceLabel': 'Tarifa: {{price}}',
-    'booking.studentPageTitle': 'Solicitudes en curso y clases validadas',
+    'booking.studentPageTitle': 'Solicitudes y clases',
     'booking.studentPageBody':
-      'Consulta solo tus solicitudes pendientes y tus clases validadas.',
-    'booking.studentListTitle': 'Tus solicitudes en curso y clases validadas',
+      'Consulta el estado de tus solicitudes y clases, incluso después de una cancelación.',
+    'booking.studentListTitle': 'Tus solicitudes y clases',
     'booking.studentListBody':
       'Aquí no se muestran horarios disponibles. Las nuevas solicitudes se hacen desde el inicio.',
     'booking.studentEmptyTitle': 'Sin solicitudes',
     'booking.studentEmptyBody':
-      'Tus solicitudes enviadas y clases confirmadas aparecerán aquí.',
+      'Tus solicitudes enviadas y el historial de tus clases aparecerán aquí.',
     'booking.coachListTitle': 'Solicitudes y clases',
     'booking.coachEmptyTitle': 'Sin solicitudes pendientes',
     'booking.coachEmptyBody':
@@ -2046,7 +2084,21 @@ export const dictionaries = {
     'booking.refuseAction': 'Rechazar',
     'booking.refusalCommentLabel': 'Comentario de rechazo',
     'booking.refusalCommentPlaceholder': 'Mensaje opcional para el alumno',
-    'booking.cancelAction': 'Cancelar reserva',
+    'booking.cancelAction': 'Cancelar solicitud o clase',
+    'booking.cancellationTitle': 'Cancelar solicitud o clase',
+    'booking.cancellationBody':
+      'Explica por qué cancelas. Este mensaje se enviará al coach.',
+    'booking.cancellationMessageLabel': 'Mensaje al coach',
+    'booking.cancellationMessagePlaceholder':
+      'Indica el motivo de la cancelación.',
+    'booking.cancellationMessageCount': '{{count}} / {{max}} caracteres',
+    'booking.cancellationMessageRequired':
+      'Es obligatorio enviar un mensaje al coach.',
+    'booking.cancellationMessageTooLong':
+      'El mensaje no puede superar los 500 caracteres.',
+    'booking.cancellationConfirmAction': 'Confirmar cancelación',
+    'booking.cancellationSubmitting': 'Cancelando...',
+    'booking.cancellationCloseAction': 'Cerrar ventana de cancelación',
     'booking.modifyAction': 'Modificar',
     'booking.expiresAt': 'Caduca el {{date}}',
     'booking.participantNames': 'Participantes: {{names}}',
@@ -2065,7 +2117,10 @@ export const dictionaries = {
       'La clase confirmada es visible en los calendarios.',
     'booking.cancelSuccessTitle': 'Reserva cancelada',
     'booking.cancelSuccessBody':
-      'El estado se actualizó y el horario se libera si aplica.',
+      'El estado se actualizó y el horario se libera cuando corresponde.',
+    'booking.studentCancelSuccessTitle': 'Reserva cancelada',
+    'booking.studentCancelSuccessBody':
+      'El estado se actualizó y tu mensaje se envió al coach.',
     'booking.modifySuccessTitle': 'Reserva modificada',
     'booking.modifySuccessBody':
       'La nueva fecha o duración es visible en los calendarios.',
@@ -2081,6 +2136,8 @@ export const dictionaries = {
       'Una clase pasada ya no puede ser cancelada por el alumno.',
     'booking.invalidParticipants':
       'La selección de participantes no está permitida.',
+    'booking.invalidInput':
+      'El mensaje de cancelación es obligatorio y está limitado a 500 caracteres.',
     'booking.pricingMissing':
       'No hay una tarifa activa para este tipo y duración de clase.',
     'booking.unauthorized': 'Tu rol no permite esta acción.',

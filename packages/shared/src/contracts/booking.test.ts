@@ -8,6 +8,7 @@ import {
   canRefuseBooking,
   isBookingExpired,
   normalizeParticipantIds,
+  studentCancelBookingSchema,
 } from './booking';
 
 test('canCreatePendingBooking enforces slot and student pending limits', () => {
@@ -82,6 +83,33 @@ test('student cancellation is blocked after the lesson starts', () => {
 
   assert.deepEqual(
     canCancelBooking(
+      { status: 'pending', startsAt: '2026-06-29T13:00:00.000Z' },
+      'student',
+      now
+    ),
+    { ok: true }
+  );
+
+  assert.deepEqual(
+    canCancelBooking(
+      { status: 'modified', startsAt: '2026-06-29T13:00:00.000Z' },
+      'student',
+      now
+    ),
+    { ok: true }
+  );
+
+  assert.deepEqual(
+    canCancelBooking(
+      { status: 'pending', startsAt: '2026-06-29T13:00:00.000Z' },
+      'coach',
+      now
+    ),
+    { ok: false, error: 'already_processed' }
+  );
+
+  assert.deepEqual(
+    canCancelBooking(
       { status: 'confirmed', startsAt: '2026-06-29T13:00:00.000Z' },
       'student',
       now
@@ -105,6 +133,50 @@ test('student cancellation is blocked after the lesson starts', () => {
       now
     ),
     { ok: true }
+  );
+});
+
+test('student cancellation message is trimmed and limited to 500 characters', () => {
+  const valid = studentCancelBookingSchema.parse({
+    bookingId: '10000000-0000-4000-8000-000000000001',
+    cancellationMessage: '  Empêchement professionnel.  ',
+  });
+
+  assert.equal(valid.cancellationMessage, 'Empêchement professionnel.');
+  assert.equal(
+    studentCancelBookingSchema.safeParse({
+      bookingId: '10000000-0000-4000-8000-000000000001',
+      cancellationMessage: ' '.repeat(10),
+    }).success,
+    false
+  );
+  assert.equal(
+    studentCancelBookingSchema.safeParse({
+      bookingId: '10000000-0000-4000-8000-000000000001',
+      cancellationMessage: 'a'.repeat(500),
+    }).success,
+    true
+  );
+  assert.equal(
+    studentCancelBookingSchema.safeParse({
+      bookingId: '10000000-0000-4000-8000-000000000001',
+      cancellationMessage: 'a'.repeat(501),
+    }).success,
+    false
+  );
+  assert.equal(
+    studentCancelBookingSchema.safeParse({
+      bookingId: '10000000-0000-4000-8000-000000000001',
+      cancellationMessage: '🙂'.repeat(500),
+    }).success,
+    true
+  );
+  assert.equal(
+    studentCancelBookingSchema.safeParse({
+      bookingId: '10000000-0000-4000-8000-000000000001',
+      cancellationMessage: '🙂'.repeat(501),
+    }).success,
+    false
   );
 });
 

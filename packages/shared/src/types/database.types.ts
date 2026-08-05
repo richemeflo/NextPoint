@@ -889,7 +889,7 @@ export type Database = {
         Returns: undefined
       }
       cancel_booking: {
-        Args: { p_booking_id: string }
+        Args: { p_booking_id: string; p_cancellation_message?: string }
         Returns: {
           availability_slot_id: string | null
           cancelled_at: string | null

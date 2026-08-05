@@ -1,6 +1,6 @@
 begin;
 
-select plan(30);
+select plan(32);
 
 select ok(
   to_regtype('public.notification_type') is not null,
@@ -186,8 +186,20 @@ select has_function(
 select has_function(
   'public',
   'cancel_booking',
-  array['uuid'],
+  array['uuid', 'text'],
   'booking cancellation command remains available'
+);
+select ok(
+  to_regprocedure('public.cancel_booking(uuid)') is null,
+  'legacy cancellation signature cannot bypass the student message'
+);
+select ok(
+  has_function_privilege(
+    'authenticated',
+    'public.cancel_booking(uuid,text)',
+    'execute'
+  ),
+  'authenticated users can cancel through the guarded command'
 );
 
 select * from finish();

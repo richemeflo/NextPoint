@@ -1,6 +1,11 @@
-import type { PricingLessonType } from '@nextpoint/shared';
+import {
+  bookingCancellationMessageMaxLength,
+  canCancelBooking,
+  studentCancelBookingSchema,
+  type PricingLessonType,
+} from '@nextpoint/shared';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -64,10 +69,10 @@ function formatPrice(booking: Booking, locale: string) {
 }
 
 function canStudentCancel(booking: Booking) {
-  return (
-    (booking.status === 'confirmed' || booking.status === 'modified') &&
-    new Date(booking.startsAt).getTime() > Date.now()
-  );
+  return canCancelBooking(
+    { status: booking.status, startsAt: booking.startsAt },
+    'student'
+  ).ok;
 }
 
 type StudentAgendaProps = {
@@ -119,6 +124,14 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [lessonType, setLessonType] = useState<PricingLessonType>('individual');
   const [studentComment, setStudentComment] = useState('');
+  const [cancellationBookingId, setCancellationBookingId] = useState<
+    string | null
+  >(null);
+  const [cancellationMessage, setCancellationMessage] = useState('');
+  const [cancellationError, setCancellationError] =
+    useState<BookingMutationError | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const isCancellationSubmittingRef = useRef(false);
   const [selectedParticipantIds, setSelectedParticipantIds] = useState<string[]>(
     []
   );
@@ -215,13 +228,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
     return 'primary';
   };
 
-  const visibleBookings = useMemo(
-    () =>
-      surface === 'bookings'
-        ? bookings.filter(isHomeBookingVisible)
-        : bookings,
-    [bookings, surface]
-  );
+  const visibleBookings = bookings;
   const windowBookings = useMemo(
     () =>
       visibleBookings.filter((booking) => {
@@ -306,6 +313,21 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
     () => requestableSlots.find((slot) => slot.id === selectedSlotId) ?? null,
     [requestableSlots, selectedSlotId]
   );
+  const selectedCancellationBooking = useMemo(
+    () =>
+      bookings.find((booking) => booking.id === cancellationBookingId) ?? null,
+    [bookings, cancellationBookingId]
+  );
+  const normalizedCancellationMessage = cancellationMessage.trim();
+  const cancellationMessageLength = Array.from(
+    normalizedCancellationMessage
+  ).length;
+  const cancellationMessageError =
+    cancellationMessageLength === 0
+      ? t('booking.cancellationMessageRequired')
+      : cancellationMessageLength > bookingCancellationMessageMaxLength
+        ? t('booking.cancellationMessageTooLong')
+        : undefined;
   const selectedSlotLessonTypes = useMemo(() => {
     if (!selectedSlot) return ['individual', 'group'] as PricingLessonType[];
 
@@ -326,7 +348,10 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
     Record<typeof feedback, [TranslationKey, TranslationKey]>
   > = {
     requested: ['booking.requestSuccessTitle', 'booking.requestSuccessBody'],
-    cancelled: ['booking.cancelSuccessTitle', 'booking.cancelSuccessBody'],
+    cancelled: [
+      'booking.studentCancelSuccessTitle',
+      'booking.studentCancelSuccessBody',
+    ],
     slot_unavailable: ['booking.errorTitle', 'booking.slotUnavailable'],
     pending_limit_reached: ['booking.errorTitle', 'booking.pendingLimit'],
     student_pending_limit_reached: [
@@ -336,6 +361,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
     already_processed: ['booking.errorTitle', 'booking.alreadyProcessed'],
     past_booking: ['booking.errorTitle', 'booking.pastBooking'],
     invalid_participants: ['booking.errorTitle', 'booking.invalidParticipants'],
+    invalid_input: ['booking.errorTitle', 'booking.invalidInput'],
     pricing_rate_missing: ['booking.errorTitle', 'booking.pricingMissing'],
     unauthorized: ['booking.errorTitle', 'booking.unauthorized'],
     not_found: ['booking.errorTitle', 'booking.unknownError'],
@@ -385,17 +411,64 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
     );
   };
 
-  const cancelStudentBooking = async (booking: Booking) => {
-    setFeedback('none');
-    const result = await cancelBooking(booking.id);
+  const openCancellation = (booking: Booking) => {
+    if (!canStudentCancel(booking)) return;
 
-    if (!result.ok) {
-      setFeedback(result.error);
+    setCancellationBookingId(booking.id);
+    setCancellationMessage('');
+    setCancellationError(null);
+    setFeedback('none');
+  };
+
+  const closeCancellation = () => {
+    if (isCancelling) return;
+
+    setCancellationBookingId(null);
+    setCancellationMessage('');
+    setCancellationError(null);
+  };
+
+  const cancelStudentBooking = async () => {
+    if (!selectedCancellationBooking || isCancellationSubmittingRef.current) {
       return;
     }
 
-    setFeedback('cancelled');
-    await loadAgenda();
+    const parsedInput = studentCancelBookingSchema.safeParse({
+      bookingId: selectedCancellationBooking.id,
+      cancellationMessage,
+    });
+    if (!parsedInput.success) return;
+
+    setFeedback('none');
+    setCancellationError(null);
+    isCancellationSubmittingRef.current = true;
+    setIsCancelling(true);
+    try {
+      const result = await cancelBooking(
+        parsedInput.data.bookingId,
+        parsedInput.data.cancellationMessage
+      );
+
+      if (!result.ok) {
+        setCancellationError(result.error);
+        return;
+      }
+
+      setBookings((current) =>
+        current.map((booking) =>
+          booking.id === result.data.id ? result.data : booking
+        )
+      );
+      setCancellationBookingId(null);
+      setCancellationMessage('');
+      setFeedback('cancelled');
+      await loadAgenda();
+    } catch {
+      setCancellationError('unknown');
+    } finally {
+      isCancellationSubmittingRef.current = false;
+      setIsCancelling(false);
+    }
   };
 
   const renderSlotContent = (slot: AvailabilitySlot) => (
@@ -559,6 +632,105 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
       </Modal>
     ) : null;
 
+  const renderCancellationModal = () =>
+    selectedCancellationBooking ? (
+      <Modal
+        animationType="fade"
+        onRequestClose={closeCancellation}
+        transparent
+        visible>
+        <View style={styles.modalRoot}>
+          <Pressable
+            accessibilityElementsHidden
+            disabled={isCancelling}
+            importantForAccessibility="no-hide-descendants"
+            onPress={closeCancellation}
+            style={styles.modalBackdrop}
+          />
+          <View
+            style={[
+              styles.modalCard,
+              { backgroundColor: theme.surface, borderColor: theme.border },
+            ]}>
+            <View style={styles.modalHeader}>
+              <View style={styles.modalTitle}>
+                <ThemedText type="subtitle">
+                  {t('booking.cancellationTitle')}
+                </ThemedText>
+                <ThemedText type="small" themeColor="textMuted">
+                  {t('booking.cancellationBody')}
+                </ThemedText>
+              </View>
+              <Pressable
+                accessibilityLabel={t('booking.cancellationCloseAction')}
+                accessibilityRole="button"
+                disabled={isCancelling}
+                onPress={closeCancellation}
+                style={[
+                  styles.modalClose,
+                  { borderColor: theme.border, backgroundColor: theme.surface },
+                ]}>
+                <ThemedText type="smallBold">X</ThemedText>
+              </Pressable>
+            </View>
+            <ScrollView
+              contentContainerStyle={styles.modalBody}
+              showsVerticalScrollIndicator={false}>
+              {renderBookingContent(selectedCancellationBooking)}
+              <TextField
+                error={
+                  cancellationMessage.length > 0
+                    ? cancellationMessageError
+                    : undefined
+                }
+                label={t('booking.cancellationMessageLabel')}
+                multiline
+                numberOfLines={4}
+                onChangeText={(value) => {
+                  setCancellationMessage(value);
+                  setCancellationError(null);
+                }}
+                placeholder={t('booking.cancellationMessagePlaceholder')}
+                style={styles.cancellationInput}
+                textAlignVertical="top"
+                value={cancellationMessage}
+              />
+              <ThemedText type="small" themeColor="textMuted">
+                {t('booking.cancellationMessageCount', {
+                  count: cancellationMessageLength,
+                  max: bookingCancellationMessageMaxLength,
+                })}
+              </ThemedText>
+              {cancellationError && feedbackCopy[cancellationError] ? (
+                <Feedback
+                  message={t(feedbackCopy[cancellationError][1])}
+                  title={t(feedbackCopy[cancellationError][0])}
+                  tone="error"
+                />
+              ) : null}
+              <View style={styles.requestActions}>
+                <Button
+                  disabled={!!cancellationMessageError || isCancelling}
+                  label={
+                    isCancelling
+                      ? t('booking.cancellationSubmitting')
+                      : t('booking.cancellationConfirmAction')
+                  }
+                  onPress={() => void cancelStudentBooking()}
+                />
+                <Button
+                  disabled={isCancelling}
+                  label={t('availability.cancelAction')}
+                  onPress={closeCancellation}
+                  variant="secondary"
+                />
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+    ) : null;
+
   const renderBookingContent = (booking: Booking, includeDate = true) => {
     const price = formatPrice(booking, locale);
 
@@ -613,7 +785,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
       {canStudentCancel(booking) ? (
         <Button
           label={t('booking.cancelAction')}
-          onPress={() => void cancelStudentBooking(booking)}
+          onPress={() => openCancellation(booking)}
           variant="secondary"
         />
       ) : null}
@@ -636,8 +808,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
 
   const renderBookingAgendaContent = (booking: Booking) => {
     const canUseTwoStatusLines = booking.durationMinutes >= 90;
-
-    return (
+    const content = (
       <>
         <ThemedText numberOfLines={1} type="smallBold">
           {t('planning.slotTime', {
@@ -652,6 +823,18 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
           {getBookingAgendaStatus(booking)}
         </ThemedText>
       </>
+    );
+
+    return canStudentCancel(booking) ? (
+      <Pressable
+        accessibilityLabel={t('booking.cancelAction')}
+        accessibilityRole="button"
+        onPress={() => openCancellation(booking)}
+        style={styles.agendaBookingPressable}>
+        {content}
+      </Pressable>
+    ) : (
+      content
     );
   };
 
@@ -777,6 +960,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
       ) : null}
 
       {renderRequestModal()}
+      {renderCancellationModal()}
 
       {showRequestableSlots && displayMode === 'agenda' ? (
         <>
@@ -997,5 +1181,13 @@ const styles = StyleSheet.create({
     minWidth: 240,
     flex: 1,
     gap: Spacing.two,
+  },
+  agendaBookingPressable: {
+    flex: 1,
+    gap: Spacing.one,
+  },
+  cancellationInput: {
+    minHeight: 112,
+    paddingTop: Spacing.three,
   },
 });

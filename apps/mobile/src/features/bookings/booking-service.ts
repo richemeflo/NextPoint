@@ -59,6 +59,7 @@ export type BookingMutationError =
   | 'already_processed'
   | 'past_booking'
   | 'invalid_participants'
+  | 'invalid_input'
   | 'pricing_rate_missing'
   | 'not_found'
   | 'unknown';
@@ -84,9 +85,11 @@ function mapBookingError(code: string | undefined, message?: string): BookingMut
   if (code === '22023') {
     return message?.includes('past')
       ? 'past_booking'
-      : message?.includes('participant')
-        ? 'invalid_participants'
-        : 'student_pending_limit_reached';
+      : message?.includes('cancellation message')
+        ? 'invalid_input'
+        : message?.includes('participant')
+          ? 'invalid_participants'
+          : 'student_pending_limit_reached';
   }
   if (code === '55000') {
     return message?.includes('processed') || message?.includes('refused')
@@ -355,11 +358,15 @@ export async function createCoachBooking(
   return { ok: true, data: bookings };
 }
 
-export async function cancelBooking(bookingId: string): Promise<BookingResult> {
+export async function cancelBooking(
+  bookingId: string,
+  cancellationMessage?: string
+): Promise<BookingResult> {
   if (!supabase) return { ok: false, error: 'unknown' };
 
   const { data, error } = await supabase.rpc('cancel_booking', {
     p_booking_id: bookingId,
+    p_cancellation_message: cancellationMessage,
   });
 
   if (error || !data) {

@@ -29,6 +29,7 @@ export const bookingErrorCodes = [
 
 export const bookingCommentMaxLength = 500;
 export const bookingRefusalCommentMaxLength = 500;
+export const bookingCancellationMessageMaxLength = 500;
 export const bookingPendingTtlDays = 7;
 export const maxPendingBookingsPerSlot = 2;
 export const maxPendingBookingsPerStudent = 10;
@@ -76,6 +77,19 @@ export const bookingActionSchema = z.object({
   bookingId: z.uuid(),
 });
 
+export const studentCancelBookingSchema = z.object({
+  bookingId: z.uuid(),
+  cancellationMessage: z
+    .string()
+    .trim()
+    .min(1)
+    .refine(
+      (value) =>
+        Array.from(value).length <= bookingCancellationMessageMaxLength,
+      { message: 'Cancellation message must not exceed 500 characters' }
+    ),
+});
+
 export const coachCreateBookingSchema = z.object({
   studentIds: uuidArraySchema.min(1),
   startsAt: z.iso.datetime(),
@@ -95,6 +109,9 @@ export const coachModifyBookingSchema = z.object({
 export type RequestBookingInput = z.infer<typeof requestBookingSchema>;
 export type RefuseBookingInput = z.infer<typeof refuseBookingSchema>;
 export type BookingActionInput = z.infer<typeof bookingActionSchema>;
+export type StudentCancelBookingInput = z.infer<
+  typeof studentCancelBookingSchema
+>;
 export type CoachCreateBookingInput = z.infer<typeof coachCreateBookingSchema>;
 export type CoachModifyBookingInput = z.infer<typeof coachModifyBookingSchema>;
 
@@ -137,7 +154,12 @@ export function canCancelBooking(
   actor: 'coach' | 'student',
   nowMs = Date.now()
 ): BookingRuleResult {
-  if (booking.status !== 'confirmed' && booking.status !== 'modified') {
+  const canCancelStatus =
+    booking.status === 'confirmed' ||
+    booking.status === 'modified' ||
+    (actor === 'student' && booking.status === 'pending');
+
+  if (!canCancelStatus) {
     return { ok: false, error: 'already_processed' };
   }
 
