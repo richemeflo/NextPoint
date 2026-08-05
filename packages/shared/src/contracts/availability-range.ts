@@ -124,6 +124,60 @@ function parseTime(time: string) {
   return { hours, minutes };
 }
 
+export function calculateAvailabilityEndLocalTime(
+  date: string,
+  startsAtLocalTime: string,
+  durationMinutes: number
+) {
+  if (
+    !localDateRegex.test(date) ||
+    !localTimeRegex.test(startsAtLocalTime) ||
+    !availabilitySlotDurations.includes(
+      durationMinutes as AvailabilitySlotDuration
+    )
+  ) {
+    return null;
+  }
+
+  const { year, monthIndex, day } = parseDate(date);
+  const { hours, minutes } = parseTime(startsAtLocalTime);
+  const start = new Date(year, monthIndex, day, hours, minutes);
+
+  if (
+    start.getFullYear() !== year ||
+    start.getMonth() !== monthIndex ||
+    start.getDate() !== day ||
+    start.getHours() !== hours ||
+    start.getMinutes() !== minutes
+  ) {
+    return null;
+  }
+
+  const end = new Date(start.getTime() + durationMinutes * 60_000);
+
+  if (
+    end.getFullYear() !== year ||
+    end.getMonth() !== monthIndex ||
+    end.getDate() !== day
+  ) {
+    return null;
+  }
+
+  const endLocalTime = `${String(end.getHours()).padStart(2, '0')}:${String(
+    end.getMinutes()
+  ).padStart(2, '0')}`;
+  const { hours: endHours, minutes: endMinutes } = parseTime(endLocalTime);
+  const representableEnd = new Date(
+    year,
+    monthIndex,
+    day,
+    endHours,
+    endMinutes
+  );
+
+  return representableEnd.getTime() === end.getTime() ? endLocalTime : null;
+}
+
 export function getDefaultAvailabilityRecurrenceEndsOn(date: string) {
   const { year, monthIndex, day } = parseDate(date);
   const targetMonthIndex = monthIndex + 1;

@@ -5,6 +5,7 @@ import {
   availabilityRecurrenceTypes,
   availabilitySlotDurations,
   buildAvailabilityPreviewSlots,
+  calculateAvailabilityEndLocalTime,
   defaultAvailabilityLocation,
   getDefaultAvailabilityRecurrenceEndsOn,
   toAvailabilityRangeInput,
@@ -73,7 +74,7 @@ function slotToFormInput(slot: AvailabilitySlot): AvailabilityRangeFormInput {
 const defaultValues: AvailabilityRangeFormInput = {
   date: formatLocalDate(new Date()),
   startsAtLocalTime: '18:00',
-  endsAtLocalTime: '20:00',
+  endsAtLocalTime: '19:30',
   slotDurationMinutes: '90',
   location: defaultAvailabilityLocation,
   recurrenceType: 'none',
@@ -114,6 +115,31 @@ export default function CoachAvailabilityScreen() {
   });
   const watchedValues = useWatch({ control });
   const selectedRecurrenceType = watchedValues.recurrenceType ?? 'none';
+  const calculatedCreationEnd = useMemo(
+    () =>
+      calculateAvailabilityEndLocalTime(
+        watchedValues.date ?? '',
+        watchedValues.startsAtLocalTime ?? '',
+        Number(watchedValues.slotDurationMinutes)
+      ),
+    [
+      watchedValues.date,
+      watchedValues.slotDurationMinutes,
+      watchedValues.startsAtLocalTime,
+    ]
+  );
+
+  useEffect(() => {
+    const endsAtLocalTime = calculatedCreationEnd ?? '';
+
+    if (watchedValues.endsAtLocalTime !== endsAtLocalTime) {
+      setValue('endsAtLocalTime', endsAtLocalTime, { shouldValidate: true });
+    }
+  }, [
+    calculatedCreationEnd,
+    setValue,
+    watchedValues.endsAtLocalTime,
+  ]);
 
   const loadRanges = useCallback(async () => {
     if (!user) return;
@@ -453,22 +479,13 @@ export default function CoachAvailabilityScreen() {
                 name="startsAtLocalTime"
                 render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
                   <TextField
-                    error={translateError(error?.message)}
+                    error={
+                      translateError(error?.message) ??
+                      (value.length === 5 && !calculatedCreationEnd
+                        ? t('availability.validation.endBeforeStart')
+                        : undefined)
+                    }
                     label={t('availability.startsAtLabel')}
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    placeholder={t('availability.timePlaceholder')}
-                    value={value}
-                  />
-                )}
-              />
-              <Controller
-                control={control}
-                name="endsAtLocalTime"
-                render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
-                  <TextField
-                    error={translateError(error?.message)}
-                    label={t('availability.endsAtLabel')}
                     onBlur={onBlur}
                     onChangeText={onChange}
                     placeholder={t('availability.timePlaceholder')}

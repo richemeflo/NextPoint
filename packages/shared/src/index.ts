@@ -7,6 +7,7 @@ export {
   availabilitySlotStatuses,
   availabilitySlotDurations,
   buildAvailabilityPreviewSlots,
+  calculateAvailabilityEndLocalTime,
   defaultAvailabilityLocation,
   getDefaultAvailabilityRecurrenceEndsOn,
   isAvailabilitySlotRequestable,

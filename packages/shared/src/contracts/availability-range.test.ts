@@ -8,6 +8,7 @@ import {
   availabilitySlotStatuses,
   availabilitySlotDurations,
   buildAvailabilityPreviewSlots,
+  calculateAvailabilityEndLocalTime,
   defaultAvailabilityLocation,
   getDefaultAvailabilityRecurrenceEndsOn,
   isAvailabilitySlotRequestable,
@@ -20,6 +21,121 @@ test('availability constants expose P0 durations, location and recurrence limits
   assert.equal(defaultAvailabilityLocation, 'Les Bruyères Centre Sportif');
   assert.deepEqual(availabilityLocations, ['Les Bruyères Centre Sportif']);
   assert.deepEqual(availabilityRecurrenceTypes, ['none', 'daily', 'weekly']);
+});
+
+test('calculateAvailabilityEndLocalTime adds supported slot durations', () => {
+  assert.equal(
+    calculateAvailabilityEndLocalTime('2026-07-01', '16:00', 60),
+    '17:00'
+  );
+  assert.equal(
+    calculateAvailabilityEndLocalTime('2026-07-01', '16:00', 90),
+    '17:30'
+  );
+});
+
+test('calculateAvailabilityEndLocalTime reflects a duration change', () => {
+  const oneHourEnd = calculateAvailabilityEndLocalTime(
+    '2026-07-01',
+    '16:00',
+    60
+  );
+  const ninetyMinuteEnd = calculateAvailabilityEndLocalTime(
+    '2026-07-01',
+    '16:00',
+    90
+  );
+
+  assert.equal(oneHourEnd, '17:00');
+  assert.equal(ninetyMinuteEnd, '17:30');
+  assert.notEqual(oneHourEnd, ninetyMinuteEnd);
+});
+
+test('calculateAvailabilityEndLocalTime rejects invalid starts and durations', () => {
+  assert.equal(
+    calculateAvailabilityEndLocalTime('2026-07-01', '16h00', 60),
+    null
+  );
+  assert.equal(
+    calculateAvailabilityEndLocalTime('2026-07-01', '24:00', 60),
+    null
+  );
+  assert.equal(
+    calculateAvailabilityEndLocalTime('2026-07-01', '16:00', 45),
+    null
+  );
+});
+
+test('calculateAvailabilityEndLocalTime rejects ranges crossing midnight', () => {
+  assert.equal(
+    calculateAvailabilityEndLocalTime('2026-07-01', '23:00', 60),
+    null
+  );
+  assert.equal(
+    calculateAvailabilityEndLocalTime('2026-07-01', '23:30', 90),
+    null
+  );
+});
+
+test('calculateAvailabilityEndLocalTime preserves real duration across DST', () => {
+  const previousTimezone = process.env.TZ;
+  process.env.TZ = 'Europe/Paris';
+
+  try {
+    assert.equal(
+      calculateAvailabilityEndLocalTime('2026-03-29', '01:30', 90),
+      '04:00'
+    );
+    assert.equal(
+      calculateAvailabilityEndLocalTime('2026-03-29', '02:30', 60),
+      null
+    );
+    assert.equal(
+      calculateAvailabilityEndLocalTime('2026-10-25', '02:30', 60),
+      null
+    );
+  } finally {
+    if (previousTimezone === undefined) {
+      delete process.env.TZ;
+    } else {
+      process.env.TZ = previousTimezone;
+    }
+  }
+});
+
+test('a DST transition still produces exactly one slot of the selected duration', () => {
+  const previousTimezone = process.env.TZ;
+  process.env.TZ = 'Europe/Paris';
+
+  try {
+    const endsAtLocalTime = calculateAvailabilityEndLocalTime(
+      '2026-03-29',
+      '01:30',
+      90
+    );
+
+    assert.equal(endsAtLocalTime, '04:00');
+
+    const input = toAvailabilityRangeInput({
+      date: '2026-03-29',
+      startsAtLocalTime: '01:30',
+      endsAtLocalTime,
+      slotDurationMinutes: '90',
+      location: defaultAvailabilityLocation,
+      recurrenceType: 'none',
+      recurrenceEndsOn: '',
+    });
+    const slots = buildAvailabilityPreviewSlots(input);
+
+    assert.equal(new Date(input.endsAt).getTime() - new Date(input.startsAt).getTime(), 90 * 60_000);
+    assert.equal(slots.length, 1);
+  } finally {
+    if (previousTimezone === undefined) {
+      delete process.env.TZ;
+    } else {
+      process.env.TZ = previousTimezone;
+    }
+  }
 });
 
 test('availabilityRangeSchema accepts a valid 1h30 coach range', () => {
