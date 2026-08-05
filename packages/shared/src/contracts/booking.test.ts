@@ -144,6 +144,13 @@ test('student cancellation message is trimmed and limited to 500 characters', ()
 
   assert.equal(valid.cancellationMessage, 'Empêchement professionnel.');
   assert.equal(
+    studentCancelBookingSchema.parse({
+      bookingId: '10000000-0000-4000-8000-000000000001',
+      cancellationMessage: 'a',
+    }).cancellationMessage,
+    'a'
+  );
+  assert.equal(
     studentCancelBookingSchema.safeParse({
       bookingId: '10000000-0000-4000-8000-000000000001',
       cancellationMessage: ' '.repeat(10),

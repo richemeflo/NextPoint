@@ -405,7 +405,7 @@ select throws_ok(
 select lives_ok(
   $$select public.cancel_booking(
     '30000000-0000-4000-8000-000000000001',
-    '  Je dois garder mon enfant.  '
+    '  a  '
   )$$,
   'student can cancel an owned future pending request with a reason'
 );
@@ -476,8 +476,8 @@ select results_eq(
       '30000000-0000-4000-8000-000000000001',
       '30000000-0000-4000-8000-000000000002'
     ) and event_type = 'booking_cancelled'
-    order by description$$,
-  $$values ('Empêchement professionnel.'), ('Je dois garder mon enfant.')$$,
+    order by lower(description) collate "C"$$,
+  $$values ('a'), ('Empêchement professionnel.')$$,
   'coach history contains the exact normalized student reasons'
 );
 select results_eq(
@@ -486,8 +486,8 @@ select results_eq(
       '30000000-0000-4000-8000-000000000001',
       '30000000-0000-4000-8000-000000000002'
     ) and type = 'booking_cancelled'
-    order by body$$,
-  $$values ('Empêchement professionnel.'), ('Je dois garder mon enfant.')$$,
+    order by lower(body) collate "C"$$,
+  $$values ('a'), ('Empêchement professionnel.')$$,
   'coach notifications contain the exact student reasons'
 );
 select results_eq(
@@ -500,10 +500,10 @@ select results_eq(
       '30000000-0000-4000-8000-000000000002'
     ) and coach_messages.body in (
       'Empêchement professionnel.',
-      'Je dois garder mon enfant.'
+      'a'
     )
-    order by coach_messages.body$$,
-  $$values ('Empêchement professionnel.'), ('Je dois garder mon enfant.')$$,
+    order by lower(coach_messages.body) collate "C"$$,
+  $$values ('a'), ('Empêchement professionnel.')$$,
   'coach threads contain the exact student reasons'
 );
 
