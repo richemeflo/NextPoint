@@ -425,7 +425,7 @@ begin
     raise exception 'student pending limit reached' using errcode = '22023';
   end if;
 
-  if p_lesson_type = 'group' then
+  if p_lesson_type in ('duo', 'group') then
     foreach participant_id in array coalesce(p_participant_ids, '{}')
     loop
       perform public.assert_active_student_for_coach(target_slot.coach_id, participant_id);
@@ -474,7 +474,10 @@ begin
   perform public.add_booking_participants(
     created_booking.id,
     requester_id,
-    case when p_lesson_type = 'group' then p_participant_ids else '{}'::uuid[] end
+    case
+      when p_lesson_type in ('duo', 'group') then p_participant_ids
+      else '{}'::uuid[]
+    end
   );
   perform public.add_booking_history(
     created_booking,

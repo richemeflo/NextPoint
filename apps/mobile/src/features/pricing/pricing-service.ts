@@ -1,28 +1,15 @@
-import type {
-  PricingApplicabilityContext,
-  PricingDuration,
-  PricingLessonType,
-  PricingRateInput,
-  Tables,
+import {
+  pricingRateReadModelSchema,
+  type PricingRateInput,
+  type PricingRateReadModel,
+  type Tables,
 } from '@nextpoint/shared';
 
 import { supabase } from '@/lib/supabase/client';
 
 type PricingRateRow = Tables<'pricing_rates'>;
 
-export type PricingRate = {
-  id: string;
-  coachId: string;
-  label: string;
-  amountCents: number;
-  currency: 'EUR';
-  durationMinutes: PricingDuration;
-  lessonType: PricingLessonType;
-  isActive: boolean;
-  applicabilityContexts: PricingApplicabilityContext[];
-  targetStudentIds: string[];
-  updatedAt: string;
-};
+export type PricingRate = PricingRateReadModel;
 
 type PricingRatesResult =
   | { ok: true; data: PricingRate[] }
@@ -32,24 +19,40 @@ type PricingRateResult =
   | { ok: true; data: PricingRate }
   | { ok: false };
 
-function mapPricingRate(
+function parsePricingRate(
   row: PricingRateRow,
   targetStudentIds: string[] = []
-): PricingRate {
-  return {
+): PricingRate | null {
+  const parsed = pricingRateReadModelSchema.safeParse({
     id: row.id,
     coachId: row.coach_id,
     label: row.label,
     amountCents: row.amount_cents,
-    currency: row.currency as 'EUR',
-    durationMinutes: row.duration_minutes as PricingDuration,
-    lessonType: row.lesson_type as PricingLessonType,
+    currency: row.currency,
+    durationMinutes: row.duration_minutes,
+    lessonType: row.lesson_type,
     isActive: row.is_active,
-    applicabilityContexts:
-      row.applicability_contexts as PricingApplicabilityContext[],
+    applicabilityContexts: row.applicability_contexts,
     targetStudentIds,
     updatedAt: row.updated_at,
-  };
+  });
+
+  return parsed.success ? parsed.data : null;
+}
+
+function parsePricingRates(
+  rows: PricingRateRow[],
+  getTargetStudentIds: (row: PricingRateRow) => string[] = () => []
+): PricingRate[] | null {
+  const parsedRates: PricingRate[] = [];
+
+  for (const row of rows) {
+    const parsedRate = parsePricingRate(row, getTargetStudentIds(row));
+    if (!parsedRate) return null;
+    parsedRates.push(parsedRate);
+  }
+
+  return parsedRates;
 }
 
 export async function getPublishedPricingRates(): Promise<PricingRatesResult> {
@@ -64,7 +67,8 @@ export async function getPublishedPricingRates(): Promise<PricingRatesResult> {
     .order('duration_minutes');
 
   if (error) return { ok: false };
-  return { ok: true, data: data.map((row) => mapPricingRate(row)) };
+  const parsedRates = parsePricingRates(data);
+  return parsedRates ? { ok: true, data: parsedRates } : { ok: false };
 }
 
 export async function getCoachPricingRates(
@@ -92,17 +96,15 @@ export async function getCoachPricingRates(
 
   if (targets.error) return { ok: false };
 
-  return {
-    ok: true,
-    data: rates.data.map((row) =>
-      mapPricingRate(
-        row,
-        targets.data
-          .filter(({ pricing_rate_id }) => pricing_rate_id === row.id)
-          .map(({ student_id }) => student_id)
-      )
-    ),
-  };
+  const parsedRates = parsePricingRates(
+    rates.data,
+    (row) =>
+      targets.data
+        .filter(({ pricing_rate_id }) => pricing_rate_id === row.id)
+        .map(({ student_id }) => student_id)
+  );
+
+  return parsedRates ? { ok: true, data: parsedRates } : { ok: false };
 }
 
 export async function savePricingRate(
@@ -124,7 +126,8 @@ export async function savePricingRate(
   });
 
   if (error || !data) return { ok: false };
-  return { ok: true, data: mapPricingRate(data, rate.targetStudentIds) };
+  const parsedRate = parsePricingRate(data, rate.targetStudentIds);
+  return parsedRate ? { ok: true, data: parsedRate } : { ok: false };
 }
 
 export async function deletePricingRate(rateId: string): Promise<boolean> {

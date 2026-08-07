@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const pricingLessonTypes = ['individual', 'group'] as const;
+export const pricingLessonTypes = ['individual', 'duo', 'group'] as const;
 export const pricingDurations = [60, 90] as const;
 export const pricingApplicabilityContexts = [
   'student',
@@ -25,11 +25,28 @@ export const pricingRateSchema = z.object({
   targetStudentIds: z.array(z.uuid('invalid_student')),
 });
 
+export const pricingRateReadModelSchema = z.object({
+  id: z.uuid(),
+  coachId: z.uuid(),
+  label: z.string().min(2).max(100),
+  amountCents: z.number().int().min(1).max(10_000_000),
+  currency: z.literal('EUR'),
+  durationMinutes: z.union([z.literal(60), z.literal(90)]),
+  lessonType: z.enum(pricingLessonTypes),
+  isActive: z.boolean(),
+  applicabilityContexts: z.array(z.enum(pricingApplicabilityContexts)),
+  targetStudentIds: z.array(z.uuid()),
+  updatedAt: z.iso.datetime({ offset: true }),
+});
+
 export type PricingLessonType = (typeof pricingLessonTypes)[number];
 export type PricingDuration = (typeof pricingDurations)[number];
 export type PricingApplicabilityContext =
   (typeof pricingApplicabilityContexts)[number];
 export type PricingRateFormInput = z.infer<typeof pricingRateSchema>;
+export type PricingRateReadModel = z.infer<
+  typeof pricingRateReadModelSchema
+>;
 
 export type PricingRateInput = {
   label: string;

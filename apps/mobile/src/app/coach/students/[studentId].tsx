@@ -1,7 +1,8 @@
-import type {
-  StudentAccountStatus,
-  StudentHistoryEventStatus,
-  StudentHistoryEventType,
+import {
+  schedulingTimeZone,
+  type StudentAccountStatus,
+  type StudentHistoryEventStatus,
+  type StudentHistoryEventType,
 } from '@nextpoint/shared';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -75,6 +76,7 @@ const historyTypeKeys: Record<StudentHistoryEventType, TranslationKey> = {
   booking_modified: 'studentDetail.historyType.bookingModified',
   lesson_pack_assigned: 'studentDetail.historyType.lessonPackAssigned',
   lesson_pack_consumed: 'studentDetail.historyType.lessonPackConsumed',
+  lesson_pack_adjusted: 'studentDetail.historyType.lessonPackAdjusted',
 };
 
 function HistoryRow({ event }: { event: StudentHistoryEvent }) {
@@ -82,6 +84,7 @@ function HistoryRow({ event }: { event: StudentHistoryEvent }) {
   const occurredAt = new Intl.DateTimeFormat(locale, {
     dateStyle: 'medium',
     timeStyle: 'short',
+    timeZone: schedulingTimeZone,
   }).format(new Date(event.occurredAt));
 
   return (
@@ -128,15 +131,20 @@ export default function CoachStudentDetailScreen() {
     if (!studentId) return;
 
     let active = true;
-    void getAssociatedStudentDetail(studentId).then((result) => {
-      if (!active) return;
-      if (!result.ok) {
-        setLoadState(result.code === 'not_found' ? 'not_found' : 'error');
-        return;
-      }
-      setDetail(result.data);
-      setLoadState('ready');
-    });
+    void getAssociatedStudentDetail(studentId)
+      .then((result) => {
+        if (!active) return;
+        if (!result.ok) {
+          setLoadState(result.code === 'not_found' ? 'not_found' : 'error');
+          return;
+        }
+        setDetail(result.data);
+        setLoadState('ready');
+      })
+      .catch(() => {
+        if (!active) return;
+        setLoadState('error');
+      });
 
     return () => {
       active = false;
@@ -224,6 +232,7 @@ export default function CoachStudentDetailScreen() {
     ? new Intl.DateTimeFormat(locale, {
         dateStyle: 'medium',
         timeStyle: 'short',
+        timeZone: schedulingTimeZone,
       }).format(new Date(activationLink.expiresAt))
     : null;
 

@@ -43,22 +43,22 @@ test('coach stats read model rejects negative aggregates', () => {
 });
 
 test('month is the default period and quarter/year boundaries are available', () => {
-  const reference = new Date(2026, 6, 13, 12, 0, 0);
+  const reference = new Date('2026-07-13T10:00:00.000Z');
 
   assert.deepEqual(getCoachStatsPeriodRange(undefined, reference), {
     period: 'month',
-    startsAt: new Date(2026, 6, 1).toISOString(),
-    endsAt: new Date(2026, 7, 1).toISOString(),
+    startsAt: '2026-06-30T22:00:00.000Z',
+    endsAt: '2026-07-31T22:00:00.000Z',
   });
   assert.deepEqual(getCoachStatsPeriodRange('quarter', reference), {
     period: 'quarter',
-    startsAt: new Date(2026, 6, 1).toISOString(),
-    endsAt: new Date(2026, 9, 1).toISOString(),
+    startsAt: '2026-06-30T22:00:00.000Z',
+    endsAt: '2026-09-30T22:00:00.000Z',
   });
   assert.deepEqual(getCoachStatsPeriodRange('year', reference), {
     period: 'year',
-    startsAt: new Date(2026, 0, 1).toISOString(),
-    endsAt: new Date(2027, 0, 1).toISOString(),
+    startsAt: '2025-12-31T23:00:00.000Z',
+    endsAt: '2026-12-31T23:00:00.000Z',
   });
 });
 

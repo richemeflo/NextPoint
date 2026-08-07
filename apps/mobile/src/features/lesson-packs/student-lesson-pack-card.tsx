@@ -1,5 +1,9 @@
-import { lessonPackSchema } from '@nextpoint/shared';
-import { useEffect, useState } from 'react';
+import {
+  lessonPackSchema,
+  schedulingTimeZone,
+  type LessonPackAdjustment,
+} from '@nextpoint/shared';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -10,15 +14,21 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
 import {
+  adjustLessonPackSessions,
   assignLessonPack,
   consumeLessonPackSession,
   getStudentLessonPacks,
   type LessonPack,
 } from '@/features/lesson-packs/lesson-pack-service';
 import {
-  getLessonPackConsumeDisabledReason,
-  replaceConsumedLessonPack,
+  getLessonPackAdjustmentDisabledReason,
+  getLessonPackConsumptionDisabledReason,
+  replaceAdjustedLessonPack,
 } from '@/features/lesson-packs/lesson-pack-state';
+import {
+  acquireMutationLock,
+  releaseMutationLock,
+} from '@/features/mutations/mutation-lock';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/i18n';
 
@@ -38,22 +48,38 @@ export function StudentLessonPackCard({
   const [saveState, setSaveState] = useState<
     'idle' | 'saving' | 'saved' | 'duplicate' | 'error'
   >('idle');
-  const [consumeState, setConsumeState] = useState<
+  const [adjustmentState, setAdjustmentState] = useState<
+    | 'idle'
+    | 'adjusting'
+    | 'increased'
+    | 'decreased'
+    | 'noRemaining'
+    | 'minimum'
+    | 'maximum'
+    | 'error'
+  >('idle');
+  const [consumptionState, setConsumptionState] = useState<
     'idle' | 'consuming' | 'consumed' | 'noRemaining' | 'error'
   >('idle');
   const [validationError, setValidationError] = useState<string | null>(null);
+  const mutationLock = useRef(false);
 
   useEffect(() => {
     let active = true;
-    void getStudentLessonPacks(studentId).then((result) => {
-      if (!active) return;
-      if (!result.ok) {
+    void getStudentLessonPacks(studentId)
+      .then((result) => {
+        if (!active) return;
+        if (!result.ok) {
+          setLoadState('error');
+          return;
+        }
+        setPacks(result.data);
+        setLoadState('ready');
+      })
+      .catch(() => {
+        if (!active) return;
         setLoadState('error');
-        return;
-      }
-      setPacks(result.data);
-      setLoadState('ready');
-    });
+      });
 
     return () => {
       active = false;
@@ -61,6 +87,7 @@ export function StudentLessonPackCard({
   }, [studentId]);
 
   const activePack = packs.find((pack) => pack.status === 'active');
+  const adjustablePack = activePack ?? packs[0];
 
   const assignPack = async () => {
     const parsed = lessonPackSchema.safeParse({ includedSessions });
@@ -69,38 +96,99 @@ export function StudentLessonPackCard({
       return;
     }
 
+    if (!acquireMutationLock(mutationLock)) return;
+
     setValidationError(null);
     setSaveState('saving');
-    const result = await assignLessonPack(studentId, parsed.data);
-    if (!result.ok) {
-      setSaveState(
-        result.code === 'active_pack_exists' ? 'duplicate' : 'error'
-      );
+    try {
+      const result = await assignLessonPack(studentId, parsed.data);
+      if (!result.ok) {
+        setSaveState(
+          result.code === 'active_pack_exists' ? 'duplicate' : 'error'
+        );
+        return;
+      }
+
+      setPacks((current) => [result.data, ...current]);
+      setIncludedSessions('');
+      setIsFormOpen(false);
+      setSaveState('saved');
+    } catch {
+      setSaveState('error');
+    } finally {
+      releaseMutationLock(mutationLock);
+    }
+  };
+
+  const adjustPack = async (
+    pack: LessonPack,
+    adjustment: LessonPackAdjustment
+  ) => {
+    if (!acquireMutationLock(mutationLock)) return;
+
+    const disabledReason = getLessonPackAdjustmentDisabledReason(
+      pack,
+      adjustment
+    );
+    if (disabledReason === 'no_remaining_session') {
+      setAdjustmentState('noRemaining');
+      releaseMutationLock(mutationLock);
+      return;
+    }
+    if (disabledReason === 'maximum_included_sessions') {
+      setAdjustmentState('maximum');
+      releaseMutationLock(mutationLock);
+      return;
+    }
+    if (disabledReason === 'minimum_included_sessions') {
+      setAdjustmentState('minimum');
+      releaseMutationLock(mutationLock);
       return;
     }
 
-    setPacks((current) => [result.data, ...current]);
-    setIncludedSessions('');
-    setIsFormOpen(false);
-    setSaveState('saved');
+    setConsumptionState('idle');
+    setAdjustmentState('adjusting');
+    try {
+      const result = await adjustLessonPackSessions(pack.id, adjustment);
+      if (!result.ok) {
+        setAdjustmentState('error');
+        return;
+      }
+
+      setPacks((current) => replaceAdjustedLessonPack(current, result.data));
+      setAdjustmentState(adjustment === 1 ? 'increased' : 'decreased');
+    } catch {
+      setAdjustmentState('error');
+    } finally {
+      releaseMutationLock(mutationLock);
+    }
   };
 
   const consumePack = async (pack: LessonPack) => {
-    const disabledReason = getLessonPackConsumeDisabledReason(pack);
-    if (disabledReason === 'no_remaining_session') {
-      setConsumeState('noRemaining');
+    if (!acquireMutationLock(mutationLock)) return;
+
+    if (getLessonPackConsumptionDisabledReason(pack) !== null) {
+      setConsumptionState('noRemaining');
+      releaseMutationLock(mutationLock);
       return;
     }
 
-    setConsumeState('consuming');
-    const result = await consumeLessonPackSession(pack.id);
-    if (!result.ok) {
-      setConsumeState('error');
-      return;
-    }
+    setAdjustmentState('idle');
+    setConsumptionState('consuming');
+    try {
+      const result = await consumeLessonPackSession(pack.id);
+      if (!result.ok) {
+        setConsumptionState('error');
+        return;
+      }
 
-    setPacks((current) => replaceConsumedLessonPack(current, result.data));
-    setConsumeState('consumed');
+      setPacks((current) => replaceAdjustedLessonPack(current, result.data));
+      setConsumptionState('consumed');
+    } catch {
+      setConsumptionState('error');
+    } finally {
+      releaseMutationLock(mutationLock);
+    }
   };
 
   if (loadState === 'loading') {
@@ -140,7 +228,8 @@ export function StudentLessonPackCard({
             label={t('lessonPack.assignAction')}
             onPress={() => {
               setSaveState('idle');
-              setConsumeState('idle');
+              setAdjustmentState('idle');
+              setConsumptionState('idle');
               setIsFormOpen(true);
             }}
           />
@@ -203,21 +292,63 @@ export function StudentLessonPackCard({
           tone="error"
         />
       ) : null}
-      {consumeState === 'consumed' ? (
+      {adjustmentState === 'decreased' ? (
         <Feedback
-          message={t('lessonPack.consumeSuccessBody')}
-          title={t('lessonPack.consumeSuccessTitle')}
+          message={t('lessonPack.decreaseSuccessBody')}
+          title={t('lessonPack.decreaseSuccessTitle')}
           tone="success"
         />
       ) : null}
-      {consumeState === 'noRemaining' ? (
+      {adjustmentState === 'increased' ? (
+        <Feedback
+          message={t('lessonPack.increaseSuccessBody')}
+          title={t('lessonPack.increaseSuccessTitle')}
+          tone="success"
+        />
+      ) : null}
+      {adjustmentState === 'noRemaining' ? (
         <Feedback
           message={t('lessonPack.noRemainingBody')}
           title={t('lessonPack.noRemainingTitle')}
           tone="warning"
         />
       ) : null}
-      {consumeState === 'error' ? (
+      {adjustmentState === 'maximum' ? (
+        <Feedback
+          message={t('lessonPack.maximumBody')}
+          title={t('lessonPack.maximumTitle')}
+          tone="warning"
+        />
+      ) : null}
+      {adjustmentState === 'minimum' ? (
+        <Feedback
+          message={t('lessonPack.minimumBody')}
+          title={t('lessonPack.minimumTitle')}
+          tone="warning"
+        />
+      ) : null}
+      {adjustmentState === 'error' ? (
+        <Feedback
+          message={t('lessonPack.adjustErrorBody')}
+          title={t('lessonPack.adjustErrorTitle')}
+          tone="error"
+        />
+      ) : null}
+      {consumptionState === 'consumed' ? (
+        <Feedback
+          message={t('lessonPack.consumeSuccessBody')}
+          title={t('lessonPack.consumeSuccessTitle')}
+          tone="success"
+        />
+      ) : null}
+      {consumptionState === 'noRemaining' ? (
+        <Feedback
+          message={t('lessonPack.noRemainingBody')}
+          title={t('lessonPack.noRemainingTitle')}
+          tone="warning"
+        />
+      ) : null}
+      {consumptionState === 'error' ? (
         <Feedback
           message={t('lessonPack.consumeErrorBody')}
           title={t('lessonPack.consumeErrorTitle')}
@@ -241,6 +372,7 @@ export function StudentLessonPackCard({
                   <ThemedText type="small" themeColor="textMuted">
                     {new Intl.DateTimeFormat(locale, {
                       dateStyle: 'medium',
+                      timeZone: schedulingTimeZone,
                     }).format(new Date(pack.createdAt))}
                   </ThemedText>
                 </View>
@@ -263,23 +395,78 @@ export function StudentLessonPackCard({
                     {t('lessonPack.usedMetric')}
                   </ThemedText>
                 </View>
-                <View style={styles.metric}>
-                  <ThemedText type="subtitle">
-                    {pack.remainingSessions}
-                  </ThemedText>
-                  <ThemedText type="small" themeColor="textMuted">
-                    {t('lessonPack.remainingMetric')}
-                  </ThemedText>
-                </View>
+                {pack.id === adjustablePack?.id ? (
+                  <View style={[styles.metric, styles.counterMetric]}>
+                    <ThemedText type="small" themeColor="textMuted">
+                      {t('lessonPack.remainingMetric')}
+                    </ThemedText>
+                    <View style={styles.counterControls}>
+                      <Button
+                        accessibilityLabel={t(
+                          'lessonPack.decrementAccessibilityLabel'
+                        )}
+                        disabled={
+                          adjustmentState === 'adjusting' ||
+                          consumptionState === 'consuming' ||
+                          getLessonPackAdjustmentDisabledReason(pack, -1) !==
+                            null
+                        }
+                        label="−"
+                        onPress={() => void adjustPack(pack, -1)}
+                        style={styles.counterButton}
+                        variant="secondary"
+                      />
+                      {adjustmentState === 'adjusting' ? (
+                        <ActivityIndicator
+                          accessibilityLabel={t('lessonPack.adjusting')}
+                          color={theme.primary}
+                          size="small"
+                          style={styles.counterProgress}
+                        />
+                      ) : (
+                        <ThemedText
+                          accessibilityLiveRegion="polite"
+                          style={styles.counterValue}
+                          type="subtitle">
+                          {pack.remainingSessions}
+                        </ThemedText>
+                      )}
+                      <Button
+                        accessibilityLabel={t(
+                          'lessonPack.incrementAccessibilityLabel'
+                        )}
+                        disabled={
+                          adjustmentState === 'adjusting' ||
+                          consumptionState === 'consuming' ||
+                          getLessonPackAdjustmentDisabledReason(pack, 1) !==
+                            null
+                        }
+                        label="+"
+                        onPress={() => void adjustPack(pack, 1)}
+                        style={styles.counterButton}
+                      />
+                    </View>
+                  </View>
+                ) : (
+                  <View style={styles.metric}>
+                    <ThemedText type="subtitle">
+                      {pack.remainingSessions}
+                    </ThemedText>
+                    <ThemedText type="small" themeColor="textMuted">
+                      {t('lessonPack.remainingMetric')}
+                    </ThemedText>
+                  </View>
+                )}
               </View>
-              {pack.status === 'active' ? (
+              {pack.id === adjustablePack?.id ? (
                 <Button
                   disabled={
-                    consumeState === 'consuming' ||
-                    getLessonPackConsumeDisabledReason(pack) !== null
+                    adjustmentState === 'adjusting' ||
+                    consumptionState === 'consuming' ||
+                    getLessonPackConsumptionDisabledReason(pack) !== null
                   }
                   label={
-                    consumeState === 'consuming'
+                    consumptionState === 'consuming'
                       ? t('lessonPack.consuming')
                       : t('lessonPack.consumeAction')
                   }
@@ -350,5 +537,24 @@ const styles = StyleSheet.create({
     minWidth: 120,
     flex: 1,
     gap: Spacing.one,
+  },
+  counterMetric: {
+    minWidth: 180,
+  },
+  counterControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  counterButton: {
+    minWidth: 44,
+    paddingHorizontal: Spacing.two,
+  },
+  counterValue: {
+    minWidth: 32,
+    textAlign: 'center',
+  },
+  counterProgress: {
+    minWidth: 32,
   },
 });

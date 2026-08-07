@@ -30,6 +30,7 @@ import {
   type PricingRate,
 } from '@/features/pricing/pricing-service';
 import { PricingMultiSelector } from '@/features/pricing/pricing-multi-selector';
+import { PricingStudentSelector } from '@/features/pricing/pricing-student-selector';
 import { ProfileOptionSelector } from '@/features/profiles/profile-option-selector';
 import {
   getAssociatedStudents,
@@ -60,6 +61,7 @@ export default function CoachPricingScreen() {
     'loading'
   );
   const [feedback, setFeedback] = useState<'none' | 'saved' | 'error'>('none');
+  const [studentSearch, setStudentSearch] = useState('');
   const {
     control,
     handleSubmit,
@@ -96,18 +98,23 @@ export default function CoachPricingScreen() {
     void Promise.all([
       getCoachPricingRates(user.id),
       getAssociatedStudents(user.id),
-    ]).then(([ratesResult, studentsResult]) => {
-      if (!active) return;
+    ])
+      .then(([ratesResult, studentsResult]) => {
+        if (!active) return;
 
-      if (!ratesResult.ok || !studentsResult.ok) {
+        if (!ratesResult.ok || !studentsResult.ok) {
+          setLoadState('error');
+          return;
+        }
+
+        setRates(ratesResult.data);
+        setStudents(studentsResult.data);
+        setLoadState('ready');
+      })
+      .catch(() => {
+        if (!active) return;
         setLoadState('error');
-        return;
-      }
-
-      setRates(ratesResult.data);
-      setStudents(studentsResult.data);
-      setLoadState('ready');
-    });
+      });
 
     return () => {
       active = false;
@@ -133,6 +140,7 @@ export default function CoachPricingScreen() {
     }
 
     setEditingId(null);
+    setStudentSearch('');
     reset(defaultValues);
     setFeedback('saved');
     await loadData();
@@ -141,6 +149,7 @@ export default function CoachPricingScreen() {
   const startEditing = (rate: PricingRate) => {
     setEditingId(rate.id);
     setFeedback('none');
+    setStudentSearch('');
     reset({
       label: rate.label,
       amountEuros: (rate.amountCents / 100).toFixed(2),
@@ -155,6 +164,7 @@ export default function CoachPricingScreen() {
   const cancelEditing = () => {
     setEditingId(null);
     setFeedback('none');
+    setStudentSearch('');
     reset(defaultValues);
   };
 
@@ -258,6 +268,7 @@ export default function CoachPricingScreen() {
                   onChange={onChange}
                   options={[
                     { value: 'individual', label: t('pricing.type.individual') },
+                    { value: 'duo', label: t('pricing.type.duo') },
                     { value: 'group', label: t('pricing.type.group') },
                   ]}
                   value={value}
@@ -311,13 +322,16 @@ export default function CoachPricingScreen() {
                 control={control}
                 name="targetStudentIds"
                 render={({ field: { onChange, value } }) => (
-                  <PricingMultiSelector
+                  <PricingStudentSelector
                     label={t('pricing.studentsLabel')}
                     onChange={onChange}
+                    onQueryChange={setStudentSearch}
                     options={students.map((student) => ({
                       value: student.userId,
                       label: student.fullName,
+                      description: student.email,
                     }))}
+                    query={studentSearch}
                     values={value}
                   />
                 )}

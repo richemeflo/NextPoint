@@ -5,6 +5,7 @@ export const studentHistoryEventTypes = [
   'booking_modified',
   'lesson_pack_assigned',
   'lesson_pack_consumed',
+  'lesson_pack_adjusted',
 ] as const;
 
 export type StudentHistoryEventType =

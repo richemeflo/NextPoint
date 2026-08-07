@@ -215,6 +215,38 @@ try {
     },
   ]);
 
+  const dstCreated = await coach.client.rpc('create_availability_range', {
+    p_starts_at: '2026-03-22T17:00:00.000Z',
+    p_ends_at: '2026-03-22T18:00:00.000Z',
+    p_slot_duration_minutes: 60,
+    p_location: 'Les Bruyères Centre Sportif',
+    p_recurrence_type: 'weekly',
+    p_recurrence_ends_on: '2026-04-05',
+  });
+  assert.equal(dstCreated.error, null);
+  createdRangeIds.push(dstCreated.data.id);
+
+  const dstSlots = await coach.client
+    .from('availability_slots')
+    .select('starts_at, ends_at')
+    .eq('availability_range_id', dstCreated.data.id)
+    .order('starts_at', { ascending: true });
+  assert.equal(dstSlots.error, null);
+  assert.deepEqual(dstSlots.data, [
+    {
+      starts_at: '2026-03-22T17:00:00+00:00',
+      ends_at: '2026-03-22T18:00:00+00:00',
+    },
+    {
+      starts_at: '2026-03-29T16:00:00+00:00',
+      ends_at: '2026-03-29T17:00:00+00:00',
+    },
+    {
+      starts_at: '2026-04-05T16:00:00+00:00',
+      ends_at: '2026-04-05T17:00:00+00:00',
+    },
+  ]);
+
   const coachRead = await coach.client
     .from('availability_ranges')
     .select('id, starts_at, ends_at, slot_duration_minutes, location')
@@ -454,7 +486,7 @@ try {
   assert.deepEqual(visibleAfterSeriesDelete.data, []);
 
   console.log(
-    'AVAILABILITY_RANGES_INTEGRATION_OK atomic range and recurring slot generation, complete-slot truncation, coach read, associated student requestable read, direct mutation/update/delete refusal, safe occurrence and series updates/deletes, overlap guard, duration/location/recurrence constraints, booked slots hidden from requestable reads'
+    'AVAILABILITY_RANGES_INTEGRATION_OK atomic range and recurring Paris-local slot generation across DST, complete-slot truncation, coach read, associated student requestable read, direct mutation/update/delete refusal, safe occurrence and series updates/deletes, overlap guard, duration/location/recurrence constraints, booked slots hidden from requestable reads'
   );
 } finally {
   for (const rangeId of createdRangeIds) {

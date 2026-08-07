@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  agendaHourMarks,
   getPlanningWindow,
   getAgendaSlotPosition,
   getSlotDateKey,
@@ -13,13 +14,19 @@ test('planning view modes stay limited to week and day', () => {
   assert.deepEqual(planningViewModes, ['week', 'day']);
 });
 
+test('agenda hour marks cover 08:00 through 23:00', () => {
+  assert.equal(agendaHourMarks[0], 8);
+  assert.equal(agendaHourMarks.at(-1), 23);
+  assert.equal(agendaHourMarks.length, 16);
+});
+
 test('getPlanningWindow defaults a week to Monday through Sunday', () => {
   const window = getPlanningWindow('2026-07-01', 'week');
 
   assert.equal(window.startDate, '2026-06-29');
   assert.equal(window.endDate, '2026-07-05');
-  assert.equal(window.startsAt, '2026-06-29T00:00:00.000Z');
-  assert.equal(window.endsAt, '2026-07-06T00:00:00.000Z');
+  assert.equal(window.startsAt, '2026-06-28T22:00:00.000Z');
+  assert.equal(window.endsAt, '2026-07-05T22:00:00.000Z');
   assert.deepEqual(
     window.days.map((day) => day.date),
     [
@@ -48,13 +55,14 @@ test('movePlanningAnchor moves by the active view span', () => {
   assert.equal(movePlanningAnchor('2026-07-01', 'day', 1), '2026-07-02');
 });
 
-test('getSlotDateKey groups ISO slots by UTC date', () => {
+test('getSlotDateKey groups ISO slots by Europe/Paris date', () => {
   assert.equal(getSlotDateKey('2026-07-01T16:00:00.000Z'), '2026-07-01');
+  assert.equal(getSlotDateKey('2026-07-01T22:30:00.000Z'), '2026-07-02');
 });
 
 test('getAgendaSlotPosition maps slots into the agenda hour rail', () => {
-  const startsAt = new Date(2026, 6, 1, 10, 0).toISOString();
-  const endsAt = new Date(2026, 6, 1, 11, 30).toISOString();
+  const startsAt = '2026-07-01T08:00:00.000Z';
+  const endsAt = '2026-07-01T09:30:00.000Z';
 
   assert.deepEqual(
     getAgendaSlotPosition(startsAt, endsAt, 8, 20),

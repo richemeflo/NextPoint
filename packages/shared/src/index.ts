@@ -1,6 +1,16 @@
 export { Constants } from './types/database.types';
 export { signInSchema, signUpSchema } from './contracts/auth';
 export {
+  calculateSchedulingEndTime,
+  getSchedulingDateKey,
+  getSchedulingDateLabelInstant,
+  getSchedulingTime,
+  getSchedulingTimeMinutes,
+  getSchedulingToday,
+  schedulingLocalDateTimeToIso,
+  schedulingTimeZone,
+} from './domain/scheduling-time';
+export {
   availabilityLocations,
   availabilityRangeSchema,
   availabilityRecurrenceTypes,
@@ -32,12 +42,14 @@ export { coachProfileSchema, toCoachProfileInput } from './contracts/coach-profi
 export {
   lessonPackSchema,
   lessonPackStatuses,
+  maximumLessonPackSessions,
   toLessonPackInput,
 } from './contracts/lesson-pack';
 export {
   pricingApplicabilityContexts,
   pricingDurations,
   pricingLessonTypes,
+  pricingRateReadModelSchema,
   pricingRateSchema,
   selectApplicablePricingRate,
   toPricingRateInput,
@@ -45,6 +57,11 @@ export {
 export {
   bookingActionSchema,
   bookingCancellationMessageMaxLength,
+  bookingParticipantProfileReadModelSchema,
+  bookingParticipantReadModelSchema,
+  bookingParticipantLimits,
+  bookingPricingReadModelSchema,
+  bookingReadModelSchema,
   bookingErrorCodes,
   bookingOrigins,
   bookingPendingTtlDays,
@@ -56,6 +73,7 @@ export {
   coachCreateBookingSchema,
   coachModifyBookingSchema,
   isBookingExpired,
+  isBookingParticipantCountValid,
   maxGroupBookingParticipants,
   maxPendingBookingsPerSlot,
   maxPendingBookingsPerStudent,
@@ -99,6 +117,11 @@ export {
   toManualStudentProfileInput,
   toStudentProfileInput,
 } from './contracts/student-profile';
+export {
+  activateStudentAccountResponseSchema,
+  createManualStudentResponseSchema,
+  generateStudentActivationLinkResponseSchema,
+} from './contracts/student-edge-function';
 export { appLanguages } from './domain/languages';
 export { appRoles, isAppRole } from './domain/roles';
 export type { SignInInput, SignUpInput } from './contracts/auth';
@@ -129,6 +152,7 @@ export type {
   CoachProfileInput,
 } from './contracts/coach-profile';
 export type {
+  LessonPackAdjustment,
   LessonPackFormInput,
   LessonPackInput,
   LessonPackStatus,
@@ -139,6 +163,7 @@ export type {
   PricingLessonType,
   PricingRateFormInput,
   PricingRateInput,
+  PricingRateReadModel,
   PricingRateCandidate,
   PricingSelectionContext,
 } from './contracts/pricing-rate';
@@ -146,6 +171,10 @@ export type {
   BookingActionInput,
   BookingErrorCode,
   BookingOrigin,
+  BookingParticipantProfileReadModel,
+  BookingParticipantReadModel,
+  BookingPricingReadModel,
+  BookingReadModel,
   BookingRuleResult,
   BookingStatus,
   CoachCreateBookingInput,

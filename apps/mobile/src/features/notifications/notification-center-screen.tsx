@@ -1,4 +1,8 @@
-import { resolveNotificationLink, type AppRole } from '@nextpoint/shared';
+import {
+  resolveNotificationLink,
+  schedulingTimeZone,
+  type AppRole,
+} from '@nextpoint/shared';
 import { router, type Href } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -43,8 +47,8 @@ export function NotificationCenterScreen({ role }: { role: AppRole }) {
   useEffect(() => {
     let mounted = true;
 
-    Promise.all([getNotifications(), getPushPreference()]).then(
-      ([notificationsResult, preferenceResult]) => {
+    void Promise.all([getNotifications(), getPushPreference()])
+      .then(([notificationsResult, preferenceResult]) => {
         if (!mounted) return;
 
         if (!notificationsResult.ok || !preferenceResult.ok) {
@@ -53,10 +57,14 @@ export function NotificationCenterScreen({ role }: { role: AppRole }) {
           setNotifications(notificationsResult.data);
           setPushPreference(preferenceResult.data);
         }
-
-        setLoading(false);
-      }
-    );
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setNotice('loadError');
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
 
     return () => {
       mounted = false;
@@ -65,66 +73,81 @@ export function NotificationCenterScreen({ role }: { role: AppRole }) {
 
   const registerPushPreference = async (accept: boolean) => {
     setNotice(null);
-    const input = accept
-      ? await requestClientPushPermission()
-      : buildPushRefusalPreference();
-    const result = await updatePushPreference(input);
+    try {
+      const input = accept
+        ? await requestClientPushPermission()
+        : buildPushRefusalPreference();
+      const result = await updatePushPreference(input);
 
-    if (!result.ok) {
+      if (!result.ok) {
+        setNotice('saveError');
+        return;
+      }
+
+      setPushPreference(result.data);
+    } catch {
       setNotice('saveError');
-      return;
     }
-
-    setPushPreference(result.data);
   };
 
   const markAllRead = async () => {
-    const result = await markAllNotificationsRead();
-    if (!result.ok) {
-      setNotice('saveError');
-      return;
-    }
+    try {
+      const result = await markAllNotificationsRead();
+      if (!result.ok) {
+        setNotice('saveError');
+        return;
+      }
 
-    setNotifications((current) =>
-      current.map((notification) => ({
-        ...notification,
-        readAt: notification.readAt ?? new Date().toISOString(),
-      }))
-    );
+      setNotifications((current) =>
+        current.map((notification) => ({
+          ...notification,
+          readAt: notification.readAt ?? new Date().toISOString(),
+        }))
+      );
+    } catch {
+      setNotice('saveError');
+    }
   };
 
   const openNotification = async (notification: AppNotification) => {
-    const markResult = notification.readAt
-      ? null
-      : await markNotificationRead(notification.id);
+    try {
+      const markResult = notification.readAt
+        ? null
+        : await markNotificationRead(notification.id);
 
-    if (markResult?.ok) {
-      setNotifications((current) =>
-        current.map((currentNotification) =>
-          currentNotification.id === notification.id
-            ? markResult.data
-            : currentNotification
-        )
+      if (markResult?.ok) {
+        setNotifications((current) =>
+          current.map((currentNotification) =>
+            currentNotification.id === notification.id
+              ? markResult.data
+              : currentNotification
+          )
+        );
+      } else if (markResult && !markResult.ok) {
+        setNotice('saveError');
+      }
+
+      const href = resolveNotificationLink(
+        { linkType: notification.linkType, linkId: notification.linkId },
+        role
       );
+
+      if (!href) {
+        setNotice('linkMissing');
+        return;
+      }
+
+      router.push(href as Href);
+    } catch {
+      setNotice('saveError');
     }
-
-    const href = resolveNotificationLink(
-      { linkType: notification.linkType, linkId: notification.linkId },
-      role
-    );
-
-    if (!href) {
-      setNotice('linkMissing');
-      return;
-    }
-
-    router.push(href as Href);
   };
 
   const formatDate = (value: string) =>
     new Intl.DateTimeFormat(locale, {
       dateStyle: 'medium',
       timeStyle: 'short',
+      timeZone: schedulingTimeZone,
     }).format(new Date(value));
 
   const permissionLabel = pushPreference

@@ -45,18 +45,27 @@ export default function CoachStatsScreen() {
   useEffect(() => {
     let active = true;
 
-    void getCoachStats(period).then((result) => {
-      if (!active) return;
+    void getCoachStats(period)
+      .then((result) => {
+        if (!active) return;
 
-      if (result.ok) {
-        setStats(result.data);
-        setError(null);
-      } else {
+        if (result.ok) {
+          setStats(result.data);
+          setError(null);
+        } else {
+          setStats(null);
+          setError(result.error);
+        }
+      })
+      .catch(() => {
+        if (!active) return;
         setStats(null);
-        setError(result.error);
-      }
-      setLoading(false);
-    });
+        setError('unknown');
+      })
+      .finally(() => {
+        if (!active) return;
+        setLoading(false);
+      });
 
     return () => {
       active = false;

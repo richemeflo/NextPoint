@@ -1,4 +1,8 @@
-import type { ActivateStudentAccountInput } from '@nextpoint/shared';
+import {
+  activateStudentAccountResponseSchema,
+  generateStudentActivationLinkResponseSchema,
+  type ActivateStudentAccountInput,
+} from '@nextpoint/shared';
 
 import { supabase } from '@/lib/supabase/client';
 
@@ -36,14 +40,18 @@ export async function activateStudentAccount(
     'activate-student-account',
     { body: input }
   );
+  const parsed = activateStudentAccountResponseSchema.safeParse(data as unknown);
 
-  if (error || !data?.ok) {
+  if (error || !parsed.success) {
+    return { ok: false, code: 'invalid_activation' };
+  }
+  if (!parsed.data.ok) {
     return {
       ok: false,
       code:
-        data?.error?.code === 'password_update_failed' ||
-        data?.error?.code === 'activation_failed'
-          ? data.error.code
+        parsed.data.error.code === 'password_update_failed' ||
+        parsed.data.error.code === 'activation_failed'
+          ? parsed.data.error.code
           : 'invalid_activation',
     };
   }
@@ -60,14 +68,20 @@ export async function generateStudentActivationLink(
     'generate-student-activation-link',
     { body: { studentId } }
   );
+  const parsed = generateStudentActivationLinkResponseSchema.safeParse(
+    data as unknown
+  );
 
-  if (error || !data?.ok || !data.data) {
+  if (error || !parsed.success) {
+    return { ok: false, code: 'configuration_error' };
+  }
+  if (!parsed.data.ok) {
     return {
       ok: false,
       code:
-        data?.error?.code === 'unauthorized'
+        parsed.data.error.code === 'unauthorized'
           ? 'unauthorized'
-          : data?.error?.code === 'account_not_activatable'
+          : parsed.data.error.code === 'account_not_activatable'
             ? 'account_not_activatable'
             : 'configuration_error',
     };
@@ -76,8 +90,8 @@ export async function generateStudentActivationLink(
   return {
     ok: true,
     data: {
-      activationLink: data.data.activationLink,
-      expiresAt: data.data.expiresAt,
+      activationLink: parsed.data.data.activationLink,
+      expiresAt: parsed.data.data.expiresAt,
     },
   };
 }

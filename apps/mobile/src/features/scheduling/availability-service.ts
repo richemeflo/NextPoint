@@ -153,6 +153,7 @@ export async function getCoachAvailabilitySlotsInRange(
     .from('availability_slots')
     .select('*')
     .eq('coach_id', coachId)
+    .neq('status', 'cancelled')
     .is('deleted_at', null)
     .gte('starts_at', startsAt)
     .lt('starts_at', endsAt)

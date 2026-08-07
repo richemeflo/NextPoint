@@ -20,17 +20,22 @@ export function PublicCoachCard() {
   useEffect(() => {
     let active = true;
 
-    void getPublicCoachProfile().then((result) => {
-      if (!active) return;
+    void getPublicCoachProfile()
+      .then((result) => {
+        if (!active) return;
 
-      if (!result.ok) {
+        if (!result.ok) {
+          setLoadError(true);
+          return;
+        }
+
+        setProfile(result.data);
+        setLoadError(false);
+      })
+      .catch(() => {
+        if (!active) return;
         setLoadError(true);
-        return;
-      }
-
-      setProfile(result.data);
-      setLoadError(false);
-    });
+      });
 
     return () => {
       active = false;

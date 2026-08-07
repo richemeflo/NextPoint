@@ -1,13 +1,19 @@
-import type { PricingLessonType } from '@nextpoint/shared';
+import {
+  bookingParticipantLimits,
+  getSchedulingDateKey,
+  getSchedulingDateLabelInstant,
+  getSchedulingTime,
+  getSchedulingToday,
+  isBookingParticipantCountValid,
+  schedulingLocalDateTimeToIso,
+  schedulingTimeZone,
+  type PricingDuration,
+  type PricingLessonType,
+} from '@nextpoint/shared';
 import { useLocalSearchParams } from 'expo-router';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -15,7 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Feedback } from '@/components/ui/feedback';
 import { TextField } from '@/components/ui/text-field';
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { MaxContentWidth, Radii, Spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/auth-context';
 import {
   approveBooking,
@@ -27,8 +33,26 @@ import {
   type Booking,
   type BookingMutationError,
 } from '@/features/bookings/booking-service';
+import {
+  acquireBookingMutationLock,
+  releaseBookingMutationLock,
+} from '@/features/bookings/booking-mutation-lock';
+import { getCoachBookingPricingOptions } from '@/features/bookings/coach-booking-pricing';
+import {
+  getCoachPricingRates,
+  type PricingRate,
+} from '@/features/pricing/pricing-service';
 import { ProfileOptionSelector } from '@/features/profiles/profile-option-selector';
 import { AgendaGrid } from '@/features/scheduling/agenda-grid';
+import {
+  isCoachPlanningBookingVisible,
+  isCoachPlanningSlotVisible,
+} from '@/features/scheduling/coach-planning-visibility';
+import {
+  beginPlanningRequest,
+  invalidatePlanningRequest,
+  isLatestPlanningRequest,
+} from '@/features/scheduling/latest-planning-request';
 import {
   getCoachAvailabilitySlotsInRange,
   type AvailabilitySlot,
@@ -41,29 +65,24 @@ import {
 } from '@/features/scheduling/planning-window';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
-import { getAssociatedStudents, type AssociatedStudent } from '@/features/students/student-coach-service';
+import {
+  getAssociatedStudents,
+  type AssociatedStudent,
+} from '@/features/students/student-coach-service';
 
-function formatLocalDate(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-const today = () => formatLocalDate(new Date());
+const today = () => getSchedulingToday();
 
 function getLinkedAnchorDate(value: string | undefined) {
   if (!value) return today();
 
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? today() : formatLocalDate(date);
+  return Number.isNaN(date.getTime()) ? today() : getSchedulingDateKey(date);
 }
 
 function localDateTimeToIso(date: string, time: string) {
-  const [year, month, day] = date.split('-').map(Number);
-  const [hours, minutes] = time.split(':').map(Number);
-
-  return new Date(year, month - 1, day, hours, minutes).toISOString();
+  const iso = schedulingLocalDateTimeToIso(date, time);
+  if (!iso) throw new RangeError('Invalid Europe/Paris booking date');
+  return iso;
 }
 
 function formatPrice(booking: Booking, locale: string) {
@@ -74,6 +93,22 @@ function formatPrice(booking: Booking, locale: string) {
     currency: booking.pricing.currency,
   }).format(booking.pricing.amountCents / 100);
 }
+
+type CoachPlanningItem =
+  | {
+      kind: 'availability';
+      id: string;
+      startsAt: string;
+      endsAt: string;
+      slot: AvailabilitySlot;
+    }
+  | {
+      kind: 'booking';
+      id: string;
+      startsAt: string;
+      endsAt: string;
+      booking: Booking;
+    };
 
 export default function CoachPlanningScreen() {
   const { bookingId: linkedBookingId, startsAt: linkedStartsAt } =
@@ -89,16 +124,30 @@ export default function CoachPlanningScreen() {
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [students, setStudents] = useState<AssociatedStudent[]>([]);
+  const [pricingRates, setPricingRates] = useState<PricingRate[]>([]);
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>(
     'loading'
   );
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const planningRequestVersion = useRef(0);
   const [feedback, setFeedback] = useState<
-    'none' | 'approved' | 'refused' | 'created' | 'cancelled' | 'modified' | BookingMutationError
+    | 'none'
+    | 'approved'
+    | 'refused'
+    | 'created'
+    | 'cancelled'
+    | 'modified'
+    | BookingMutationError
   >('none');
-  const [refusalComments, setRefusalComments] = useState<Record<string, string>>(
-    {}
-  );
+  const [feedbackSurface, setFeedbackSurface] = useState<
+    'planning' | 'creation'
+  >('planning');
+  const bookingMutationLock = useRef(false);
+  const [isBookingMutationPending, setIsBookingMutationPending] =
+    useState(false);
+  const [refusalComments, setRefusalComments] = useState<
+    Record<string, string>
+  >({});
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [newLessonType, setNewLessonType] =
     useState<PricingLessonType>('individual');
@@ -117,30 +166,63 @@ export default function CoachPlanningScreen() {
   );
 
   const loadPlanning = useCallback(async () => {
-    if (!user) return;
-
-    setIsRefreshing(true);
-    const [slotsResult, bookingsResult, studentsResult] = await Promise.all([
-      getCoachAvailabilitySlotsInRange(user.id, window.startsAt, window.endsAt),
-      getCoachBookingsInRange(user.id, window.startsAt, window.endsAt),
-      getAssociatedStudents(user.id),
-    ]);
-
-    if (!slotsResult.ok || !bookingsResult.ok) {
-      setLoadState('error');
+    const requestVersion = beginPlanningRequest(planningRequestVersion);
+    if (!user) {
       setIsRefreshing(false);
       return;
     }
 
-    setSlots(slotsResult.data);
-    setBookings(bookingsResult.data);
-    if (studentsResult.ok) setStudents(studentsResult.data);
-    setLoadState('ready');
-    setIsRefreshing(false);
+    setIsRefreshing(true);
+    try {
+      const [slotsResult, bookingsResult, studentsResult, pricingResult] =
+        await Promise.all([
+          getCoachAvailabilitySlotsInRange(
+            user.id,
+            window.startsAt,
+            window.endsAt
+          ),
+          getCoachBookingsInRange(user.id, window.startsAt, window.endsAt),
+          getAssociatedStudents(user.id),
+          getCoachPricingRates(user.id),
+        ]);
+
+      if (!isLatestPlanningRequest(planningRequestVersion, requestVersion)) {
+        return;
+      }
+
+      if (
+        !slotsResult.ok ||
+        !bookingsResult.ok ||
+        !studentsResult.ok ||
+        !pricingResult.ok
+      ) {
+        setLoadState('error');
+        return;
+      }
+
+      setSlots(slotsResult.data);
+      setBookings(bookingsResult.data);
+      setStudents(studentsResult.data);
+      setPricingRates(pricingResult.data);
+      setLoadState('ready');
+    } catch {
+      if (!isLatestPlanningRequest(planningRequestVersion, requestVersion)) {
+        return;
+      }
+      setLoadState('error');
+    } finally {
+      if (isLatestPlanningRequest(planningRequestVersion, requestVersion)) {
+        setIsRefreshing(false);
+      }
+    }
   }, [user, window.endsAt, window.startsAt]);
 
   useEffect(() => {
-    void Promise.resolve().then(loadPlanning);
+    void Promise.resolve().then(loadPlanning).catch(() => undefined);
+
+    return () => {
+      invalidatePlanningRequest(planningRequestVersion);
+    };
   }, [loadPlanning]);
 
   const formatDay = (value: string) =>
@@ -148,12 +230,14 @@ export default function CoachPlanningScreen() {
       weekday: 'long',
       day: '2-digit',
       month: 'short',
-    }).format(new Date(`${value}T00:00:00Z`));
+      timeZone: schedulingTimeZone,
+    }).format(getSchedulingDateLabelInstant(value) ?? new Date(value));
 
   const formatTime = (value: string) =>
     new Intl.DateTimeFormat(locale, {
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: schedulingTimeZone,
     }).format(new Date(value));
 
   const formatRange = () =>
@@ -167,7 +251,29 @@ export default function CoachPlanningScreen() {
   const move = (direction: -1 | 1) =>
     setAnchorDate((current) => movePlanningAnchor(current, mode, direction));
 
-  const feedbackCopy: Partial<Record<typeof feedback, [TranslationKey, TranslationKey]>> = {
+  const bookingPricingOptions = useMemo(
+    () =>
+      getCoachBookingPricingOptions(
+        pricingRates,
+        {
+          durationMinutes: Number(newDuration) as PricingDuration,
+          lessonType: newLessonType,
+        },
+        selectedStudentIds[0]
+      ),
+    [newDuration, newLessonType, pricingRates, selectedStudentIds]
+  );
+  const selectedCreateLessonType = bookingPricingOptions.selection.lessonType;
+  const createParticipantLimit =
+    bookingParticipantLimits[selectedCreateLessonType].max;
+  const hasValidCreateParticipants = isBookingParticipantCountValid(
+    selectedCreateLessonType,
+    selectedStudentIds.length
+  );
+
+  const feedbackCopy: Partial<
+    Record<typeof feedback, [TranslationKey, TranslationKey]>
+  > = {
     approved: ['booking.approveSuccessTitle', 'booking.approveSuccessBody'],
     refused: ['booking.refuseSuccessTitle', 'booking.refuseSuccessBody'],
     created: ['booking.createSuccessTitle', 'booking.createSuccessBody'],
@@ -177,6 +283,7 @@ export default function CoachPlanningScreen() {
     slot_unavailable: ['booking.errorTitle', 'booking.slotUnavailable'],
     already_processed: ['booking.errorTitle', 'booking.alreadyProcessed'],
     invalid_participants: ['booking.errorTitle', 'booking.invalidParticipants'],
+    invalid_input: ['booking.errorTitle', 'booking.invalidInput'],
     pricing_rate_missing: ['booking.errorTitle', 'booking.pricingMissing'],
     past_booking: ['booking.errorTitle', 'booking.pastBooking'],
     not_found: ['booking.errorTitle', 'booking.unknownError'],
@@ -188,11 +295,17 @@ export default function CoachPlanningScreen() {
 
   const getBookingStatusStyle = (status: Booking['status'] | undefined) => {
     if (status === 'pending') {
-      return { backgroundColor: theme.warningSurface, borderColor: theme.warning };
+      return {
+        backgroundColor: theme.warningSurface,
+        borderColor: theme.warning,
+      };
     }
 
     if (status === 'confirmed' || status === 'modified') {
-      return { backgroundColor: theme.successSurface, borderColor: theme.success };
+      return {
+        backgroundColor: theme.successSurface,
+        borderColor: theme.success,
+      };
     }
 
     if (status === 'refused') {
@@ -213,7 +326,8 @@ export default function CoachPlanningScreen() {
 
   const getHighlightedSlotBooking = (slotBookings: Booking[]) =>
     slotBookings.find(
-      (booking) => booking.status === 'confirmed' || booking.status === 'modified'
+      (booking) =>
+        booking.status === 'confirmed' || booking.status === 'modified'
     ) ??
     slotBookings.find((booking) => booking.status === 'pending') ??
     slotBookings.find((booking) => booking.status === 'refused');
@@ -224,7 +338,9 @@ export default function CoachPlanningScreen() {
 
   const toggleSelectedStudent = (studentId: string) => {
     setSelectedStudentIds((current) => {
-      if (newLessonType === 'individual') return [studentId];
+      if (selectedCreateLessonType === 'individual') {
+        return [studentId];
+      }
 
       return current.includes(studentId)
         ? current.filter((id) => id !== studentId)
@@ -233,69 +349,118 @@ export default function CoachPlanningScreen() {
   };
 
   const runBookingMutation = async (
-    action: () => Promise<{ ok: true } | { ok: false; error: BookingMutationError }>,
-    success: typeof feedback
+    action: () => Promise<
+      { ok: true } | { ok: false; error: BookingMutationError }
+    >,
+    success: typeof feedback,
+    surface: typeof feedbackSurface = 'planning'
   ) => {
+    if (!acquireBookingMutationLock(bookingMutationLock)) return;
+
+    setIsBookingMutationPending(true);
+    setFeedbackSurface(surface);
     setFeedback('none');
-    const result = await action();
+    try {
+      const result = await action();
 
-    if (!result.ok) {
-      setFeedback(result.error);
-      return;
+      if (!result.ok) {
+        setFeedback(result.error);
+        return;
+      }
+
+      setFeedback(success);
+      await loadPlanning();
+    } catch {
+      setFeedback('invalid_input');
+    } finally {
+      releaseBookingMutationLock(bookingMutationLock);
+      setIsBookingMutationPending(false);
     }
-
-    setFeedback(success);
-    await loadPlanning();
   };
 
   const createDirectBooking = async () => {
-    await runBookingMutation(
-      async () => {
-        const result = await createCoachBooking({
-          studentIds: selectedStudentIds,
-          startsAt: localDateTimeToIso(newDate, newTime),
-          durationMinutes: Number(newDuration) as 60 | 90,
-          location: 'Les Bruyères Centre Sportif',
-          lessonType: newLessonType,
-          recurrenceEndsOn: newRecurrenceEndsOn.trim() || null,
-        });
+    await runBookingMutation(async () => {
+      const result = await createCoachBooking({
+        studentIds: selectedStudentIds,
+        startsAt: localDateTimeToIso(newDate, newTime),
+        durationMinutes: bookingPricingOptions.selection.durationMinutes,
+        location: 'Les Bruyères Centre Sportif',
+        lessonType: bookingPricingOptions.selection.lessonType,
+        recurrenceEndsOn: newRecurrenceEndsOn.trim() || null,
+      });
 
-        return result.ok ? { ok: true } : result;
-      },
-      'created'
-    );
+      return result.ok ? { ok: true } : result;
+    }, 'created', 'creation');
   };
+
+  const startAnotherBooking = () => {
+    setFeedback('none');
+    setSelectedStudentIds([]);
+    setNewRecurrenceEndsOn('');
+  };
+
+  const creationSucceeded =
+    feedbackSurface === 'creation' && feedback === 'created';
 
   const startEditingBooking = (booking: Booking) => {
     const startsAt = new Date(booking.startsAt);
     setEditingBookingId(booking.id);
-    setEditDate(formatLocalDate(startsAt));
-    setEditTime(
-      `${String(startsAt.getHours()).padStart(2, '0')}:${String(
-        startsAt.getMinutes()
-      ).padStart(2, '0')}`
-    );
+    setEditDate(getSchedulingDateKey(startsAt));
+    setEditTime(getSchedulingTime(startsAt));
     setEditDuration(String(booking.durationMinutes) as '60' | '90');
   };
 
-  const slotsByDay = useMemo(() => {
-    const grouped = new Map<string, AvailabilitySlot[]>();
+  const planningItems = useMemo<CoachPlanningItem[]>(
+    () => [
+      ...slots
+        .filter((slot) => isCoachPlanningSlotVisible(slot.status))
+        .map((slot) => ({
+          kind: 'availability' as const,
+          id: `availability-${slot.id}`,
+          startsAt: slot.startsAt,
+          endsAt: slot.endsAt,
+          slot,
+        })),
+      ...bookings
+        .filter(
+          (booking) =>
+            !booking.availabilitySlotId &&
+            (booking.status === 'confirmed' || booking.status === 'modified')
+        )
+        .map((booking) => ({
+          kind: 'booking' as const,
+          id: `booking-${booking.id}`,
+          startsAt: booking.startsAt,
+          endsAt: booking.endsAt,
+          booking,
+        })),
+    ],
+    [bookings, slots]
+  );
 
-    for (const slot of slots) {
-      const key = getSlotDateKey(slot.startsAt);
+  const planningItemsByDay = useMemo(() => {
+    const grouped = new Map<string, CoachPlanningItem[]>();
+
+    for (const item of planningItems) {
+      const key = getSlotDateKey(item.startsAt);
       const current = grouped.get(key) ?? [];
-      current.push(slot);
+      current.push(item);
       grouped.set(key, current);
     }
 
     return grouped;
-  }, [slots]);
+  }, [planningItems]);
 
   const bookingsBySlotId = useMemo(() => {
     const grouped = new Map<string, Booking[]>();
 
     for (const booking of bookings) {
-      if (!booking.availabilitySlotId) continue;
+      if (
+        !booking.availabilitySlotId ||
+        !isCoachPlanningBookingVisible(booking.status)
+      ) {
+        continue;
+      }
 
       const current = grouped.get(booking.availabilitySlotId) ?? [];
       current.push(booking);
@@ -306,13 +471,18 @@ export default function CoachPlanningScreen() {
   }, [bookings]);
 
   const linkedBooking = linkedBookingId
-    ? bookings.find((booking) => booking.id === linkedBookingId) ?? null
+    ? (bookings.find((booking) => booking.id === linkedBookingId) ?? null)
     : null;
 
   const getSlotBookingStyle = (slotId: string) =>
     getBookingStatusStyle(
       getHighlightedSlotBooking(bookingsBySlotId.get(slotId) ?? [])?.status
     );
+
+  const getPlanningItemStyle = (item: CoachPlanningItem) =>
+    item.kind === 'availability'
+      ? getSlotBookingStyle(item.slot.id)
+      : getBookingStatusStyle(item.booking.status);
 
   const renderSlotContent = (slot: AvailabilitySlot) => (
     <>
@@ -369,6 +539,36 @@ export default function CoachPlanningScreen() {
       ))}
     </>
   );
+
+  const renderDirectBookingContent = (booking: Booking, agenda = false) => (
+    <>
+      <ThemedText numberOfLines={agenda ? 1 : undefined} type="smallBold">
+        {t('planning.slotTime', {
+          start: formatTime(booking.startsAt),
+          end: formatTime(booking.endsAt),
+        })}
+      </ThemedText>
+      <ThemedText
+        numberOfLines={agenda ? 1 : undefined}
+        type="small"
+        themeColor="textMuted">
+        {studentName(booking.studentId)}
+      </ThemedText>
+      <ThemedText
+        numberOfLines={agenda ? 1 : undefined}
+        type="smallBold"
+        themeColor={bookingStatusThemeColor(booking.status)}>
+        {t(bookingStatusKey(booking.status))}
+      </ThemedText>
+    </>
+  );
+
+  const renderPlanningItem = (item: CoachPlanningItem, agenda = false) =>
+    item.kind === 'availability'
+      ? agenda
+        ? renderAgendaSlotContent(item.slot)
+        : renderSlotContent(item.slot)
+      : renderDirectBookingContent(item.booking, agenda);
 
   if (loadState === 'loading') {
     return (
@@ -452,43 +652,107 @@ export default function CoachPlanningScreen() {
             />
           ) : null}
 
-          {feedback !== 'none' && feedbackCopy[feedback] ? (
+          {feedbackSurface === 'planning' &&
+          feedback !== 'none' &&
+          feedbackCopy[feedback] ? (
             <Feedback
               title={t(feedbackCopy[feedback][0])}
               message={t(feedbackCopy[feedback][1])}
               tone={
-                ['approved', 'refused', 'created', 'cancelled', 'modified'].includes(
-                  feedback
-                )
+                [
+                  'approved',
+                  'refused',
+                  'created',
+                  'cancelled',
+                  'modified',
+                ].includes(feedback)
                   ? 'success'
                   : 'error'
               }
             />
           ) : null}
 
+          {displayMode === 'agenda' ? (
+            <AgendaGrid
+              days={window.days}
+              formatDay={formatDay}
+              getSlotStyle={getPlanningItemStyle}
+              renderSlot={(item) => renderPlanningItem(item, true)}
+              slots={planningItems}
+            />
+          ) : (
+            <View style={styles.days}>
+              {window.days.map((day) => {
+                const dayItems = planningItemsByDay.get(day.date) ?? [];
+
+                return (
+                  <View key={day.date} style={styles.daySection}>
+                    <ThemedText type="smallBold">
+                      {formatDay(day.date)}
+                    </ThemedText>
+                    {dayItems.length === 0 ? (
+                      <Feedback
+                        message={t('planning.emptyDayBody')}
+                        title={t('planning.emptyDayTitle')}
+                        tone="info"
+                      />
+                    ) : (
+                      <View style={styles.slotGrid}>
+                        {dayItems.map((item) => (
+                          <Card
+                            key={item.id}
+                            style={[
+                              styles.slotCard,
+                              getPlanningItemStyle(item),
+                            ]}>
+                            {renderPlanningItem(item)}
+                          </Card>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
+            </View>
+          )}
+
           <Card elevated style={styles.formCard}>
-            <ThemedText type="subtitle">{t('booking.coachCreateTitle')}</ThemedText>
+            <ThemedText type="subtitle">
+              {t('booking.coachCreateTitle')}
+            </ThemedText>
+            {!bookingPricingOptions.hasMatchingRate ? (
+              <Feedback
+                message={t('booking.createPricingRequiredBody')}
+                title={t('booking.createPricingRequiredTitle')}
+                tone="warning"
+              />
+            ) : null}
             <ProfileOptionSelector<PricingLessonType>
               label={t('booking.lessonTypeLabel')}
               onChange={(value) => {
                 setNewLessonType(value);
                 setSelectedStudentIds([]);
               }}
-              options={[
-                { value: 'individual', label: t('pricing.type.individual') },
-                { value: 'group', label: t('pricing.type.group') },
-              ]}
-              value={newLessonType}
+              options={bookingPricingOptions.lessonTypes.map((value) => ({
+                value,
+                label: t(`pricing.type.${value}` as TranslationKey),
+              }))}
+              value={bookingPricingOptions.selection.lessonType}
             />
             <View style={styles.studentPicker}>
               <ThemedText type="smallBold">
-                {newLessonType === 'individual'
+                {selectedCreateLessonType === 'individual'
                   ? t('booking.studentLabel')
                   : t('booking.participantsLabel')}
               </ThemedText>
               <View style={styles.segmented}>
                 {students.map((student) => (
                   <Button
+                    disabled={
+                      selectedCreateLessonType !== 'individual' &&
+                      selectedStudentIds.length >= createParticipantLimit &&
+                      !selectedStudentIds.includes(student.userId)
+                    }
                     key={student.userId}
                     label={student.fullName}
                     onPress={() => toggleSelectedStudent(student.userId)}
@@ -517,11 +781,14 @@ export default function CoachPlanningScreen() {
               <ProfileOptionSelector<'60' | '90'>
                 label={t('availability.durationLabel')}
                 onChange={setNewDuration}
-                options={[
-                  { value: '60', label: t('availability.duration.60') },
-                  { value: '90', label: t('availability.duration.90') },
-                ]}
-                value={newDuration}
+                options={bookingPricingOptions.durationMinutes.map((value) => ({
+                  value: String(value) as '60' | '90',
+                  label: t(`availability.duration.${value}` as TranslationKey),
+                }))}
+                value={
+                  String(bookingPricingOptions.selection.durationMinutes) as
+                    '60' | '90'
+                }
               />
             </View>
             <TextField
@@ -531,53 +798,69 @@ export default function CoachPlanningScreen() {
               value={newRecurrenceEndsOn}
             />
             <Button
-              disabled={selectedStudentIds.length === 0}
-              label={t('booking.createAction')}
+              disabled={
+                creationSucceeded ||
+                !hasValidCreateParticipants ||
+                !bookingPricingOptions.hasMatchingRate ||
+                isBookingMutationPending
+              }
+              label={
+                creationSucceeded
+                  ? t('booking.createSuccessButton')
+                  : isBookingMutationPending && feedbackSurface === 'creation'
+                    ? t('booking.creating')
+                    : t('booking.createAction')
+              }
               onPress={() => void createDirectBooking()}
             />
+            {feedbackSurface === 'creation' &&
+            feedback !== 'none' &&
+            feedback !== 'created' &&
+            feedbackCopy[feedback] ? (
+              <Feedback
+                message={t(feedbackCopy[feedback][1])}
+                title={t(feedbackCopy[feedback][0])}
+                tone="error"
+              />
+            ) : null}
           </Card>
 
-          {displayMode === 'agenda' ? (
-            <AgendaGrid
-              days={window.days}
-              formatDay={formatDay}
-              getSlotStyle={(slot) => getSlotBookingStyle(slot.id)}
-              renderSlot={renderAgendaSlotContent}
-              slots={slots}
-            />
-          ) : (
-            <View style={styles.days}>
-              {window.days.map((day) => {
-                const daySlots = slotsByDay.get(day.date) ?? [];
-
-                return (
-                  <View key={day.date} style={styles.daySection}>
-                    <ThemedText type="smallBold">{formatDay(day.date)}</ThemedText>
-                    {daySlots.length === 0 ? (
-                      <Feedback
-                        message={t('planning.emptyDayBody')}
-                        title={t('planning.emptyDayTitle')}
-                        tone="info"
-                      />
-                    ) : (
-                      <View style={styles.slotGrid}>
-                        {daySlots.map((slot) => (
-                          <Card
-                            key={slot.id}
-                            style={[styles.slotCard, getSlotBookingStyle(slot.id)]}>
-                            {renderSlotContent(slot)}
-                          </Card>
-                        ))}
-                      </View>
-                    )}
-                  </View>
-                );
-              })}
+          {creationSucceeded ? (
+            <View
+              accessibilityLiveRegion="assertive"
+              accessibilityRole="alert"
+              style={[
+                styles.creationSuccess,
+                {
+                  backgroundColor: theme.successSurface,
+                  borderColor: theme.success,
+                },
+              ]}>
+              <ThemedText
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+                style={styles.creationSuccessIcon}
+                themeColor="success">
+                ✓
+              </ThemedText>
+              <ThemedText type="subtitle" themeColor="success">
+                {t('booking.createSuccessTitle')}
+              </ThemedText>
+              <ThemedText type="default">
+                {t('booking.createSuccessBody')}
+              </ThemedText>
+              <Button
+                label={t('booking.createAnotherAction')}
+                onPress={startAnotherBooking}
+                variant="secondary"
+              />
             </View>
-          )}
+          ) : null}
 
           <View style={styles.days}>
-            <ThemedText type="subtitle">{t('booking.coachListTitle')}</ThemedText>
+            <ThemedText type="subtitle">
+              {t('booking.coachListTitle')}
+            </ThemedText>
             {linkedBooking ? (
               <Feedback
                 message={t('messaging.linkedContextBody', {
@@ -662,7 +945,11 @@ export default function CoachPlanningScreen() {
                         <ThemedText type="small" themeColor="textMuted">
                           {t('booking.participantNames', {
                             names: booking.participants
-                              .map((participant) => participant.fullName ?? studentName(participant.studentId))
+                              .map(
+                                (participant) =>
+                                  participant.fullName ??
+                                  studentName(participant.studentId)
+                              )
                               .join(', '),
                           })}
                         </ThemedText>
@@ -671,6 +958,7 @@ export default function CoachPlanningScreen() {
                       {booking.status === 'pending' ? (
                         <View style={styles.bookingActions}>
                           <Button
+                            disabled={isBookingMutationPending}
                             label={t('booking.approveAction')}
                             onPress={() =>
                               void runBookingMutation(
@@ -691,6 +979,7 @@ export default function CoachPlanningScreen() {
                             value={refusalComment}
                           />
                           <Button
+                            disabled={isBookingMutationPending}
                             label={t('booking.refuseAction')}
                             onPress={() =>
                               void runBookingMutation(
@@ -703,7 +992,8 @@ export default function CoachPlanningScreen() {
                         </View>
                       ) : null}
 
-                      {booking.status === 'confirmed' || booking.status === 'modified' ? (
+                      {booking.status === 'confirmed' ||
+                      booking.status === 'modified' ? (
                         <View style={styles.bookingActions}>
                           {editingBookingId === booking.id ? (
                             <>
@@ -723,27 +1013,41 @@ export default function CoachPlanningScreen() {
                                 label={t('availability.durationLabel')}
                                 onChange={setEditDuration}
                                 options={[
-                                  { value: '60', label: t('availability.duration.60') },
-                                  { value: '90', label: t('availability.duration.90') },
+                                  {
+                                    value: '60',
+                                    label: t('availability.duration.60'),
+                                  },
+                                  {
+                                    value: '90',
+                                    label: t('availability.duration.90'),
+                                  },
                                 ]}
                                 value={editDuration}
                               />
                               <Button
+                                disabled={isBookingMutationPending}
                                 label={t('availability.updateAction')}
                                 onPress={() =>
                                   void runBookingMutation(
                                     () =>
                                       modifyBooking({
                                         bookingId: booking.id,
-                                        startsAt: localDateTimeToIso(editDate, editTime),
-                                        durationMinutes: Number(editDuration) as 60 | 90,
-                                        location: booking.location as 'Les Bruyères Centre Sportif',
+                                        startsAt: localDateTimeToIso(
+                                          editDate,
+                                          editTime
+                                        ),
+                                        durationMinutes: Number(
+                                          editDuration
+                                        ) as 60 | 90,
+                                        location:
+                                          booking.location as 'Les Bruyères Centre Sportif',
                                       }),
                                     'modified'
                                   )
                                 }
                               />
                               <Button
+                                disabled={isBookingMutationPending}
                                 label={t('availability.cancelAction')}
                                 onPress={() => setEditingBookingId(null)}
                                 variant="secondary"
@@ -752,11 +1056,13 @@ export default function CoachPlanningScreen() {
                           ) : (
                             <>
                               <Button
+                                disabled={isBookingMutationPending}
                                 label={t('booking.modifyAction')}
                                 onPress={() => startEditingBooking(booking)}
                                 variant="secondary"
                               />
                               <Button
+                                disabled={isBookingMutationPending}
                                 label={t('booking.cancelAction')}
                                 onPress={() =>
                                   void runBookingMutation(
@@ -821,6 +1127,18 @@ const styles = StyleSheet.create({
   },
   formCard: {
     gap: Spacing.three,
+  },
+  creationSuccess: {
+    alignItems: 'center',
+    borderRadius: Radii.medium,
+    borderWidth: 2,
+    gap: Spacing.three,
+    padding: Spacing.five,
+  },
+  creationSuccessIcon: {
+    fontSize: 48,
+    lineHeight: 52,
+    fontWeight: 700,
   },
   formGrid: {
     gap: Spacing.three,

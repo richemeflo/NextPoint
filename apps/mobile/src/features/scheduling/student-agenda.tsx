@@ -1,6 +1,12 @@
 import {
   bookingCancellationMessageMaxLength,
+  bookingParticipantLimits,
   canCancelBooking,
+  getSchedulingDateLabelInstant,
+  getSchedulingToday,
+  isBookingParticipantCountValid,
+  pricingLessonTypes,
+  schedulingTimeZone,
   studentCancelBookingSchema,
   type PricingLessonType,
 } from '@nextpoint/shared';
@@ -25,18 +31,27 @@ import { useAuth } from '@/features/auth/auth-context';
 import {
   cancelBooking,
   getRequestableBookingParticipants,
-  getStudentBookings,
+  getStudentBookingsInRange,
   requestBooking,
   type Booking,
   type BookingParticipant,
   type BookingMutationError,
 } from '@/features/bookings/booking-service';
 import {
+  acquireBookingMutationLock,
+  releaseBookingMutationLock,
+} from '@/features/bookings/booking-mutation-lock';
+import {
   getPublishedPricingRates,
   type PricingRate,
 } from '@/features/pricing/pricing-service';
 import { ProfileOptionSelector } from '@/features/profiles/profile-option-selector';
 import { AgendaGrid } from '@/features/scheduling/agenda-grid';
+import {
+  beginPlanningRequest,
+  invalidatePlanningRequest,
+  isLatestPlanningRequest,
+} from '@/features/scheduling/latest-planning-request';
 import {
   getStudentRequestableAvailabilitySlotsInRange,
   type AvailabilitySlot,
@@ -50,14 +65,7 @@ import {
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
 
-function formatLocalDate(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-const today = () => formatLocalDate(new Date());
+const today = () => getSchedulingToday();
 
 function formatPrice(booking: Booking, locale: string) {
   if (!booking.pricing) return null;
@@ -121,6 +129,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
     'loading'
   );
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const planningRequestVersion = useRef(0);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [lessonType, setLessonType] = useState<PricingLessonType>('individual');
   const [studentComment, setStudentComment] = useState('');
@@ -130,8 +139,10 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
   const [cancellationMessage, setCancellationMessage] = useState('');
   const [cancellationError, setCancellationError] =
     useState<BookingMutationError | null>(null);
-  const [isCancelling, setIsCancelling] = useState(false);
-  const isCancellationSubmittingRef = useRef(false);
+  const bookingMutationLock = useRef(false);
+  const [bookingMutationKind, setBookingMutationKind] = useState<
+    'request' | 'cancel' | null
+  >(null);
   const [selectedParticipantIds, setSelectedParticipantIds] = useState<string[]>(
     []
   );
@@ -141,6 +152,8 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
   const showRequestableSlots = surface === 'requestable';
   const showBookingSchedule = surface === 'bookings';
   const useRequestModal = showRequestableSlots;
+  const isRequestSubmitting = bookingMutationKind === 'request';
+  const isCancelling = bookingMutationKind === 'cancel';
 
   const window = useMemo(
     () => getPlanningWindow(anchorDate, mode),
@@ -148,40 +161,58 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
   );
 
   const loadAgenda = useCallback(async () => {
+    const requestVersion = beginPlanningRequest(planningRequestVersion);
     setIsRefreshing(true);
-    const [slotsResult, bookingsResult, participantsResult, pricingResult] =
-      await Promise.all([
-        showRequestableSlots
-          ? getStudentRequestableAvailabilitySlotsInRange(
-              window.startsAt,
-              window.endsAt
-            )
-          : Promise.resolve({ ok: true as const, data: [] }),
-        getStudentBookings(),
-        showRequestableSlots
-          ? getRequestableBookingParticipants()
-          : Promise.resolve({ ok: true as const, data: [] }),
-        showRequestableSlots
-          ? getPublishedPricingRates()
-          : Promise.resolve({ ok: true as const, data: [] }),
-      ]);
+    try {
+      const [slotsResult, bookingsResult, participantsResult, pricingResult] =
+        await Promise.all([
+          showRequestableSlots
+            ? getStudentRequestableAvailabilitySlotsInRange(
+                window.startsAt,
+                window.endsAt
+              )
+            : Promise.resolve({ ok: true as const, data: [] }),
+          getStudentBookingsInRange(window.startsAt, window.endsAt),
+          showRequestableSlots
+            ? getRequestableBookingParticipants()
+            : Promise.resolve({ ok: true as const, data: [] }),
+          showRequestableSlots
+            ? getPublishedPricingRates()
+            : Promise.resolve({ ok: true as const, data: [] }),
+        ]);
 
-    if (!slotsResult.ok || !bookingsResult.ok || !pricingResult.ok) {
+      if (!isLatestPlanningRequest(planningRequestVersion, requestVersion)) {
+        return;
+      }
+
+      if (!slotsResult.ok || !bookingsResult.ok || !pricingResult.ok) {
+        setLoadState('error');
+        return;
+      }
+
+      setSlots(slotsResult.data);
+      setBookings(bookingsResult.data);
+      if (participantsResult.ok) setParticipants(participantsResult.data);
+      setPricingRates(pricingResult.data);
+      setLoadState('ready');
+    } catch {
+      if (!isLatestPlanningRequest(planningRequestVersion, requestVersion)) {
+        return;
+      }
       setLoadState('error');
-      setIsRefreshing(false);
-      return;
+    } finally {
+      if (isLatestPlanningRequest(planningRequestVersion, requestVersion)) {
+        setIsRefreshing(false);
+      }
     }
-
-    setSlots(slotsResult.data);
-    setBookings(bookingsResult.data);
-    if (participantsResult.ok) setParticipants(participantsResult.data);
-    setPricingRates(pricingResult.data);
-    setLoadState('ready');
-    setIsRefreshing(false);
   }, [showRequestableSlots, window.endsAt, window.startsAt]);
 
   useEffect(() => {
-    void Promise.resolve().then(loadAgenda);
+    void Promise.resolve().then(loadAgenda).catch(() => undefined);
+
+    return () => {
+      invalidatePlanningRequest(planningRequestVersion);
+    };
   }, [loadAgenda]);
 
   const formatDay = (value: string) =>
@@ -189,12 +220,14 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
       weekday: 'long',
       day: '2-digit',
       month: 'short',
-    }).format(new Date(`${value}T00:00:00Z`));
+      timeZone: schedulingTimeZone,
+    }).format(getSchedulingDateLabelInstant(value) ?? new Date(value));
 
   const formatTime = (value: string) =>
     new Intl.DateTimeFormat(locale, {
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: schedulingTimeZone,
     }).format(new Date(value));
 
   const move = (direction: -1 | 1) =>
@@ -329,9 +362,9 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
         ? t('booking.cancellationMessageTooLong')
         : undefined;
   const selectedSlotLessonTypes = useMemo(() => {
-    if (!selectedSlot) return ['individual', 'group'] as PricingLessonType[];
+    if (!selectedSlot) return [...pricingLessonTypes];
 
-    return (['individual', 'group'] as PricingLessonType[]).filter((type) =>
+    return pricingLessonTypes.filter((type) =>
       pricingRates.some(
         (rate) =>
           rate.isActive &&
@@ -343,6 +376,15 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
   const selectedLessonType = selectedSlotLessonTypes.includes(lessonType)
     ? lessonType
     : (selectedSlotLessonTypes[0] ?? 'individual');
+  const selectedAdditionalParticipantIds = selectedParticipantIds.filter(
+    (id) => id !== user?.id
+  );
+  const hasValidParticipantSelection = isBookingParticipantCountValid(
+    selectedLessonType,
+    selectedAdditionalParticipantIds.length + 1
+  );
+  const additionalParticipantLimit =
+    bookingParticipantLimits[selectedLessonType].max - 1;
 
   const feedbackCopy: Partial<
     Record<typeof feedback, [TranslationKey, TranslationKey]>
@@ -369,38 +411,48 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
   };
 
   const submitRequest = async (slot: AvailabilitySlot) => {
-    if (homeBookedSlotIds.has(slot.id)) {
-      setFeedback('already_processed');
+    if (!acquireBookingMutationLock(bookingMutationLock)) return;
+
+    setBookingMutationKind('request');
+    try {
+      if (homeBookedSlotIds.has(slot.id)) {
+        setFeedback('already_processed');
+        setSelectedSlotId(null);
+        return;
+      }
+
+      if (!selectedSlotLessonTypes.includes(selectedLessonType)) {
+        setFeedback('pricing_rate_missing');
+        return;
+      }
+
+      setFeedback('none');
+      const result = await requestBooking({
+        slotId: slot.id,
+        lessonType: selectedLessonType,
+        studentComment,
+        participantIds:
+          selectedLessonType !== 'individual'
+            ? selectedAdditionalParticipantIds
+            : [],
+      });
+
+      if (!result.ok) {
+        setFeedback(result.error);
+        return;
+      }
+
       setSelectedSlotId(null);
-      return;
+      setStudentComment('');
+      setSelectedParticipantIds([]);
+      setFeedback('requested');
+      await loadAgenda();
+    } catch {
+      setFeedback('unknown');
+    } finally {
+      releaseBookingMutationLock(bookingMutationLock);
+      setBookingMutationKind(null);
     }
-
-    if (!selectedSlotLessonTypes.includes(selectedLessonType)) {
-      setFeedback('pricing_rate_missing');
-      return;
-    }
-
-    setFeedback('none');
-    const result = await requestBooking({
-      slotId: slot.id,
-      lessonType: selectedLessonType,
-      studentComment,
-      participantIds:
-        selectedLessonType === 'group'
-          ? selectedParticipantIds.filter((id) => id !== user?.id)
-          : [],
-    });
-
-    if (!result.ok) {
-      setFeedback(result.error);
-      return;
-    }
-
-    setSelectedSlotId(null);
-    setStudentComment('');
-    setSelectedParticipantIds([]);
-    setFeedback('requested');
-    await loadAgenda();
   };
 
   const toggleParticipant = (studentId: string) => {
@@ -429,7 +481,10 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
   };
 
   const cancelStudentBooking = async () => {
-    if (!selectedCancellationBooking || isCancellationSubmittingRef.current) {
+    if (
+      !selectedCancellationBooking ||
+      !acquireBookingMutationLock(bookingMutationLock)
+    ) {
       return;
     }
 
@@ -437,12 +492,14 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
       bookingId: selectedCancellationBooking.id,
       cancellationMessage,
     });
-    if (!parsedInput.success) return;
+    if (!parsedInput.success) {
+      releaseBookingMutationLock(bookingMutationLock);
+      return;
+    }
 
     setFeedback('none');
     setCancellationError(null);
-    isCancellationSubmittingRef.current = true;
-    setIsCancelling(true);
+    setBookingMutationKind('cancel');
     try {
       const result = await cancelBooking(
         parsedInput.data.bookingId,
@@ -466,8 +523,8 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
     } catch {
       setCancellationError('unknown');
     } finally {
-      isCancellationSubmittingRef.current = false;
-      setIsCancelling(false);
+      releaseBookingMutationLock(bookingMutationLock);
+      setBookingMutationKind(null);
     }
   };
 
@@ -520,7 +577,10 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
       <View style={styles.requestPanel}>
         <ProfileOptionSelector<PricingLessonType>
           label={t('booking.lessonTypeLabel')}
-          onChange={setLessonType}
+          onChange={(value) => {
+            setLessonType(value);
+            setSelectedParticipantIds([]);
+          }}
           options={selectedSlotLessonTypes.map((type) => ({
             value: type,
             label: t(`pricing.type.${type}` as TranslationKey),
@@ -534,7 +594,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
             tone="error"
           />
         ) : null}
-        {selectedLessonType === 'group' ? (
+        {selectedLessonType !== 'individual' ? (
           <View style={styles.participantList}>
             <ThemedText type="smallBold">
               {t('booking.participantsLabel')}
@@ -554,9 +614,23 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
                     ? 'primary'
                     : 'secondary'
                 }
-                disabled={participant.studentId === user?.id}
+                disabled={
+                  participant.studentId === user?.id ||
+                  isRequestSubmitting ||
+                  (!selectedAdditionalParticipantIds.includes(
+                    participant.studentId
+                  ) &&
+                    selectedAdditionalParticipantIds.length >=
+                      additionalParticipantLimit)
+                }
               />
             ))}
+            {selectedLessonType === 'duo' &&
+            !hasValidParticipantSelection ? (
+              <ThemedText type="small" themeColor="error">
+                {t('booking.duoParticipantRequired')}
+              </ThemedText>
+            ) : null}
           </View>
         ) : null}
         <TextField
@@ -569,9 +643,14 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
           <Button
             label={t('booking.requestAction')}
             onPress={() => void submitRequest(slot)}
-            disabled={selectedSlotLessonTypes.length === 0}
+            disabled={
+              selectedSlotLessonTypes.length === 0 ||
+              !hasValidParticipantSelection ||
+              bookingMutationKind !== null
+            }
           />
           <Button
+            disabled={bookingMutationKind !== null}
             label={t('availability.cancelAction')}
             onPress={() => setSelectedSlotId(null)}
             variant="secondary"
@@ -584,12 +663,15 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
     useRequestModal && selectedSlot ? (
       <Modal
         animationType="fade"
-        onRequestClose={() => setSelectedSlotId(null)}
+        onRequestClose={() => {
+          if (!isRequestSubmitting) setSelectedSlotId(null);
+        }}
         transparent
         visible>
         <View style={styles.modalRoot}>
           <Pressable
             accessibilityRole="button"
+            disabled={isRequestSubmitting}
             onPress={() => setSelectedSlotId(null)}
             style={styles.modalBackdrop}
           />
@@ -613,6 +695,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
               <Pressable
                 accessibilityLabel={t('availability.cancelAction')}
                 accessibilityRole="button"
+                disabled={isRequestSubmitting}
                 onPress={() => setSelectedSlotId(null)}
                 style={[
                   styles.modalClose,

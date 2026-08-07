@@ -33,7 +33,7 @@ export const dictionaries = {
       'Impossible de charger les informations du coach pour le moment.',
     'public.pricingTitle': 'Tarifs transparents',
     'public.pricingBody':
-      'Les tarifs individuels et collectifs configurés par le coach seront visibles avant toute demande.',
+      'Les tarifs individuels, duo et collectifs configurés par le coach seront visibles avant toute demande.',
     'public.noAvailabilityTitle': 'Inscription requise',
     'public.noAvailabilityBody':
       'Les disponibilités restent privées jusqu’à la création de votre compte.',
@@ -63,8 +63,7 @@ export const dictionaries = {
     'stats.estimatedRevenueHint':
       'Estimation calculée depuis les tarifs appliqués, sans paiement intégré.',
     'stats.emptyTitle': 'Aucune activité sur cette période',
-    'stats.emptyBody':
-      'Les cours confirmés et terminés apparaîtront ici.',
+    'stats.emptyBody': 'Les cours confirmés et terminés apparaîtront ici.',
     'stats.activeStudentsTitle': 'Élèves les plus actifs',
     'stats.activeStudentsEmpty':
       'Pas encore assez de cours pour afficher des élèves actifs.',
@@ -114,6 +113,10 @@ export const dictionaries = {
     'notifications.linkMissingBody':
       'L’événement lié n’est plus accessible ou n’existe plus.',
     'messaging.loading': 'Chargement des discussions...',
+    'messaging.loadingMessages': 'Chargement des messages...',
+    'messaging.loadingMore': 'Chargement...',
+    'messaging.loadMoreThreads': 'Charger plus de discussions',
+    'messaging.loadOlderMessages': 'Charger les messages précédents',
     'messaging.title': 'Messagerie',
     'messaging.subtitle':
       'Retrouvez les échanges rattachés à vos créneaux, demandes et réservations.',
@@ -207,12 +210,17 @@ export const dictionaries = {
     'profile.loadErrorTitle': 'Profil indisponible',
     'profile.loadErrorBody':
       'Impossible de charger votre profil pour le moment. Réessayez après avoir relancé l’application.',
-    'profile.validation.nameTooShort': 'Saisissez un nom d’au moins 2 caractères.',
-    'profile.validation.nameTooLong': 'Le nom ne peut pas dépasser 100 caractères.',
-    'profile.validation.invalidPhone': 'Saisissez un numéro de téléphone valide.',
+    'profile.validation.nameTooShort':
+      'Saisissez un nom d’au moins 2 caractères.',
+    'profile.validation.nameTooLong':
+      'Le nom ne peut pas dépasser 100 caractères.',
+    'profile.validation.invalidPhone':
+      'Saisissez un numéro de téléphone valide.',
     'profile.validation.invalidNumber': 'Saisissez un nombre valide.',
-    'profile.validation.invalidLevel': 'Choisissez un niveau compris entre 1 et 10.',
-    'profile.validation.invalidAge': 'Saisissez un âge compris entre 5 et 100 ans.',
+    'profile.validation.invalidLevel':
+      'Choisissez un niveau compris entre 1 et 10.',
+    'profile.validation.invalidAge':
+      'Saisissez un âge compris entre 5 et 100 ans.',
     'coachProfile.loading': 'Chargement de votre profil coach...',
     'coachProfile.title': 'Mon profil coach',
     'coachProfile.subtitle':
@@ -242,7 +250,7 @@ export const dictionaries = {
     'coachProfile.openAvailability': 'Gérer les disponibilités',
     'coachProfile.pricingTitle': 'Tarifs',
     'coachProfile.pricingBody':
-      'Configurez les tarifs individuels et collectifs présentés avant réservation.',
+      'Configurez les tarifs individuels, duo et collectifs présentés avant réservation.',
     'coachProfile.openPricing': 'Gérer les tarifs',
     'coachProfile.notificationsTitle': 'Notifications push',
     'coachProfile.notificationsBody':
@@ -261,8 +269,7 @@ export const dictionaries = {
     'studentAgenda.emptyDayTitle': 'Aucun créneau demandable',
     'studentAgenda.emptyDayBody':
       'Aucun créneau disponible n’est proposé sur cette journée.',
-    'studentAgenda.slotDetail':
-      '{{date}} · {{duration}} · {{location}}',
+    'studentAgenda.slotDetail': '{{date}} · {{duration}} · {{location}}',
     'studentAgenda.requestableStatus': 'Demandable',
     'pricing.loading': 'Chargement des tarifs...',
     'pricing.loadErrorTitle': 'Tarifs indisponibles',
@@ -276,7 +283,7 @@ export const dictionaries = {
       'Le coach n’a encore publié aucun tarif actif.',
     'pricing.manageTitle': 'Gestion des tarifs',
     'pricing.manageBody':
-      'Créez les tarifs individuels et collectifs proposés avant une demande.',
+      'Créez les tarifs individuels, duo et collectifs proposés avant une demande.',
     'pricing.createTitle': 'Nouveau tarif',
     'pricing.editTitle': 'Modifier le tarif',
     'pricing.catalogTitle': 'Catalogue coach',
@@ -286,6 +293,7 @@ export const dictionaries = {
     'pricing.amountPlaceholder': 'Ex. 45,00',
     'pricing.typeLabel': 'Type de cours',
     'pricing.type.individual': 'Individuel',
+    'pricing.type.duo': 'Duo',
     'pricing.type.group': 'Collectif',
     'pricing.durationLabel': 'Durée',
     'pricing.duration.60': '1 heure',
@@ -298,6 +306,16 @@ export const dictionaries = {
     'pricing.context.weekend': 'Week-end',
     'pricing.context.public_holiday': 'Jour férié',
     'pricing.studentsLabel': 'Élèves ciblés',
+    'pricing.studentSearchLabel': 'Recherche par nom',
+    'pricing.studentSearchPlaceholder': 'Nom de l’élève',
+    'pricing.studentSearchHint':
+      'Saisissez un nom pour trouver l’élève à cibler.',
+    'pricing.studentSearchEmpty':
+      'Aucun élève ne correspond à cette recherche.',
+    'pricing.selectedStudentsLabel': 'Élèves sélectionnés ({{count}})',
+    'pricing.selectStudentAction': 'Sélectionner',
+    'pricing.selectedStudentAction': 'Sélectionné',
+    'pricing.removeStudentAction': 'Retirer {{name}} de la sélection',
     'pricing.noStudentsBody':
       'Aucun élève associé n’est disponible pour un ciblage spécifique.',
     'pricing.createAction': 'Créer le tarif',
@@ -318,15 +336,14 @@ export const dictionaries = {
       'Le tarif n’a pas été modifié. Vérifiez les informations puis réessayez.',
     'pricing.emptyCoachTitle': 'Aucun tarif',
     'pricing.emptyCoachBody':
-      'Créez un premier tarif individuel ou collectif.',
+      'Créez un premier tarif individuel, duo ou collectif.',
     'pricing.validation.labelTooShort':
       'Le libellé doit contenir au moins 2 caractères.',
     'pricing.validation.labelTooLong':
       'Le libellé ne peut pas dépasser 100 caractères.',
     'pricing.validation.invalidAmount':
       'Saisissez un prix positif avec au maximum deux décimales.',
-    'pricing.validation.invalidStudent':
-      'Un élève ciblé n’est pas valide.',
+    'pricing.validation.invalidStudent': 'Un élève ciblé n’est pas valide.',
     'availability.loading': 'Chargement des disponibilités...',
     'availability.manageTitle': 'Gestion des disponibilités',
     'availability.manageBody':
@@ -398,8 +415,10 @@ export const dictionaries = {
       'Choisissez si l’action concerne uniquement cette occurrence ou toute la série récurrente.',
     'availability.scopeOccurrenceAction': 'Cette occurrence',
     'availability.scopeSeriesAction': 'Toute la série',
-    'availability.validation.invalidDate': 'Saisissez une date au format AAAA-MM-JJ.',
-    'availability.validation.invalidTime': 'Saisissez une heure au format HH:MM.',
+    'availability.validation.invalidDate':
+      'Saisissez une date au format AAAA-MM-JJ.',
+    'availability.validation.invalidTime':
+      'Saisissez une heure au format HH:MM.',
     'availability.validation.endBeforeStart':
       'L’heure de fin doit être après l’heure de début.',
     'availability.validation.rangeTooShort':
@@ -476,6 +495,7 @@ export const dictionaries = {
     'studentDetail.historyType.bookingModified': 'Modification',
     'studentDetail.historyType.lessonPackAssigned': 'Pack attribué',
     'studentDetail.historyType.lessonPackConsumed': 'Session de pack consommée',
+    'studentDetail.historyType.lessonPackAdjusted': 'Crédit de pack ajouté',
     'studentDetail.activationGenerateAction': 'Générer le lien d’activation',
     'studentDetail.activationRegenerateAction': 'Régénérer le lien',
     'studentDetail.activationGenerating': 'Génération...',
@@ -506,7 +526,8 @@ export const dictionaries = {
     'studentPrivateNote.cancelAction': 'Annuler',
     'studentPrivateNote.emptyBody':
       'Aucune note privée n’a encore été enregistrée.',
-    'studentPrivateNote.validationRequired': 'Saisissez une note avant d’enregistrer.',
+    'studentPrivateNote.validationRequired':
+      'Saisissez une note avant d’enregistrer.',
     'studentPrivateNote.validationTooLong':
       'La note ne peut pas dépasser 2000 caractères.',
     'studentPrivateNote.loadErrorTitle': 'Note indisponible',
@@ -553,18 +574,39 @@ export const dictionaries = {
     'lessonPack.consumeSuccessTitle': 'Session consommée',
     'lessonPack.consumeSuccessBody':
       'Les compteurs du pack sont à jour et l’historique élève a été alimenté.',
+    'lessonPack.decrementAccessibilityLabel': 'Retirer un cours restant',
+    'lessonPack.incrementAccessibilityLabel': 'Ajouter un cours restant',
+    'lessonPack.adjusting': 'Mise à jour du pack...',
+    'lessonPack.increaseSuccessTitle': 'Cours ajouté',
+    'lessonPack.increaseSuccessBody':
+      'Le pack dispose maintenant d’un cours restant supplémentaire.',
+    'lessonPack.decreaseSuccessTitle': 'Cours retiré',
+    'lessonPack.decreaseSuccessBody':
+      'Le total du pack a été corrigé sans modifier le nombre de cours utilisés.',
     'lessonPack.noRemainingTitle': 'Pack épuisé',
     'lessonPack.noRemainingBody':
       'Aucune session ne peut être consommée: ce pack n’a plus de cours restants.',
     'lessonPack.consumeErrorTitle': 'Consommation impossible',
     'lessonPack.consumeErrorBody':
       'Aucun cours restant n’a été modifié. Le pack est peut-être épuisé ou l’accès refusé.',
+    'lessonPack.maximumTitle': 'Maximum atteint',
+    'lessonPack.maximumBody':
+      'Un pack ne peut pas dépasser 100 cours inclus.',
+    'lessonPack.minimumTitle': 'Minimum atteint',
+    'lessonPack.minimumBody':
+      'Un pack doit conserver au moins un cours inclus.',
+    'lessonPack.adjustErrorTitle': 'Modification impossible',
+    'lessonPack.adjustErrorBody':
+      'Le compteur n’a pas été modifié. Rechargez la fiche puis réessayez.',
     'booking.openRequestAction': 'Demander',
     'booking.requestAction': 'Envoyer la demande',
     'booking.lessonTypeLabel': 'Type de cours',
     'booking.commentLabel': 'Commentaire',
-    'booking.commentPlaceholder': 'Précisez votre besoin ou vos disponibilités.',
+    'booking.commentPlaceholder':
+      'Précisez votre besoin ou vos disponibilités.',
     'booking.participantsLabel': 'Participants',
+    'booking.duoParticipantRequired':
+      'Sélectionnez exactement un partenaire pour former le duo.',
     'booking.requesterIncluded': 'Vous êtes inclus',
     'booking.unknownStudent': 'Élève',
     'booking.priceLabel': 'Tarif : {{price}}',
@@ -582,10 +624,16 @@ export const dictionaries = {
     'booking.coachEmptyBody':
       'Les demandes élèves et cours planifiés apparaîtront ici.',
     'booking.coachCreateTitle': 'Créer un cours',
+    'booking.createPricingRequiredTitle': 'Tarif requis',
+    'booking.createPricingRequiredBody':
+      'Ajoutez ou activez un tarif compatible avec cet élève, ce type de cours et cette durée.',
     'booking.studentLabel': 'Élève',
     'booking.recurrenceEndsOnLabel': 'Récurrence hebdomadaire jusqu’au',
     'booking.recurrenceEndsOnPlaceholder': 'AAAA-MM-JJ, optionnel',
     'booking.createAction': 'Créer le cours',
+    'booking.creating': 'Création du cours...',
+    'booking.createSuccessButton': 'Cours créé ✓',
+    'booking.createAnotherAction': 'Créer un autre cours',
     'booking.approveAction': 'Valider',
     'booking.refuseAction': 'Refuser',
     'booking.refusalCommentLabel': 'Commentaire de refus',
@@ -638,11 +686,12 @@ export const dictionaries = {
     'booking.studentPendingLimit':
       'Vous avez déjà 10 demandes en attente auprès du coach.',
     'booking.alreadyProcessed': 'Cette demande a déjà été traitée.',
-    'booking.pastBooking': 'Un cours passé ne peut plus être annulé par l’élève.',
+    'booking.pastBooking':
+      'Un cours passé ne peut plus être annulé par l’élève.',
     'booking.invalidParticipants':
       'La sélection de participants n’est pas autorisée.',
     'booking.invalidInput':
-      'Le message d’annulation est obligatoire et limité à 500 caractères.',
+      'Vérifiez le format et les valeurs des champs avant de réessayer.',
     'booking.pricingMissing':
       'Aucun tarif actif ne correspond au type et à la durée du cours.',
     'booking.unauthorized': 'Votre rôle ne permet pas cette action.',
@@ -688,8 +737,10 @@ export const dictionaries = {
       'Le compte n’a pas été activé. Vérifiez votre connexion puis réessayez.',
     'auth.validation.required': 'Ce champ est requis.',
     'auth.validation.invalidEmail': 'Saisissez une adresse email valide.',
-    'auth.validation.passwordTooShort': 'Le mot de passe doit contenir au moins 8 caractères.',
-    'auth.validation.passwordMismatch': 'Les mots de passe ne correspondent pas.',
+    'auth.validation.passwordTooShort':
+      'Le mot de passe doit contenir au moins 8 caractères.',
+    'auth.validation.passwordMismatch':
+      'Les mots de passe ne correspondent pas.',
     'auth.validation.invalid': 'Vérifiez la valeur saisie.',
     'auth.error.title': 'Impossible de continuer',
     'auth.error.configuration':
@@ -698,8 +749,10 @@ export const dictionaries = {
     'auth.error.emailInUse':
       'Un compte utilise déjà cette adresse email. Si votre coach l’a créé, utilisez son lien d’activation.',
     'auth.error.weakPassword': 'Choisissez un mot de passe plus robuste.',
-    'auth.error.emailNotConfirmed': 'Confirmez votre adresse email avant de vous connecter.',
-    'auth.error.rateLimited': 'Trop de tentatives. Réessayez dans quelques minutes.',
+    'auth.error.emailNotConfirmed':
+      'Confirmez votre adresse email avant de vous connecter.',
+    'auth.error.rateLimited':
+      'Trop de tentatives. Réessayez dans quelques minutes.',
     'auth.error.network': 'Vérifiez votre connexion internet puis réessayez.',
     'auth.error.generic': 'Une erreur est survenue. Réessayez plus tard.',
     'auth.sessionTitle': 'Session active',
@@ -707,7 +760,8 @@ export const dictionaries = {
     'auth.signOutAction': 'Se déconnecter',
     'auth.signingOut': 'Déconnexion...',
     'home.eyebrow': 'Socle mobile-first',
-    'home.title': 'Réserver, valider et suivre les cours de padel sans friction.',
+    'home.title':
+      'Réserver, valider et suivre les cours de padel sans friction.',
     'home.subtitle':
       'Une base UI premium, chaude et traduisible pour construire les parcours coach et élève.',
     'home.primaryAction': 'Demander un créneau',
@@ -730,7 +784,8 @@ export const dictionaries = {
     'foundation.tokensTitle': 'Tokens actifs',
     'foundation.themeTitle': 'Thème',
     'foundation.i18nTitle': 'Internationalisation',
-    'foundation.i18nBody': 'Français, anglais et espagnol sont disponibles via le même helper.',
+    'foundation.i18nBody':
+      'Français, anglais et espagnol sont disponibles via le même helper.',
     'foundation.primitiveTitle': 'Primitives UI',
     'foundation.primitiveBody':
       'Boutons, champs, cartes, statuts et feedback partagent les tokens du thème courant.',
@@ -783,7 +838,7 @@ export const dictionaries = {
       'The coach information cannot be loaded right now.',
     'public.pricingTitle': 'Transparent pricing',
     'public.pricingBody':
-      'Individual and group rates configured by the coach will be visible before any request.',
+      'Individual, duo and group rates configured by the coach will be visible before any request.',
     'public.noAvailabilityTitle': 'Registration required',
     'public.noAvailabilityBody':
       'Availability remains private until you create your account.',
@@ -862,6 +917,10 @@ export const dictionaries = {
     'notifications.linkMissingBody':
       'The linked event is no longer accessible or no longer exists.',
     'messaging.loading': 'Loading discussions...',
+    'messaging.loadingMessages': 'Loading messages...',
+    'messaging.loadingMore': 'Loading...',
+    'messaging.loadMoreThreads': 'Load more discussions',
+    'messaging.loadOlderMessages': 'Load earlier messages',
     'messaging.title': 'Messages',
     'messaging.subtitle':
       'Find conversations attached to your slots, requests, and bookings.',
@@ -874,8 +933,7 @@ export const dictionaries = {
     'messaging.unknownStudent': 'Student',
     'messaging.noMessages': 'No messages in this discussion.',
     'messaging.responseLabel': 'Your reply',
-    'messaging.responsePlaceholder':
-      'Reply about this slot or booking.',
+    'messaging.responsePlaceholder': 'Reply about this slot or booking.',
     'messaging.sendAction': 'Send',
     'messaging.sending': 'Sending...',
     'messaging.backAction': 'Back to discussions',
@@ -889,8 +947,7 @@ export const dictionaries = {
     'messaging.selectThreadBody':
       'Open a discussion to review its context and reply.',
     'messaging.loadErrorTitle': 'Messages unavailable',
-    'messaging.loadErrorBody':
-      'Your discussions cannot be loaded right now.',
+    'messaging.loadErrorBody': 'Your discussions cannot be loaded right now.',
     'messaging.saveErrorTitle': 'Action unavailable',
     'messaging.saveErrorBody':
       'The reply or read state was not saved. Try again.',
@@ -916,8 +973,7 @@ export const dictionaries = {
     'planning.nextAction': 'Next',
     'planning.weekRange': '{{start}} - {{end}}',
     'planning.loadErrorTitle': 'Schedule unavailable',
-    'planning.loadErrorBody':
-      'Unable to load your slots for this period.',
+    'planning.loadErrorBody': 'Unable to load your slots for this period.',
     'planning.emptyDayTitle': 'No slots',
     'planning.emptyDayBody': 'No availability visible on this day.',
     'planning.slotTime': '{{start}}-{{end}}',
@@ -954,7 +1010,8 @@ export const dictionaries = {
     'profile.loadErrorTitle': 'Profile unavailable',
     'profile.loadErrorBody':
       'Your profile cannot be loaded right now. Try again after restarting the application.',
-    'profile.validation.nameTooShort': 'Enter a name with at least 2 characters.',
+    'profile.validation.nameTooShort':
+      'Enter a name with at least 2 characters.',
     'profile.validation.nameTooLong': 'The name cannot exceed 100 characters.',
     'profile.validation.invalidPhone': 'Enter a valid phone number.',
     'profile.validation.invalidNumber': 'Enter a valid number.',
@@ -989,7 +1046,7 @@ export const dictionaries = {
     'coachProfile.openAvailability': 'Manage availability',
     'coachProfile.pricingTitle': 'Pricing',
     'coachProfile.pricingBody':
-      'Configure individual and group rates shown before booking.',
+      'Configure individual, duo and group rates shown before booking.',
     'coachProfile.openPricing': 'Manage pricing',
     'coachProfile.notificationsTitle': 'Push notifications',
     'coachProfile.notificationsBody':
@@ -1006,10 +1063,8 @@ export const dictionaries = {
     'studentAgenda.loadErrorBody':
       'Unable to load requestable slots right now.',
     'studentAgenda.emptyDayTitle': 'No requestable slots',
-    'studentAgenda.emptyDayBody':
-      'No available slot is offered on this day.',
-    'studentAgenda.slotDetail':
-      '{{date}} · {{duration}} · {{location}}',
+    'studentAgenda.emptyDayBody': 'No available slot is offered on this day.',
+    'studentAgenda.slotDetail': '{{date}} · {{duration}} · {{location}}',
     'studentAgenda.requestableStatus': 'Requestable',
     'pricing.loading': 'Loading pricing...',
     'pricing.loadErrorTitle': 'Pricing unavailable',
@@ -1023,7 +1078,7 @@ export const dictionaries = {
       'The coach has not published any active rate yet.',
     'pricing.manageTitle': 'Pricing management',
     'pricing.manageBody':
-      'Create the individual and group rates shown before a request.',
+      'Create the individual, duo and group rates shown before a request.',
     'pricing.createTitle': 'New rate',
     'pricing.editTitle': 'Edit rate',
     'pricing.catalogTitle': 'Coach catalog',
@@ -1033,6 +1088,7 @@ export const dictionaries = {
     'pricing.amountPlaceholder': 'E.g. 45.00',
     'pricing.typeLabel': 'Lesson type',
     'pricing.type.individual': 'Individual',
+    'pricing.type.duo': 'Duo',
     'pricing.type.group': 'Group',
     'pricing.durationLabel': 'Duration',
     'pricing.duration.60': '1 hour',
@@ -1045,6 +1101,15 @@ export const dictionaries = {
     'pricing.context.weekend': 'Weekend',
     'pricing.context.public_holiday': 'Public holiday',
     'pricing.studentsLabel': 'Targeted students',
+    'pricing.studentSearchLabel': 'Search by name',
+    'pricing.studentSearchPlaceholder': 'Student name',
+    'pricing.studentSearchHint':
+      'Enter a name to find the student you want to target.',
+    'pricing.studentSearchEmpty': 'No student matches this search.',
+    'pricing.selectedStudentsLabel': 'Selected students ({{count}})',
+    'pricing.selectStudentAction': 'Select',
+    'pricing.selectedStudentAction': 'Selected',
+    'pricing.removeStudentAction': 'Remove {{name}} from the selection',
     'pricing.noStudentsBody':
       'No associated student is available for specific targeting.',
     'pricing.createAction': 'Create rate',
@@ -1064,16 +1129,14 @@ export const dictionaries = {
     'pricing.saveErrorBody':
       'The rate was not changed. Check the information and try again.',
     'pricing.emptyCoachTitle': 'No pricing',
-    'pricing.emptyCoachBody':
-      'Create your first individual or group rate.',
+    'pricing.emptyCoachBody': 'Create your first individual, duo or group rate.',
     'pricing.validation.labelTooShort':
       'The label must contain at least 2 characters.',
     'pricing.validation.labelTooLong':
       'The label cannot exceed 100 characters.',
     'pricing.validation.invalidAmount':
       'Enter a positive price with no more than two decimals.',
-    'pricing.validation.invalidStudent':
-      'A targeted student is invalid.',
+    'pricing.validation.invalidStudent': 'A targeted student is invalid.',
     'availability.loading': 'Loading availability...',
     'availability.manageTitle': 'Availability management',
     'availability.manageBody':
@@ -1223,6 +1286,7 @@ export const dictionaries = {
     'studentDetail.historyType.bookingModified': 'Change',
     'studentDetail.historyType.lessonPackAssigned': 'Pack assigned',
     'studentDetail.historyType.lessonPackConsumed': 'Pack session used',
+    'studentDetail.historyType.lessonPackAdjusted': 'Pack credit added',
     'studentDetail.activationGenerateAction': 'Generate activation link',
     'studentDetail.activationRegenerateAction': 'Regenerate link',
     'studentDetail.activationGenerating': 'Generating...',
@@ -1233,15 +1297,13 @@ export const dictionaries = {
     'studentDetail.activationShareMessage':
       'Activate your NextPoint account with this 24-hour link: {{link}}',
     'studentDetail.activationCopiedTitle': 'Link copied',
-    'studentDetail.activationCopiedBody':
-      'You can now send it to the student.',
+    'studentDetail.activationCopiedBody': 'You can now send it to the student.',
     'studentDetail.activationErrorTitle': 'Link unavailable',
     'studentDetail.activationErrorBody':
       'The link could not be generated or shared. Check the account status and try again.',
     'studentPrivateNote.loading': 'Loading private note...',
     'studentPrivateNote.title': 'Private coach note',
-    'studentPrivateNote.privateHint':
-      'Visible only in your coach space.',
+    'studentPrivateNote.privateHint': 'Visible only in your coach space.',
     'studentPrivateNote.addAction': 'Add a note',
     'studentPrivateNote.editAction': 'Edit',
     'studentPrivateNote.fieldLabel': 'Private note',
@@ -1292,25 +1354,44 @@ export const dictionaries = {
     'lessonPack.saveErrorBody':
       'No pack was created. Check the student relationship and try again.',
     'lessonPack.loadErrorTitle': 'Packs unavailable',
-    'lessonPack.loadErrorBody':
-      'Lesson credits cannot be loaded right now.',
+    'lessonPack.loadErrorBody': 'Lesson credits cannot be loaded right now.',
     'lessonPack.consumeAction': 'Mark one session used',
     'lessonPack.consuming': 'Marking used...',
     'lessonPack.consumeSuccessTitle': 'Session used',
     'lessonPack.consumeSuccessBody':
       'Pack counters are up to date and the student history was updated.',
+    'lessonPack.decrementAccessibilityLabel': 'Remove one remaining lesson',
+    'lessonPack.incrementAccessibilityLabel': 'Add one remaining lesson',
+    'lessonPack.adjusting': 'Updating the pack...',
+    'lessonPack.increaseSuccessTitle': 'Lesson added',
+    'lessonPack.increaseSuccessBody':
+      'The pack now has one additional remaining lesson.',
+    'lessonPack.decreaseSuccessTitle': 'Lesson removed',
+    'lessonPack.decreaseSuccessBody':
+      'The pack total was corrected without changing the number of used lessons.',
     'lessonPack.noRemainingTitle': 'Pack exhausted',
     'lessonPack.noRemainingBody':
       'No session can be used: this pack has no remaining lessons.',
     'lessonPack.consumeErrorTitle': 'Unable to mark used',
     'lessonPack.consumeErrorBody':
       'No remaining lesson was changed. The pack may be exhausted or access denied.',
+    'lessonPack.maximumTitle': 'Maximum reached',
+    'lessonPack.maximumBody':
+      'A pack cannot contain more than 100 included lessons.',
+    'lessonPack.minimumTitle': 'Minimum reached',
+    'lessonPack.minimumBody':
+      'A pack must keep at least one included lesson.',
+    'lessonPack.adjustErrorTitle': 'Unable to update',
+    'lessonPack.adjustErrorBody':
+      'The counter was not changed. Reload the student record and try again.',
     'booking.openRequestAction': 'Request',
     'booking.requestAction': 'Send request',
     'booking.lessonTypeLabel': 'Lesson type',
     'booking.commentLabel': 'Comment',
     'booking.commentPlaceholder': 'Add your goal or scheduling context.',
     'booking.participantsLabel': 'Participants',
+    'booking.duoParticipantRequired':
+      'Select exactly one partner to form the duo.',
     'booking.requesterIncluded': 'You are included',
     'booking.unknownStudent': 'Student',
     'booking.priceLabel': 'Price: {{price}}',
@@ -1328,10 +1409,16 @@ export const dictionaries = {
     'booking.coachEmptyBody':
       'Student requests and planned lessons will appear here.',
     'booking.coachCreateTitle': 'Create a lesson',
+    'booking.createPricingRequiredTitle': 'Rate required',
+    'booking.createPricingRequiredBody':
+      'Add or activate a rate compatible with this student, lesson type and duration.',
     'booking.studentLabel': 'Student',
     'booking.recurrenceEndsOnLabel': 'Weekly recurrence until',
     'booking.recurrenceEndsOnPlaceholder': 'YYYY-MM-DD, optional',
     'booking.createAction': 'Create lesson',
+    'booking.creating': 'Creating lesson...',
+    'booking.createSuccessButton': 'Lesson created ✓',
+    'booking.createAnotherAction': 'Create another lesson',
     'booking.approveAction': 'Approve',
     'booking.refuseAction': 'Refuse',
     'booking.refusalCommentLabel': 'Refusal comment',
@@ -1377,15 +1464,18 @@ export const dictionaries = {
     'booking.modifySuccessBody':
       'The new date or duration is visible in schedules.',
     'booking.errorTitle': 'Action unavailable',
-    'booking.slotUnavailable': 'This slot is no longer available. Try another slot.',
-    'booking.pendingLimit': 'This slot already reached its pending request limit.',
+    'booking.slotUnavailable':
+      'This slot is no longer available. Try another slot.',
+    'booking.pendingLimit':
+      'This slot already reached its pending request limit.',
     'booking.studentPendingLimit':
       'You already have 10 pending requests with the coach.',
     'booking.alreadyProcessed': 'This request has already been processed.',
-    'booking.pastBooking': 'A past lesson can no longer be cancelled by the student.',
+    'booking.pastBooking':
+      'A past lesson can no longer be cancelled by the student.',
     'booking.invalidParticipants': 'The participant selection is not allowed.',
     'booking.invalidInput':
-      'The cancellation message is required and limited to 500 characters.',
+      'Check the field formats and values before trying again.',
     'booking.pricingMissing':
       'No active rate matches this lesson type and duration.',
     'booking.unauthorized': 'Your role cannot perform this action.',
@@ -1420,8 +1510,7 @@ export const dictionaries = {
     'activation.submitAction': 'Activate my account',
     'activation.activating': 'Activating...',
     'activation.successTitle': 'Account activated',
-    'activation.successBody':
-      'Your password is saved. You can now sign in.',
+    'activation.successBody': 'Your password is saved. You can now sign in.',
     'activation.signInAction': 'Sign in',
     'activation.invalidTitle': 'Invalid link',
     'activation.invalidBody':
@@ -1431,7 +1520,8 @@ export const dictionaries = {
       'The account was not activated. Check your connection and try again.',
     'auth.validation.required': 'This field is required.',
     'auth.validation.invalidEmail': 'Enter a valid email address.',
-    'auth.validation.passwordTooShort': 'The password must contain at least 8 characters.',
+    'auth.validation.passwordTooShort':
+      'The password must contain at least 8 characters.',
     'auth.validation.passwordMismatch': 'The passwords do not match.',
     'auth.validation.invalid': 'Check the entered value.',
     'auth.error.title': 'Unable to continue',
@@ -1441,7 +1531,8 @@ export const dictionaries = {
     'auth.error.emailInUse':
       'An account already uses this email address. If your coach created it, use the activation link.',
     'auth.error.weakPassword': 'Choose a stronger password.',
-    'auth.error.emailNotConfirmed': 'Confirm your email address before signing in.',
+    'auth.error.emailNotConfirmed':
+      'Confirm your email address before signing in.',
     'auth.error.rateLimited': 'Too many attempts. Try again in a few minutes.',
     'auth.error.network': 'Check your internet connection and try again.',
     'auth.error.generic': 'An error occurred. Try again later.',
@@ -1473,7 +1564,8 @@ export const dictionaries = {
     'foundation.tokensTitle': 'Active tokens',
     'foundation.themeTitle': 'Theme',
     'foundation.i18nTitle': 'Internationalization',
-    'foundation.i18nBody': 'French, English, and Spanish are available through one helper.',
+    'foundation.i18nBody':
+      'French, English, and Spanish are available through one helper.',
     'foundation.primitiveTitle': 'UI primitives',
     'foundation.primitiveBody':
       'Buttons, fields, cards, statuses, and feedback share the current theme tokens.',
@@ -1526,7 +1618,7 @@ export const dictionaries = {
       'No se puede cargar la información del coach en este momento.',
     'public.pricingTitle': 'Tarifas transparentes',
     'public.pricingBody':
-      'Las tarifas individuales y colectivas configuradas por el coach serán visibles antes de solicitar.',
+      'Las tarifas individuales, dúo y colectivas configuradas por el coach serán visibles antes de solicitar.',
     'public.noAvailabilityTitle': 'Registro obligatorio',
     'public.noAvailabilityBody':
       'La disponibilidad permanece privada hasta que crees tu cuenta.',
@@ -1556,8 +1648,7 @@ export const dictionaries = {
     'stats.estimatedRevenueHint':
       'Estimación calculada con las tarifas aplicadas, sin pago integrado.',
     'stats.emptyTitle': 'Sin actividad en este periodo',
-    'stats.emptyBody':
-      'Las clases confirmadas y finalizadas aparecerán aquí.',
+    'stats.emptyBody': 'Las clases confirmadas y finalizadas aparecerán aquí.',
     'stats.activeStudentsTitle': 'Alumnos más activos',
     'stats.activeStudentsEmpty':
       'Todavía no hay suficientes clases para mostrar alumnos activos.',
@@ -1607,6 +1698,10 @@ export const dictionaries = {
     'notifications.linkMissingBody':
       'El evento vinculado ya no es accesible o ya no existe.',
     'messaging.loading': 'Cargando conversaciones...',
+    'messaging.loadingMessages': 'Cargando mensajes...',
+    'messaging.loadingMore': 'Cargando...',
+    'messaging.loadMoreThreads': 'Cargar más conversaciones',
+    'messaging.loadOlderMessages': 'Cargar mensajes anteriores',
     'messaging.title': 'Mensajes',
     'messaging.subtitle':
       'Encuentra los intercambios vinculados a tus horarios, solicitudes y reservas.',
@@ -1700,9 +1795,12 @@ export const dictionaries = {
     'profile.loadErrorTitle': 'Perfil no disponible',
     'profile.loadErrorBody':
       'No se puede cargar tu perfil en este momento. Inténtalo después de reiniciar la aplicación.',
-    'profile.validation.nameTooShort': 'Introduce un nombre de al menos 2 caracteres.',
-    'profile.validation.nameTooLong': 'El nombre no puede superar los 100 caracteres.',
-    'profile.validation.invalidPhone': 'Introduce un número de teléfono válido.',
+    'profile.validation.nameTooShort':
+      'Introduce un nombre de al menos 2 caracteres.',
+    'profile.validation.nameTooLong':
+      'El nombre no puede superar los 100 caracteres.',
+    'profile.validation.invalidPhone':
+      'Introduce un número de teléfono válido.',
     'profile.validation.invalidNumber': 'Introduce un número válido.',
     'profile.validation.invalidLevel': 'Elige un nivel entre 1 y 10.',
     'profile.validation.invalidAge': 'Introduce una edad entre 5 y 100 años.',
@@ -1735,7 +1833,7 @@ export const dictionaries = {
     'coachProfile.openAvailability': 'Gestionar disponibilidad',
     'coachProfile.pricingTitle': 'Tarifas',
     'coachProfile.pricingBody':
-      'Configura las tarifas individuales y colectivas mostradas antes de reservar.',
+      'Configura las tarifas individuales, dúo y colectivas mostradas antes de reservar.',
     'coachProfile.openPricing': 'Gestionar tarifas',
     'coachProfile.notificationsTitle': 'Notificaciones push',
     'coachProfile.notificationsBody':
@@ -1752,10 +1850,8 @@ export const dictionaries = {
     'studentAgenda.loadErrorBody':
       'No se pueden cargar los horarios solicitables en este momento.',
     'studentAgenda.emptyDayTitle': 'Sin horarios solicitables',
-    'studentAgenda.emptyDayBody':
-      'No hay horarios disponibles en este día.',
-    'studentAgenda.slotDetail':
-      '{{date}} · {{duration}} · {{location}}',
+    'studentAgenda.emptyDayBody': 'No hay horarios disponibles en este día.',
+    'studentAgenda.slotDetail': '{{date}} · {{duration}} · {{location}}',
     'studentAgenda.requestableStatus': 'Solicitable',
     'pricing.loading': 'Cargando tarifas...',
     'pricing.loadErrorTitle': 'Tarifas no disponibles',
@@ -1769,7 +1865,7 @@ export const dictionaries = {
       'El coach aún no ha publicado ninguna tarifa activa.',
     'pricing.manageTitle': 'Gestión de tarifas',
     'pricing.manageBody':
-      'Crea las tarifas individuales y colectivas mostradas antes de una solicitud.',
+      'Crea las tarifas individuales, dúo y colectivas mostradas antes de una solicitud.',
     'pricing.createTitle': 'Nueva tarifa',
     'pricing.editTitle': 'Modificar tarifa',
     'pricing.catalogTitle': 'Catálogo del coach',
@@ -1779,6 +1875,7 @@ export const dictionaries = {
     'pricing.amountPlaceholder': 'Ej. 45,00',
     'pricing.typeLabel': 'Tipo de clase',
     'pricing.type.individual': 'Individual',
+    'pricing.type.duo': 'Dúo',
     'pricing.type.group': 'Colectiva',
     'pricing.durationLabel': 'Duración',
     'pricing.duration.60': '1 hora',
@@ -1791,6 +1888,16 @@ export const dictionaries = {
     'pricing.context.weekend': 'Fin de semana',
     'pricing.context.public_holiday': 'Día festivo',
     'pricing.studentsLabel': 'Alumnos seleccionados',
+    'pricing.studentSearchLabel': 'Buscar por nombre',
+    'pricing.studentSearchPlaceholder': 'Nombre del alumno',
+    'pricing.studentSearchHint':
+      'Escribe un nombre para encontrar al alumno que quieres seleccionar.',
+    'pricing.studentSearchEmpty':
+      'Ningún alumno coincide con esta búsqueda.',
+    'pricing.selectedStudentsLabel': 'Alumnos seleccionados ({{count}})',
+    'pricing.selectStudentAction': 'Seleccionar',
+    'pricing.selectedStudentAction': 'Seleccionado',
+    'pricing.removeStudentAction': 'Quitar a {{name}} de la selección',
     'pricing.noStudentsBody':
       'No hay alumnos asociados disponibles para una selección específica.',
     'pricing.createAction': 'Crear tarifa',
@@ -1811,7 +1918,7 @@ export const dictionaries = {
       'La tarifa no se ha modificado. Revisa la información e inténtalo de nuevo.',
     'pricing.emptyCoachTitle': 'Sin tarifas',
     'pricing.emptyCoachBody':
-      'Crea una primera tarifa individual o colectiva.',
+      'Crea una primera tarifa individual, dúo o colectiva.',
     'pricing.validation.labelTooShort':
       'El nombre debe contener al menos 2 caracteres.',
     'pricing.validation.labelTooLong':
@@ -1891,8 +1998,10 @@ export const dictionaries = {
       'Elige si la acción afecta solo a esta ocurrencia o a toda la serie recurrente.',
     'availability.scopeOccurrenceAction': 'Esta ocurrencia',
     'availability.scopeSeriesAction': 'Toda la serie',
-    'availability.validation.invalidDate': 'Introduce una fecha con formato AAAA-MM-DD.',
-    'availability.validation.invalidTime': 'Introduce una hora con formato HH:MM.',
+    'availability.validation.invalidDate':
+      'Introduce una fecha con formato AAAA-MM-DD.',
+    'availability.validation.invalidTime':
+      'Introduce una hora con formato HH:MM.',
     'availability.validation.endBeforeStart':
       'La hora de fin debe ser posterior a la hora de inicio.',
     'availability.validation.rangeTooShort':
@@ -1969,6 +2078,7 @@ export const dictionaries = {
     'studentDetail.historyType.bookingModified': 'Modificación',
     'studentDetail.historyType.lessonPackAssigned': 'Pack asignado',
     'studentDetail.historyType.lessonPackConsumed': 'Sesión de pack consumida',
+    'studentDetail.historyType.lessonPackAdjusted': 'Crédito de pack añadido',
     'studentDetail.activationGenerateAction': 'Generar enlace de activación',
     'studentDetail.activationRegenerateAction': 'Regenerar enlace',
     'studentDetail.activationGenerating': 'Generando...',
@@ -1979,8 +2089,7 @@ export const dictionaries = {
     'studentDetail.activationShareMessage':
       'Activa tu cuenta NextPoint con este enlace válido durante 24 horas: {{link}}',
     'studentDetail.activationCopiedTitle': 'Enlace copiado',
-    'studentDetail.activationCopiedBody':
-      'Ya puedes enviárselo al alumno.',
+    'studentDetail.activationCopiedBody': 'Ya puedes enviárselo al alumno.',
     'studentDetail.activationErrorTitle': 'Enlace no disponible',
     'studentDetail.activationErrorBody':
       'No se ha podido generar o compartir el enlace. Revisa el estado de la cuenta e inténtalo de nuevo.',
@@ -2047,18 +2156,38 @@ export const dictionaries = {
     'lessonPack.consumeSuccessTitle': 'Sesión consumida',
     'lessonPack.consumeSuccessBody':
       'Los contadores del pack están actualizados y el historial del alumno se ha completado.',
+    'lessonPack.decrementAccessibilityLabel': 'Quitar una clase restante',
+    'lessonPack.incrementAccessibilityLabel': 'Añadir una clase restante',
+    'lessonPack.adjusting': 'Actualizando el pack...',
+    'lessonPack.increaseSuccessTitle': 'Clase añadida',
+    'lessonPack.increaseSuccessBody':
+      'El pack ahora tiene una clase restante adicional.',
+    'lessonPack.decreaseSuccessTitle': 'Clase retirada',
+    'lessonPack.decreaseSuccessBody':
+      'El total del pack se corrigió sin modificar el número de clases usadas.',
     'lessonPack.noRemainingTitle': 'Pack agotado',
     'lessonPack.noRemainingBody':
       'No se puede consumir ninguna sesión: este pack no tiene clases restantes.',
     'lessonPack.consumeErrorTitle': 'No se puede consumir',
     'lessonPack.consumeErrorBody':
       'No se ha modificado ninguna clase restante. Puede que el pack esté agotado o que el acceso esté denegado.',
+    'lessonPack.maximumTitle': 'Máximo alcanzado',
+    'lessonPack.maximumBody':
+      'Un pack no puede contener más de 100 clases incluidas.',
+    'lessonPack.minimumTitle': 'Mínimo alcanzado',
+    'lessonPack.minimumBody':
+      'Un pack debe conservar al menos una clase incluida.',
+    'lessonPack.adjustErrorTitle': 'No se puede modificar',
+    'lessonPack.adjustErrorBody':
+      'El contador no se ha modificado. Recarga la ficha e inténtalo de nuevo.',
     'booking.openRequestAction': 'Solicitar',
     'booking.requestAction': 'Enviar solicitud',
     'booking.lessonTypeLabel': 'Tipo de clase',
     'booking.commentLabel': 'Comentario',
     'booking.commentPlaceholder': 'Añade tu objetivo o disponibilidad.',
     'booking.participantsLabel': 'Participantes',
+    'booking.duoParticipantRequired':
+      'Selecciona exactamente una pareja para formar el dúo.',
     'booking.requesterIncluded': 'Tú estás incluido',
     'booking.unknownStudent': 'Alumno',
     'booking.priceLabel': 'Tarifa: {{price}}',
@@ -2076,10 +2205,16 @@ export const dictionaries = {
     'booking.coachEmptyBody':
       'Las solicitudes de alumnos y clases planificadas aparecerán aquí.',
     'booking.coachCreateTitle': 'Crear una clase',
+    'booking.createPricingRequiredTitle': 'Tarifa obligatoria',
+    'booking.createPricingRequiredBody':
+      'Añade o activa una tarifa compatible con este alumno, tipo de clase y duración.',
     'booking.studentLabel': 'Alumno',
     'booking.recurrenceEndsOnLabel': 'Recurrencia semanal hasta',
     'booking.recurrenceEndsOnPlaceholder': 'AAAA-MM-DD, opcional',
     'booking.createAction': 'Crear clase',
+    'booking.creating': 'Creando clase...',
+    'booking.createSuccessButton': 'Clase creada ✓',
+    'booking.createAnotherAction': 'Crear otra clase',
     'booking.approveAction': 'Validar',
     'booking.refuseAction': 'Rechazar',
     'booking.refusalCommentLabel': 'Comentario de rechazo',
@@ -2137,7 +2272,7 @@ export const dictionaries = {
     'booking.invalidParticipants':
       'La selección de participantes no está permitida.',
     'booking.invalidInput':
-      'El mensaje de cancelación es obligatorio y está limitado a 500 caracteres.',
+      'Comprueba el formato y los valores de los campos antes de volver a intentarlo.',
     'booking.pricingMissing':
       'No hay una tarifa activa para este tipo y duración de clase.',
     'booking.unauthorized': 'Tu rol no permite esta acción.',
@@ -2183,7 +2318,8 @@ export const dictionaries = {
       'La cuenta no se ha activado. Comprueba tu conexión e inténtalo de nuevo.',
     'auth.validation.required': 'Este campo es obligatorio.',
     'auth.validation.invalidEmail': 'Introduce una dirección de email válida.',
-    'auth.validation.passwordTooShort': 'La contraseña debe tener al menos 8 caracteres.',
+    'auth.validation.passwordTooShort':
+      'La contraseña debe tener al menos 8 caracteres.',
     'auth.validation.passwordMismatch': 'Las contraseñas no coinciden.',
     'auth.validation.invalid': 'Revisa el valor introducido.',
     'auth.error.title': 'No se puede continuar',
@@ -2193,9 +2329,12 @@ export const dictionaries = {
     'auth.error.emailInUse':
       'Ya existe una cuenta con este email. Si tu coach la creó, utiliza el enlace de activación.',
     'auth.error.weakPassword': 'Elige una contraseña más segura.',
-    'auth.error.emailNotConfirmed': 'Confirma tu dirección de email antes de iniciar sesión.',
-    'auth.error.rateLimited': 'Demasiados intentos. Inténtalo de nuevo en unos minutos.',
-    'auth.error.network': 'Comprueba tu conexión a internet e inténtalo de nuevo.',
+    'auth.error.emailNotConfirmed':
+      'Confirma tu dirección de email antes de iniciar sesión.',
+    'auth.error.rateLimited':
+      'Demasiados intentos. Inténtalo de nuevo en unos minutos.',
+    'auth.error.network':
+      'Comprueba tu conexión a internet e inténtalo de nuevo.',
     'auth.error.generic': 'Se ha producido un error. Inténtalo más tarde.',
     'auth.sessionTitle': 'Sesión activa',
     'auth.sessionDescription': 'Has iniciado sesión como {{email}}.',
@@ -2225,7 +2364,8 @@ export const dictionaries = {
     'foundation.tokensTitle': 'Tokens activos',
     'foundation.themeTitle': 'Tema',
     'foundation.i18nTitle': 'Internacionalización',
-    'foundation.i18nBody': 'Francés, inglés y español están disponibles con el mismo helper.',
+    'foundation.i18nBody':
+      'Francés, inglés y español están disponibles con el mismo helper.',
     'foundation.primitiveTitle': 'Primitivas UI',
     'foundation.primitiveBody':
       'Botones, campos, tarjetas, estados y feedback comparten los tokens del tema actual.',

@@ -1,12 +1,17 @@
-import type {
-  BookingOrigin,
-  BookingStatus,
-  CoachCreateBookingInput,
-  CoachModifyBookingInput,
-  PricingDuration,
-  PricingLessonType,
-  RequestBookingInput,
-  Tables,
+import {
+  bookingParticipantProfileReadModelSchema,
+  bookingParticipantReadModelSchema,
+  bookingPricingReadModelSchema,
+  bookingReadModelSchema,
+  coachCreateBookingSchema,
+  coachModifyBookingSchema,
+  type BookingParticipantProfileReadModel,
+  type BookingPricingReadModel,
+  type BookingReadModel,
+  type CoachCreateBookingInput,
+  type CoachModifyBookingInput,
+  type RequestBookingInput,
+  type Tables,
 } from '@nextpoint/shared';
 
 import { processPendingPushNotifications } from '@/features/notifications/notification-service';
@@ -17,43 +22,12 @@ import { mapBookingError, type BookingMutationError } from './booking-error';
 export type { BookingMutationError } from './booking-error';
 
 type BookingRow = Tables<'bookings'>;
-type BookingParticipantRow = Tables<'booking_participants'>;
 type PricingRateRow = Tables<'pricing_rates'>;
 type StudentProfileRow = Tables<'student_profiles'>;
 
-export type BookingParticipant = {
-  studentId: string;
-  fullName: string | null;
-};
-
-export type BookingPricing = {
-  id: string;
-  label: string;
-  amountCents: number;
-  currency: 'EUR';
-};
-
-export type Booking = {
-  id: string;
-  availabilitySlotId: string | null;
-  coachId: string;
-  studentId: string;
-  pricingRateId: string | null;
-  lessonType: PricingLessonType;
-  status: BookingStatus;
-  origin: BookingOrigin;
-  startsAt: string;
-  endsAt: string;
-  durationMinutes: PricingDuration;
-  location: string;
-  studentComment: string | null;
-  coachRefusalComment: string | null;
-  expiresAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-  participants: BookingParticipant[];
-  pricing: BookingPricing | null;
-};
+export type BookingParticipant = BookingParticipantProfileReadModel;
+export type BookingPricing = BookingPricingReadModel;
+export type Booking = BookingReadModel;
 
 type BookingsResult = { ok: true; data: Booking[] } | { ok: false };
 type BookingResult =
@@ -66,34 +40,36 @@ type RequestableParticipantsResult =
   | { ok: true; data: BookingParticipant[] }
   | { ok: false };
 
-function mapPricing(row: PricingRateRow | undefined): BookingPricing | null {
+function parsePricing(row: PricingRateRow | undefined): BookingPricing | null {
   if (!row) return null;
 
-  return {
+  const parsed = bookingPricingReadModelSchema.safeParse({
     id: row.id,
     label: row.label,
     amountCents: row.amount_cents,
-    currency: row.currency as 'EUR',
-  };
+    currency: row.currency,
+  });
+
+  return parsed.success ? parsed.data : null;
 }
 
-function mapBooking(
+function parseBooking(
   row: BookingRow,
   participantsByBookingId: Map<string, BookingParticipant[]>,
-  pricingById: Map<string, PricingRateRow>
-): Booking {
-  return {
+  pricingById: Map<string, BookingPricing>
+): Booking | null {
+  const parsed = bookingReadModelSchema.safeParse({
     id: row.id,
     availabilitySlotId: row.availability_slot_id,
     coachId: row.coach_id,
     studentId: row.student_id,
     pricingRateId: row.pricing_rate_id,
-    lessonType: row.lesson_type as PricingLessonType,
+    lessonType: row.lesson_type,
     status: row.status,
     origin: row.origin,
     startsAt: row.starts_at,
     endsAt: row.ends_at,
-    durationMinutes: row.duration_minutes as PricingDuration,
+    durationMinutes: row.duration_minutes,
     location: row.location,
     studentComment: row.student_comment,
     coachRefusalComment: row.coach_refusal_comment,
@@ -102,12 +78,14 @@ function mapBooking(
     updatedAt: row.updated_at,
     participants: participantsByBookingId.get(row.id) ?? [],
     pricing: row.pricing_rate_id
-      ? mapPricing(pricingById.get(row.pricing_rate_id))
+      ? pricingById.get(row.pricing_rate_id) ?? null
       : null,
-  };
+  });
+
+  return parsed.success ? parsed.data : null;
 }
 
-async function hydrateBookings(rows: BookingRow[]): Promise<Booking[]> {
+async function hydrateBookings(rows: BookingRow[]): Promise<Booking[] | null> {
   if (!supabase || rows.length === 0) return [];
 
   const bookingIds = rows.map((row) => row.id);
@@ -119,7 +97,7 @@ async function hydrateBookings(rows: BookingRow[]): Promise<Booking[]> {
     )
   );
   const participantsByBookingId = new Map<string, BookingParticipant[]>();
-  const pricingById = new Map<string, PricingRateRow>();
+  const pricingById = new Map<string, BookingPricing>();
 
   const [participantsResult, pricingResult] = await Promise.all([
     supabase
@@ -132,7 +110,7 @@ async function hydrateBookings(rows: BookingRow[]): Promise<Booking[]> {
   ]);
 
   if (!participantsResult.error && participantsResult.data.length > 0) {
-    const participantRows = participantsResult.data as BookingParticipantRow[];
+    const participantRows = participantsResult.data;
     const studentIds = Array.from(
       new Set(participantRows.map((participant) => participant.student_id))
     );
@@ -149,22 +127,40 @@ async function hydrateBookings(rows: BookingRow[]): Promise<Booking[]> {
     }
 
     for (const participant of participantRows) {
-      const current = participantsByBookingId.get(participant.booking_id) ?? [];
-      current.push({
+      const parsedParticipant = bookingParticipantReadModelSchema.safeParse({
+        bookingId: participant.booking_id,
         studentId: participant.student_id,
         fullName: profilesById.get(participant.student_id)?.full_name ?? null,
       });
-      participantsByBookingId.set(participant.booking_id, current);
+      if (!parsedParticipant.success) return null;
+
+      const { bookingId, ...profile } = parsedParticipant.data;
+      const current = participantsByBookingId.get(bookingId) ?? [];
+      current.push(profile);
+      participantsByBookingId.set(bookingId, current);
     }
   }
 
   if (!pricingResult.error) {
     for (const rate of pricingResult.data) {
-      pricingById.set(rate.id, rate);
+      const parsedPricing = parsePricing(rate);
+      if (!parsedPricing) return null;
+      pricingById.set(parsedPricing.id, parsedPricing);
     }
   }
 
-  return rows.map((row) => mapBooking(row, participantsByBookingId, pricingById));
+  const bookings: Booking[] = [];
+  for (const row of rows) {
+    const parsedBooking = parseBooking(
+      row,
+      participantsByBookingId,
+      pricingById
+    );
+    if (!parsedBooking) return null;
+    bookings.push(parsedBooking);
+  }
+
+  return bookings;
 }
 
 export async function getCoachBookingsInRange(
@@ -183,7 +179,8 @@ export async function getCoachBookingsInRange(
     .order('starts_at');
 
   if (error) return { ok: false };
-  return { ok: true, data: await hydrateBookings(data) };
+  const bookings = await hydrateBookings(data);
+  return bookings ? { ok: true, data: bookings } : { ok: false };
 }
 
 export async function getStudentBookingsInRange(
@@ -200,19 +197,8 @@ export async function getStudentBookingsInRange(
     .order('starts_at');
 
   if (error) return { ok: false };
-  return { ok: true, data: await hydrateBookings(data) };
-}
-
-export async function getStudentBookings(): Promise<BookingsResult> {
-  if (!supabase) return { ok: false };
-
-  const { data, error } = await supabase
-    .from('bookings')
-    .select('*')
-    .order('starts_at', { ascending: false });
-
-  if (error) return { ok: false };
-  return { ok: true, data: await hydrateBookings(data) };
+  const bookings = await hydrateBookings(data);
+  return bookings ? { ok: true, data: bookings } : { ok: false };
 }
 
 export async function getRequestableBookingParticipants(): Promise<RequestableParticipantsResult> {
@@ -224,13 +210,16 @@ export async function getRequestableBookingParticipants(): Promise<RequestablePa
 
   if (error || !data) return { ok: false };
 
-  return {
-    ok: true,
-    data: data.map((profile) => ({
+  const participants = bookingParticipantProfileReadModelSchema.array().safeParse(
+    data.map((profile) => ({
       studentId: profile.user_id,
       fullName: profile.full_name,
-    })),
-  };
+    }))
+  );
+
+  return participants.success
+    ? { ok: true, data: participants.data }
+    : { ok: false };
 }
 
 export async function requestBooking(
@@ -249,7 +238,9 @@ export async function requestBooking(
     return { ok: false, error: mapBookingError(error?.code, error?.message) };
   }
 
-  const [booking] = await hydrateBookings([data]);
+  const bookings = await hydrateBookings([data]);
+  const booking = bookings?.[0];
+  if (!booking) return { ok: false, error: 'unknown' };
   void processPendingPushNotifications();
   return { ok: true, data: booking };
 }
@@ -265,7 +256,9 @@ export async function approveBooking(bookingId: string): Promise<BookingResult> 
     return { ok: false, error: mapBookingError(error?.code, error?.message) };
   }
 
-  const [booking] = await hydrateBookings([data]);
+  const bookings = await hydrateBookings([data]);
+  const booking = bookings?.[0];
+  if (!booking) return { ok: false, error: 'unknown' };
   void processPendingPushNotifications();
   return { ok: true, data: booking };
 }
@@ -285,7 +278,9 @@ export async function refuseBooking(
     return { ok: false, error: mapBookingError(error?.code, error?.message) };
   }
 
-  const [booking] = await hydrateBookings([data]);
+  const bookings = await hydrateBookings([data]);
+  const booking = bookings?.[0];
+  if (!booking) return { ok: false, error: 'unknown' };
   void processPendingPushNotifications();
   return { ok: true, data: booking };
 }
@@ -304,15 +299,17 @@ export async function expirePendingBookings(): Promise<
 export async function createCoachBooking(
   input: CoachCreateBookingInput
 ): Promise<CoachBookingResult> {
+  const parsed = coachCreateBookingSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: 'invalid_input' };
   if (!supabase) return { ok: false, error: 'unknown' };
 
   const { data, error } = await supabase.rpc('create_coach_booking', {
-    p_student_ids: input.studentIds,
-    p_starts_at: input.startsAt,
-    p_duration_minutes: input.durationMinutes,
-    p_location: input.location,
-    p_lesson_type: input.lessonType,
-    p_recurrence_ends_on: (input.recurrenceEndsOn ?? null) as string,
+    p_student_ids: parsed.data.studentIds,
+    p_starts_at: parsed.data.startsAt,
+    p_duration_minutes: parsed.data.durationMinutes,
+    p_location: parsed.data.location,
+    p_lesson_type: parsed.data.lessonType,
+    p_recurrence_ends_on: (parsed.data.recurrenceEndsOn ?? null) as string,
   });
 
   if (error || !data) {
@@ -320,6 +317,7 @@ export async function createCoachBooking(
   }
 
   const bookings = await hydrateBookings(data);
+  if (!bookings) return { ok: false, error: 'unknown' };
   void processPendingPushNotifications();
   return { ok: true, data: bookings };
 }
@@ -339,7 +337,9 @@ export async function cancelBooking(
     return { ok: false, error: mapBookingError(error?.code, error?.message) };
   }
 
-  const [booking] = await hydrateBookings([data]);
+  const bookings = await hydrateBookings([data]);
+  const booking = bookings?.[0];
+  if (!booking) return { ok: false, error: 'unknown' };
   void processPendingPushNotifications();
   return { ok: true, data: booking };
 }
@@ -347,20 +347,24 @@ export async function cancelBooking(
 export async function modifyBooking(
   input: CoachModifyBookingInput
 ): Promise<BookingResult> {
+  const parsed = coachModifyBookingSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: 'invalid_input' };
   if (!supabase) return { ok: false, error: 'unknown' };
 
   const { data, error } = await supabase.rpc('modify_booking', {
-    p_booking_id: input.bookingId,
-    p_starts_at: input.startsAt,
-    p_duration_minutes: input.durationMinutes,
-    p_location: input.location,
+    p_booking_id: parsed.data.bookingId,
+    p_starts_at: parsed.data.startsAt,
+    p_duration_minutes: parsed.data.durationMinutes,
+    p_location: parsed.data.location,
   });
 
   if (error || !data) {
     return { ok: false, error: mapBookingError(error?.code, error?.message) };
   }
 
-  const [booking] = await hydrateBookings([data]);
+  const bookings = await hydrateBookings([data]);
+  const booking = bookings?.[0];
+  if (!booking) return { ok: false, error: 'unknown' };
   void processPendingPushNotifications();
   return { ok: true, data: booking };
 }

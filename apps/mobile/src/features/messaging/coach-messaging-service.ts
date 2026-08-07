@@ -47,7 +47,10 @@ export type CoachMessagingError =
   | 'unknown';
 
 type ThreadsResult =
-  | { ok: true; data: CoachMessageThread[] }
+  | { ok: true; data: CoachMessageThread[]; hasMore: boolean }
+  | { ok: false; error: CoachMessagingError };
+type MessagesResult =
+  | { ok: true; data: CoachMessage[]; hasMore: boolean }
   | { ok: false; error: CoachMessagingError };
 type ThreadResult =
   | { ok: true; data: CoachMessageThread }
@@ -55,6 +58,9 @@ type ThreadResult =
 type MessageResult =
   | { ok: true; data: CoachMessage }
   | { ok: false; error: CoachMessagingError };
+
+export const coachMessageThreadPageSize = 20;
+export const coachMessagePageSize = 50;
 
 function mapMessage(row: MessageRow): CoachMessage {
   return {
@@ -99,36 +105,41 @@ function buildThread(
   };
 }
 
-export async function getCoachMessageThreads(): Promise<ThreadsResult> {
+export async function getCoachMessageThreads(
+  offset = 0
+): Promise<ThreadsResult> {
   if (!supabase) return { ok: false, error: 'unknown' };
+  const client = supabase;
 
-  const threadsResult = await supabase
+  const threadsResult = await client
     .from('coach_message_threads')
-    .select('*')
-    .order('last_message_at', { ascending: false });
+    .select('*, coach_messages(*)')
+    .order('last_message_at', { ascending: false })
+    .order('created_at', {
+      ascending: false,
+      referencedTable: 'coach_messages',
+    })
+    .limit(1, { referencedTable: 'coach_messages' })
+    .range(offset, offset + coachMessageThreadPageSize);
 
   if (threadsResult.error) {
     return { ok: false, error: mapMessagingError(threadsResult.error.code) };
   }
 
-  const threads = threadsResult.data;
-  if (threads.length === 0) return { ok: true, data: [] };
+  const hasMore = threadsResult.data.length > coachMessageThreadPageSize;
+  const threads = threadsResult.data.slice(0, coachMessageThreadPageSize);
+  if (threads.length === 0) return { ok: true, data: [], hasMore: false };
 
   const bookingIds = threads.map((thread) => thread.booking_id);
-  const threadIds = threads.map((thread) => thread.id);
-  const [bookingsResult, messagesResult] = await Promise.all([
-    supabase.from('bookings').select('*').in('id', bookingIds),
-    supabase
-      .from('coach_messages')
-      .select('*')
-      .in('thread_id', threadIds)
-      .order('created_at'),
-  ]);
+  const bookingsResult = await client
+    .from('bookings')
+    .select('*')
+    .in('id', bookingIds);
 
-  if (bookingsResult.error || messagesResult.error) {
+  if (bookingsResult.error) {
     return {
       ok: false,
-      error: mapMessagingError(bookingsResult.error?.code ?? messagesResult.error?.code),
+      error: mapMessagingError(bookingsResult.error.code),
     };
   }
 
@@ -136,16 +147,16 @@ export async function getCoachMessageThreads(): Promise<ThreadsResult> {
     bookingsResult.data.map((booking) => [booking.id, booking])
   );
   const messagesByThreadId = new Map<string, MessageRow[]>();
-  for (const message of messagesResult.data) {
-    const current = messagesByThreadId.get(message.thread_id) ?? [];
-    current.push(message);
-    messagesByThreadId.set(message.thread_id, current);
+  for (const thread of threads) {
+    if (thread.coach_messages.length > 0) {
+      messagesByThreadId.set(thread.id, thread.coach_messages);
+    }
   }
 
   const studentIds = Array.from(
     new Set(bookingsResult.data.map((booking) => booking.student_id))
   );
-  const profilesResult = await supabase
+  const profilesResult = await client
     .from('student_profiles')
     .select('*')
     .in('user_id', studentIds);
@@ -171,7 +182,36 @@ export async function getCoachMessageThreads(): Promise<ThreadsResult> {
     ];
   });
 
-  return { ok: true, data };
+  return { ok: true, data, hasMore };
+}
+
+export async function getCoachThreadMessages(
+  threadId: string,
+  before?: string
+): Promise<MessagesResult> {
+  if (!supabase) return { ok: false, error: 'unknown' };
+
+  const baseQuery = supabase
+    .from('coach_messages')
+    .select('*')
+    .eq('thread_id', threadId)
+    .order('created_at', { ascending: false })
+    .limit(coachMessagePageSize + 1);
+  const result = before
+    ? await baseQuery.lt('created_at', before)
+    : await baseQuery;
+
+  if (result.error) {
+    return { ok: false, error: mapMessagingError(result.error.code) };
+  }
+
+  const hasMore = result.data.length > coachMessagePageSize;
+  const data = result.data
+    .slice(0, coachMessagePageSize)
+    .reverse()
+    .map(mapMessage);
+
+  return { ok: true, data, hasMore };
 }
 
 export async function markCoachMessageThreadRead(

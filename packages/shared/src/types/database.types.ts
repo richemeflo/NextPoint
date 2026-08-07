@@ -828,6 +828,26 @@ export type Database = {
         }
         Returns: undefined
       }
+      adjust_lesson_pack_sessions: {
+        Args: { p_delta: number; p_pack_id: string }
+        Returns: {
+          coach_id: string
+          created_at: string
+          id: string
+          included_sessions: number
+          remaining_sessions: number | null
+          status: Database["public"]["Enums"]["lesson_pack_status"]
+          student_id: string
+          updated_at: string
+          used_sessions: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "lesson_packs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       approve_booking: {
         Args: { p_booking_id: string }
         Returns: {
@@ -1161,6 +1181,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      is_coach_registration_open: { Args: never; Returns: boolean }
       mark_all_notifications_read: { Args: never; Returns: number }
       mark_coach_message_thread_read: {
         Args: { p_thread_id: string }
@@ -1511,6 +1532,7 @@ export type Database = {
         | "booking_modified"
         | "lesson_pack_assigned"
         | "lesson_pack_consumed"
+        | "lesson_pack_adjusted"
       student_sex: "female" | "male" | "other" | "not_specified"
     }
     CompositeTypes: {
@@ -1695,8 +1717,10 @@ export const Constants = {
         "booking_modified",
         "lesson_pack_assigned",
         "lesson_pack_consumed",
+        "lesson_pack_adjusted",
       ],
       student_sex: ["female", "male", "other", "not_specified"],
     },
   },
 } as const
+

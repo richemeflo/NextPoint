@@ -98,17 +98,22 @@ export default function CoachStudentsScreen() {
 
     let active = true;
 
-    void getAssociatedStudents(user.id).then((result) => {
-      if (!active) return;
+    void getAssociatedStudents(user.id)
+      .then((result) => {
+        if (!active) return;
 
-      if (!result.ok) {
+        if (!result.ok) {
+          setLoadState('error');
+          return;
+        }
+
+        setStudents(result.data);
+        setLoadState('ready');
+      })
+      .catch(() => {
+        if (!active) return;
         setLoadState('error');
-        return;
-      }
-
-      setStudents(result.data);
-      setLoadState('ready');
-    });
+      });
 
     return () => {
       active = false;

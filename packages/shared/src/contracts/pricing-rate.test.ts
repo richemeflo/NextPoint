@@ -2,13 +2,44 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  pricingRateReadModelSchema,
   pricingRateSchema,
   selectApplicablePricingRate,
   toPricingRateInput,
 } from './pricing-rate';
 
-test('pricingRateSchema accepts P0 individual and group rates', () => {
-  for (const lessonType of ['individual', 'group'] as const) {
+const validPricingRateReadModel = {
+  id: '10000000-0000-4000-8000-000000000001',
+  coachId: '10000000-0000-4000-8000-000000000002',
+  label: 'Cours individuel',
+  amountCents: 4500,
+  currency: 'EUR',
+  durationMinutes: 60,
+  lessonType: 'individual',
+  isActive: true,
+  applicabilityContexts: ['weekend'],
+  targetStudentIds: ['10000000-0000-4000-8000-000000000003'],
+  updatedAt: '2026-08-07T10:00:00+02:00',
+} as const;
+
+test('pricing read models validate Supabase values at runtime', () => {
+  assert.equal(
+    pricingRateReadModelSchema.safeParse(validPricingRateReadModel).success,
+    true
+  );
+  assert.equal(
+    pricingRateReadModelSchema.safeParse({
+      ...validPricingRateReadModel,
+      currency: 'USD',
+      durationMinutes: 45,
+      lessonType: 'unexpected',
+    }).success,
+    false
+  );
+});
+
+test('pricingRateSchema accepts individual, duo and group rates', () => {
+  for (const lessonType of ['individual', 'duo', 'group'] as const) {
     for (const durationMinutes of ['60', '90'] as const) {
       const result = pricingRateSchema.safeParse({
         label: 'Cours standard',
@@ -30,7 +61,7 @@ test('pricingRateSchema rejects invalid labels, prices, durations and targets', 
     label: '',
     amountEuros: '-4',
     durationMinutes: '45',
-    lessonType: 'duo',
+    lessonType: 'private',
     isActive: true,
     applicabilityContexts: ['peak_hours'],
     targetStudentIds: ['not-a-uuid'],

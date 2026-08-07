@@ -94,31 +94,38 @@ export default function EleveAccountScreen() {
 
     let active = true;
 
-    void getStudentProfile(user.id).then((result) => {
-      if (!active) return;
+    void getStudentProfile(user.id)
+      .then((result) => {
+        if (!active) return;
 
-      if (!result.ok) {
+        if (!result.ok) {
+          setLoadError(true);
+          return;
+        }
+
+        if (result.data) {
+          setLocale(result.data.preferredLanguage);
+          reset({
+            fullName: result.data.fullName,
+            phone: result.data.phone,
+            email: result.data.email,
+            padelLevel: String(result.data.padelLevel),
+            age: String(result.data.age),
+            sex: result.data.sex,
+            preferredLanguage: result.data.preferredLanguage,
+          });
+        }
+
+        setLoadError(false);
+      })
+      .catch(() => {
+        if (!active) return;
         setLoadError(true);
+      })
+      .finally(() => {
+        if (!active) return;
         setIsLoading(false);
-        return;
-      }
-
-      if (result.data) {
-        setLocale(result.data.preferredLanguage);
-        reset({
-          fullName: result.data.fullName,
-          phone: result.data.phone,
-          email: result.data.email,
-          padelLevel: String(result.data.padelLevel),
-          age: String(result.data.age),
-          sex: result.data.sex,
-          preferredLanguage: result.data.preferredLanguage,
-        });
-      }
-
-      setLoadError(false);
-      setIsLoading(false);
-    });
+      });
 
     return () => {
       active = false;

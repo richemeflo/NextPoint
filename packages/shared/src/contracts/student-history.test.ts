@@ -16,6 +16,7 @@ test('student history exposes only P0 activity types', () => {
     'booking_modified',
     'lesson_pack_assigned',
     'lesson_pack_consumed',
+    'lesson_pack_adjusted',
   ]);
   assert.equal(isStudentHistoryEventType('lesson_confirmed'), true);
   assert.equal(isStudentHistoryEventType('sport_progress'), false);

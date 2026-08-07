@@ -2,14 +2,174 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  bookingReadModelSchema,
   canApproveBooking,
   canCancelBooking,
   canCreatePendingBooking,
   canRefuseBooking,
+  coachCreateBookingSchema,
+  coachModifyBookingSchema,
+  isBookingParticipantCountValid,
   isBookingExpired,
   normalizeParticipantIds,
+  requestBookingSchema,
   studentCancelBookingSchema,
 } from './booking';
+
+const validBookingReadModel = {
+  id: '20000000-0000-4000-8000-000000000001',
+  availabilitySlotId: '20000000-0000-4000-8000-000000000002',
+  coachId: '20000000-0000-4000-8000-000000000003',
+  studentId: '20000000-0000-4000-8000-000000000004',
+  pricingRateId: '20000000-0000-4000-8000-000000000005',
+  lessonType: 'individual',
+  status: 'confirmed',
+  origin: 'coach_created',
+  startsAt: '2026-08-10T16:00:00+00:00',
+  endsAt: '2026-08-10T17:00:00+00:00',
+  durationMinutes: 60,
+  location: 'Les Bruyères Centre Sportif',
+  studentComment: null,
+  coachRefusalComment: null,
+  expiresAt: null,
+  createdAt: '2026-08-07T10:00:00+00:00',
+  updatedAt: '2026-08-07T10:00:00+00:00',
+  participants: [
+    {
+      studentId: '20000000-0000-4000-8000-000000000004',
+      fullName: 'Élève Test',
+    },
+  ],
+  pricing: {
+    id: '20000000-0000-4000-8000-000000000005',
+    label: 'Cours individuel',
+    amountCents: 4500,
+    currency: 'EUR',
+  },
+} as const;
+
+test('booking read models reject unexpected Supabase domain values', () => {
+  assert.equal(
+    bookingReadModelSchema.safeParse(validBookingReadModel).success,
+    true
+  );
+  assert.equal(
+    bookingReadModelSchema.safeParse({
+      ...validBookingReadModel,
+      lessonType: 'unexpected',
+      durationMinutes: 45,
+    }).success,
+    false
+  );
+});
+
+const validCoachCreateBooking = {
+  studentIds: ['10000000-0000-4000-8000-000000000001'],
+  startsAt: '2026-08-10T16:00:00.000Z',
+  durationMinutes: 60,
+  location: 'Les Bruyères Centre Sportif',
+  lessonType: 'individual',
+  recurrenceEndsOn: null,
+} as const;
+
+test('coach booking creation validates every RPC input', () => {
+  assert.equal(
+    coachCreateBookingSchema.safeParse(validCoachCreateBooking).success,
+    true
+  );
+  assert.equal(
+    coachCreateBookingSchema.safeParse({
+      ...validCoachCreateBooking,
+      studentIds: [],
+    }).success,
+    false
+  );
+  assert.equal(
+    coachCreateBookingSchema.safeParse({
+      ...validCoachCreateBooking,
+      studentIds: Array.from(
+        { length: 5 },
+        (_, index) => `10000000-0000-4000-8000-00000000000${index + 1}`
+      ),
+    }).success,
+    false
+  );
+  assert.equal(
+    coachCreateBookingSchema.safeParse({
+      ...validCoachCreateBooking,
+      recurrenceEndsOn: '2026-02-30',
+    }).success,
+    false
+  );
+  assert.equal(
+    coachCreateBookingSchema.safeParse({
+      ...validCoachCreateBooking,
+      lessonType: 'duo',
+      studentIds: [
+        '10000000-0000-4000-8000-000000000001',
+        '10000000-0000-4000-8000-000000000002',
+      ],
+    }).success,
+    true
+  );
+  assert.equal(
+    coachCreateBookingSchema.safeParse({
+      ...validCoachCreateBooking,
+      lessonType: 'duo',
+    }).success,
+    false
+  );
+});
+
+test('coach booking modification rejects malformed RPC input', () => {
+  const valid = {
+    bookingId: '20000000-0000-4000-8000-000000000001',
+    startsAt: '2026-08-10T16:00:00.000Z',
+    durationMinutes: 90,
+    location: 'Les Bruyères Centre Sportif',
+  } as const;
+
+  assert.equal(coachModifyBookingSchema.safeParse(valid).success, true);
+  assert.equal(
+    coachModifyBookingSchema.safeParse({ ...valid, bookingId: 'invalid' })
+      .success,
+    false
+  );
+  assert.equal(
+    coachModifyBookingSchema.safeParse({ ...valid, durationMinutes: 30 }).success,
+    false
+  );
+});
+
+test('duo bookings require exactly two participants', () => {
+  assert.equal(isBookingParticipantCountValid('individual', 1), true);
+  assert.equal(isBookingParticipantCountValid('duo', 1), false);
+  assert.equal(isBookingParticipantCountValid('duo', 2), true);
+  assert.equal(isBookingParticipantCountValid('duo', 3), false);
+
+  const duoRequest = {
+    slotId: '20000000-0000-4000-8000-000000000001',
+    lessonType: 'duo',
+    participantIds: ['30000000-0000-4000-8000-000000000001'],
+  } as const;
+
+  assert.equal(requestBookingSchema.safeParse(duoRequest).success, true);
+  assert.equal(
+    requestBookingSchema.safeParse({ ...duoRequest, participantIds: [] })
+      .success,
+    false
+  );
+  assert.equal(
+    requestBookingSchema.safeParse({
+      ...duoRequest,
+      participantIds: [
+        '30000000-0000-4000-8000-000000000001',
+        '30000000-0000-4000-8000-000000000002',
+      ],
+    }).success,
+    false
+  );
+});
 
 test('canCreatePendingBooking enforces slot and student pending limits', () => {
   assert.deepEqual(

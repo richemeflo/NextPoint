@@ -55,17 +55,22 @@ export function PublishedPricingList() {
   useEffect(() => {
     let active = true;
 
-    void getPublishedPricingRates().then((result) => {
-      if (!active) return;
+    void getPublishedPricingRates()
+      .then((result) => {
+        if (!active) return;
 
-      if (!result.ok) {
+        if (!result.ok) {
+          setState('error');
+          return;
+        }
+
+        setRates(result.data);
+        setState('ready');
+      })
+      .catch(() => {
+        if (!active) return;
         setState('error');
-        return;
-      }
-
-      setRates(result.data);
-      setState('ready');
-    });
+      });
 
     return () => {
       active = false;

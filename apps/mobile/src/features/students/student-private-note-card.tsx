@@ -42,15 +42,20 @@ export function StudentPrivateNoteCard({
 
   useEffect(() => {
     let active = true;
-    void getStudentPrivateNote(studentId).then((result) => {
-      if (!active) return;
-      if (!result.ok) {
+    void getStudentPrivateNote(studentId)
+      .then((result) => {
+        if (!active) return;
+        if (!result.ok) {
+          setLoadState('error');
+          return;
+        }
+        setEditor(createPrivateNoteEditorState(result.data?.content ?? null));
+        setLoadState('ready');
+      })
+      .catch(() => {
+        if (!active) return;
         setLoadState('error');
-        return;
-      }
-      setEditor(createPrivateNoteEditorState(result.data?.content ?? null));
-      setLoadState('ready');
-    });
+      });
 
     return () => {
       active = false;

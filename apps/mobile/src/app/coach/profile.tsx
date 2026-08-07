@@ -74,29 +74,36 @@ export default function CoachProfileScreen() {
 
     let active = true;
 
-    void getCoachProfile(user.id).then((result) => {
-      if (!active) return;
+    void getCoachProfile(user.id)
+      .then((result) => {
+        if (!active) return;
 
-      if (!result.ok) {
+        if (!result.ok) {
+          setLoadError(true);
+          return;
+        }
+
+        if (result.data) {
+          setLocale(result.data.preferredLanguage);
+          reset({
+            displayName: result.data.displayName,
+            bio: result.data.bio,
+            phone: result.data.phone,
+            email: result.data.email,
+            preferredLanguage: result.data.preferredLanguage,
+          });
+        }
+
+        setLoadError(false);
+      })
+      .catch(() => {
+        if (!active) return;
         setLoadError(true);
+      })
+      .finally(() => {
+        if (!active) return;
         setIsLoading(false);
-        return;
-      }
-
-      if (result.data) {
-        setLocale(result.data.preferredLanguage);
-        reset({
-          displayName: result.data.displayName,
-          bio: result.data.bio,
-          phone: result.data.phone,
-          email: result.data.email,
-          preferredLanguage: result.data.preferredLanguage,
-        });
-      }
-
-      setLoadError(false);
-      setIsLoading(false);
-    });
+      });
 
     return () => {
       active = false;

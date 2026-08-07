@@ -1,5 +1,10 @@
 import { z } from 'zod';
 
+import {
+  calculateSchedulingEndTime,
+  schedulingLocalDateTimeToIso,
+} from '../domain/scheduling-time';
+
 export const availabilitySlotDurations = [60, 90] as const;
 export const availabilitySlotStatuses = [
   'available',
@@ -31,16 +36,25 @@ export const availabilityRangeSchema = z
     recurrenceEndsOn: z.string().optional(),
   })
   .superRefine((value, context) => {
-    const start = localDateTimeToUtcMs(
+    const startIso = schedulingLocalDateTimeToIso(
       value.date,
-      value.startsAtLocalTime,
-      getTimezoneOffsetForLocalDateTime(value.date, value.startsAtLocalTime)
+      value.startsAtLocalTime
     );
-    const end = localDateTimeToUtcMs(
+    const endIso = schedulingLocalDateTimeToIso(
       value.date,
-      value.endsAtLocalTime,
-      getTimezoneOffsetForLocalDateTime(value.date, value.endsAtLocalTime)
+      value.endsAtLocalTime
     );
+    if (!startIso || !endIso) {
+      context.addIssue({
+        code: 'custom',
+        message: 'invalid_time',
+        path: [!startIso ? 'startsAtLocalTime' : 'endsAtLocalTime'],
+      });
+      return;
+    }
+
+    const start = new Date(startIso).getTime();
+    const end = new Date(endIso).getTime();
     const durationMs = Number(value.slotDurationMinutes) * 60_000;
 
     if (end <= start) {
@@ -139,70 +153,24 @@ export function calculateAvailabilityEndLocalTime(
     return null;
   }
 
-  const { year, monthIndex, day } = parseDate(date);
-  const { hours, minutes } = parseTime(startsAtLocalTime);
-  const start = new Date(year, monthIndex, day, hours, minutes);
-
-  if (
-    start.getFullYear() !== year ||
-    start.getMonth() !== monthIndex ||
-    start.getDate() !== day ||
-    start.getHours() !== hours ||
-    start.getMinutes() !== minutes
-  ) {
-    return null;
-  }
-
-  const end = new Date(start.getTime() + durationMinutes * 60_000);
-
-  if (
-    end.getFullYear() !== year ||
-    end.getMonth() !== monthIndex ||
-    end.getDate() !== day
-  ) {
-    return null;
-  }
-
-  const endLocalTime = `${String(end.getHours()).padStart(2, '0')}:${String(
-    end.getMinutes()
-  ).padStart(2, '0')}`;
-  const { hours: endHours, minutes: endMinutes } = parseTime(endLocalTime);
-  const representableEnd = new Date(
-    year,
-    monthIndex,
-    day,
-    endHours,
-    endMinutes
-  );
-
-  return representableEnd.getTime() === end.getTime() ? endLocalTime : null;
+  return calculateSchedulingEndTime(date, startsAtLocalTime, durationMinutes);
 }
 
 export function getDefaultAvailabilityRecurrenceEndsOn(date: string) {
   const { year, monthIndex, day } = parseDate(date);
   const targetMonthIndex = monthIndex + 1;
   const lastDayOfTargetMonth = new Date(
-    year,
-    targetMonthIndex + 1,
-    0
-  ).getDate();
+    Date.UTC(year, targetMonthIndex + 1, 0)
+  ).getUTCDate();
   const target = new Date(
-    year,
-    targetMonthIndex,
-    Math.min(day, lastDayOfTargetMonth)
+    Date.UTC(year, targetMonthIndex, Math.min(day, lastDayOfTargetMonth))
   );
 
   return [
-    target.getFullYear(),
-    String(target.getMonth() + 1).padStart(2, '0'),
-    String(target.getDate()).padStart(2, '0'),
+    target.getUTCFullYear(),
+    String(target.getUTCMonth() + 1).padStart(2, '0'),
+    String(target.getUTCDate()).padStart(2, '0'),
   ].join('-');
-}
-
-function getTimezoneOffsetForLocalDateTime(date: string, time: string) {
-  const { year, monthIndex, day } = parseDate(date);
-  const { hours, minutes } = parseTime(time);
-  return new Date(year, monthIndex, day, hours, minutes).getTimezoneOffset();
 }
 
 function localDateTimeToUtcMs(
@@ -222,20 +190,34 @@ export function toAvailabilityRangeInput(
   form: AvailabilityRangeFormInput,
   timezoneOffsetMinutes?: number
 ): AvailabilityRangeInput {
-  const startOffset =
-    timezoneOffsetMinutes ??
-    getTimezoneOffsetForLocalDateTime(form.date, form.startsAtLocalTime);
-  const endOffset =
-    timezoneOffsetMinutes ??
-    getTimezoneOffsetForLocalDateTime(form.date, form.endsAtLocalTime);
+  const startsAt =
+    timezoneOffsetMinutes === undefined
+      ? schedulingLocalDateTimeToIso(form.date, form.startsAtLocalTime)
+      : new Date(
+          localDateTimeToUtcMs(
+            form.date,
+            form.startsAtLocalTime,
+            timezoneOffsetMinutes
+          )
+        ).toISOString();
+  const endsAt =
+    timezoneOffsetMinutes === undefined
+      ? schedulingLocalDateTimeToIso(form.date, form.endsAtLocalTime)
+      : new Date(
+          localDateTimeToUtcMs(
+            form.date,
+            form.endsAtLocalTime,
+            timezoneOffsetMinutes
+          )
+        ).toISOString();
+
+  if (!startsAt || !endsAt) {
+    throw new RangeError('Invalid Europe/Paris availability range');
+  }
 
   return {
-    startsAt: new Date(
-      localDateTimeToUtcMs(form.date, form.startsAtLocalTime, startOffset)
-    ).toISOString(),
-    endsAt: new Date(
-      localDateTimeToUtcMs(form.date, form.endsAtLocalTime, endOffset)
-    ).toISOString(),
+    startsAt,
+    endsAt,
     slotDurationMinutes: Number(
       form.slotDurationMinutes
     ) as AvailabilitySlotDuration,

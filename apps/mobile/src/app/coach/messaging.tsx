@@ -1,10 +1,11 @@
 import {
   isCoachMessageThreadUnread,
   messageBodyMaxLength,
+  schedulingTimeZone,
   type BookingStatus,
 } from '@nextpoint/shared';
 import { useRouter } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Pressable,
   ScrollView,
@@ -23,10 +24,15 @@ import { MaxContentWidth, Radii, Spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/auth-context';
 import {
   getCoachMessageThreads,
+  getCoachThreadMessages,
   markCoachMessageThreadRead,
   sendCoachMessage,
   type CoachMessageThread,
 } from '@/features/messaging/coach-messaging-service';
+import {
+  acquireMutationLock,
+  releaseMutationLock,
+} from '@/features/mutations/mutation-lock';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
 
@@ -41,7 +47,16 @@ export default function CoachMessagingScreen() {
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
   const [loading, setLoading] = useState(true);
+  const [hasMoreThreads, setHasMoreThreads] = useState(false);
+  const [loadingMoreThreads, setLoadingMoreThreads] = useState(false);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [loadingOlderMessages, setLoadingOlderMessages] = useState(false);
+  const [hasOlderMessages, setHasOlderMessages] = useState(false);
   const [sending, setSending] = useState(false);
+  const sendLock = useRef(false);
+  const threadPageLock = useRef(false);
+  const messagePageLock = useRef(false);
+  const messageRequestVersion = useRef(0);
   const [notice, setNotice] = useState<
     'loadError' | 'saveError' | 'invalidMessage' | 'contextUnavailable' | null
   >(null);
@@ -60,16 +75,24 @@ export default function CoachMessagingScreen() {
       };
     }
 
-    getCoachMessageThreads().then((result) => {
-      if (!mounted) return;
+    void getCoachMessageThreads()
+      .then((result) => {
+        if (!mounted) return;
 
-      if (!result.ok) {
+        if (!result.ok) {
+          setNotice('loadError');
+        } else {
+          setThreads(result.data);
+          setHasMoreThreads(result.hasMore);
+        }
+      })
+      .catch(() => {
+        if (!mounted) return;
         setNotice('loadError');
-      } else {
-        setThreads(result.data);
-      }
-      setLoading(false);
-    });
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
 
     return () => {
       mounted = false;
@@ -80,51 +103,177 @@ export default function CoachMessagingScreen() {
     new Intl.DateTimeFormat(locale, {
       dateStyle: 'medium',
       ...(includeTime ? { timeStyle: 'short' as const } : {}),
+      timeZone: schedulingTimeZone,
     }).format(new Date(value));
 
+  const loadMoreThreads = async () => {
+    if (!hasMoreThreads || !acquireMutationLock(threadPageLock)) return;
+
+    setLoadingMoreThreads(true);
+    try {
+      const result = await getCoachMessageThreads(threads.length);
+      if (!result.ok) {
+        setNotice('loadError');
+        return;
+      }
+
+      setThreads((current) => {
+        const knownIds = new Set(current.map((thread) => thread.id));
+        return [
+          ...current,
+          ...result.data.filter((thread) => !knownIds.has(thread.id)),
+        ];
+      });
+      setHasMoreThreads(result.hasMore);
+    } catch {
+      setNotice('loadError');
+    } finally {
+      setLoadingMoreThreads(false);
+      releaseMutationLock(threadPageLock);
+    }
+  };
+
   const openThread = async (thread: CoachMessageThread) => {
+    const requestVersion = ++messageRequestVersion.current;
     setSelectedThreadId(thread.id);
     setDraft('');
     setNotice(null);
+    setLoadingMessages(true);
+    setHasOlderMessages(false);
 
-    if (!isCoachMessageThreadUnread(thread)) return;
-    const result = await markCoachMessageThreadRead(thread);
-    if (!result.ok) {
-      setNotice('saveError');
+    try {
+      const [messagesResult, readResult] = await Promise.all([
+        getCoachThreadMessages(thread.id),
+        isCoachMessageThreadUnread(thread)
+          ? markCoachMessageThreadRead(thread)
+          : Promise.resolve(null),
+      ]);
+      if (messageRequestVersion.current !== requestVersion) return;
+
+      if (!messagesResult.ok) {
+        setNotice('loadError');
+      } else {
+        setThreads((current) =>
+          current.map((item) =>
+            item.id === thread.id
+              ? { ...item, messages: messagesResult.data }
+              : item
+          )
+        );
+        setHasOlderMessages(messagesResult.hasMore);
+      }
+
+      if (readResult && !readResult.ok) {
+        setNotice('saveError');
+      } else if (readResult) {
+        setThreads((current) =>
+          current.map((item) =>
+            item.id === readResult.data.id
+              ? {
+                  ...item,
+                  coachReadAt: readResult.data.coachReadAt,
+                  lastMessageAt: readResult.data.lastMessageAt,
+                }
+              : item
+          )
+        );
+      }
+    } catch {
+      if (messageRequestVersion.current !== requestVersion) return;
+      setNotice('loadError');
+    } finally {
+      if (messageRequestVersion.current === requestVersion) {
+        setLoadingMessages(false);
+      }
+    }
+  };
+
+  const loadOlderMessages = async () => {
+    const oldestMessage = selectedThread?.messages[0];
+    if (
+      !selectedThread ||
+      !oldestMessage ||
+      !hasOlderMessages ||
+      !acquireMutationLock(messagePageLock)
+    ) {
       return;
     }
 
-    setThreads((current) =>
-      current.map((item) => (item.id === result.data.id ? result.data : item))
-    );
+    const threadId = selectedThread.id;
+    const requestVersion = messageRequestVersion.current;
+    setLoadingOlderMessages(true);
+    try {
+      const result = await getCoachThreadMessages(
+        threadId,
+        oldestMessage.createdAt
+      );
+      if (messageRequestVersion.current !== requestVersion) return;
+      if (!result.ok) {
+        setNotice('loadError');
+        return;
+      }
+
+      setThreads((current) =>
+        current.map((thread) => {
+          if (thread.id !== threadId) return thread;
+          const knownIds = new Set(thread.messages.map((message) => message.id));
+          return {
+            ...thread,
+            messages: [
+              ...result.data.filter((message) => !knownIds.has(message.id)),
+              ...thread.messages,
+            ],
+          };
+        })
+      );
+      setHasOlderMessages(result.hasMore);
+    } catch {
+      setNotice('loadError');
+    } finally {
+      setLoadingOlderMessages(false);
+      releaseMutationLock(messagePageLock);
+    }
+  };
+
+  const closeThread = () => {
+    messageRequestVersion.current += 1;
+    setSelectedThreadId(null);
+    setHasOlderMessages(false);
   };
 
   const submitReply = async () => {
-    if (!selectedThread || sending) return;
+    if (!selectedThread || !acquireMutationLock(sendLock)) return;
 
     setSending(true);
     setNotice(null);
-    const result = await sendCoachMessage(selectedThread.id, draft);
-    setSending(false);
+    try {
+      const result = await sendCoachMessage(selectedThread.id, draft);
+      if (!result.ok) {
+        setNotice(
+          result.error === 'invalid_message' ? 'invalidMessage' : 'saveError'
+        );
+        return;
+      }
 
-    if (!result.ok) {
-      setNotice(result.error === 'invalid_message' ? 'invalidMessage' : 'saveError');
-      return;
+      setThreads((current) =>
+        current.map((thread) =>
+          thread.id === selectedThread.id
+            ? {
+                ...thread,
+                coachReadAt: result.data.createdAt,
+                lastMessageAt: result.data.createdAt,
+                messages: [...thread.messages, result.data],
+              }
+            : thread
+        )
+      );
+      setDraft('');
+    } catch {
+      setNotice('saveError');
+    } finally {
+      setSending(false);
+      releaseMutationLock(sendLock);
     }
-
-    setThreads((current) =>
-      current.map((thread) =>
-        thread.id === selectedThread.id
-          ? {
-              ...thread,
-              coachReadAt: result.data.createdAt,
-              lastMessageAt: result.data.createdAt,
-              messages: [...thread.messages, result.data],
-            }
-          : thread
-      )
-    );
-    setDraft('');
   };
 
   const openContext = () => {
@@ -238,6 +387,18 @@ export default function CoachMessagingScreen() {
                       </Pressable>
                     );
                   })}
+                  {hasMoreThreads ? (
+                    <Button
+                      disabled={loadingMoreThreads}
+                      label={t(
+                        loadingMoreThreads
+                          ? 'messaging.loadingMore'
+                          : 'messaging.loadMoreThreads'
+                      )}
+                      onPress={() => void loadMoreThreads()}
+                      variant="secondary"
+                    />
+                  ) : null}
                 </ScrollView>
               )}
             </Card>
@@ -250,7 +411,7 @@ export default function CoachMessagingScreen() {
                   {isMobile ? (
                     <Button
                       label={t('messaging.backAction')}
-                      onPress={() => setSelectedThreadId(null)}
+                      onPress={closeThread}
                       variant="secondary"
                     />
                   ) : null}
@@ -278,11 +439,30 @@ export default function CoachMessagingScreen() {
                   <ScrollView
                     contentContainerStyle={styles.messages}
                     style={styles.scrollArea}>
-                    {selectedThread.messages.length === 0 ? (
+                    {loadingMessages ? (
+                      <ThemedText themeColor="textMuted">
+                        {t('messaging.loadingMessages')}
+                      </ThemedText>
+                    ) : null}
+                    {hasOlderMessages ? (
+                      <Button
+                        disabled={loadingMessages || loadingOlderMessages}
+                        label={t(
+                          loadingOlderMessages
+                            ? 'messaging.loadingMore'
+                            : 'messaging.loadOlderMessages'
+                        )}
+                        onPress={() => void loadOlderMessages()}
+                        variant="secondary"
+                      />
+                    ) : null}
+                    {!loadingMessages && selectedThread.messages.length === 0 ? (
                       <ThemedText themeColor="textMuted">
                         {t('messaging.noMessages')}
                       </ThemedText>
-                    ) : (
+                    ) : null}
+                    {selectedThread.messages.length > 0
+                      ? (
                       selectedThread.messages.map((message) => {
                         const fromCoach = message.senderId === selectedThread.coachId;
 
@@ -313,12 +493,13 @@ export default function CoachMessagingScreen() {
                           </View>
                         );
                       })
-                    )}
+                        )
+                      : null}
                   </ScrollView>
 
                   <View style={styles.composer}>
                     <TextField
-                      editable={!sending}
+                      editable={!sending && !loadingMessages}
                       error={
                         notice === 'invalidMessage'
                           ? t('messaging.invalidMessageBody')
@@ -333,7 +514,7 @@ export default function CoachMessagingScreen() {
                       value={draft}
                     />
                     <Button
-                      disabled={sending}
+                      disabled={sending || loadingMessages}
                       label={t(
                         sending ? 'messaging.sending' : 'messaging.sendAction'
                       )}

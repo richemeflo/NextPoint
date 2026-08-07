@@ -101,6 +101,17 @@ try {
     assert.equal(coachRole.data.role, 'coach');
   }
 
+  const publicClient = createClient(
+    environment.API_URL,
+    environment.PUBLISHABLE_KEY,
+    publicOptions
+  );
+  const coachRegistration = await publicClient.rpc(
+    'is_coach_registration_open'
+  );
+  assert.equal(coachRegistration.error, null);
+  assert.equal(coachRegistration.data, false);
+
   const secondCoachClient = createClient(
     environment.API_URL,
     environment.PUBLISHABLE_KEY,

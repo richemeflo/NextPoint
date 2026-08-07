@@ -1,10 +1,11 @@
-import type {
-  ManualStudentProfileInput,
-  StudentAccountStatus,
-  StudentHistoryEventStatus,
-  StudentHistoryEventType,
-  StudentSex,
-  Tables,
+import {
+  createManualStudentResponseSchema,
+  type ManualStudentProfileInput,
+  type StudentAccountStatus,
+  type StudentHistoryEventStatus,
+  type StudentHistoryEventType,
+  type StudentSex,
+  type Tables,
 } from '@nextpoint/shared';
 
 import { supabase } from '@/lib/supabase/client';
@@ -180,10 +181,10 @@ export async function createManualStudent(
     'create-manual-student',
     { body: profile }
   );
+  const parsed = createManualStudentResponseSchema.safeParse(data as unknown);
 
-  if (error || !data?.ok || !data.data) {
-    return { ok: false, code: data?.error?.code };
-  }
+  if (error || !parsed.success) return { ok: false };
+  if (!parsed.data.ok) return { ok: false, code: parsed.data.error.code };
 
-  return { ok: true, data: mapStudent(data.data) };
+  return { ok: true, data: mapStudent(parsed.data.data) };
 }

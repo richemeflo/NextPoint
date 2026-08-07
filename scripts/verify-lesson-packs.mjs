@@ -164,6 +164,32 @@ try {
     status: 'active',
   });
 
+  const increased = await coach.client.rpc('adjust_lesson_pack_sessions', {
+    p_pack_id: assigned.data.id,
+    p_delta: 1,
+  });
+  assert.equal(increased.error, null);
+  assert.equal(increased.data.included_sessions, 3);
+  assert.equal(increased.data.used_sessions, 0);
+  assert.equal(increased.data.remaining_sessions, 3);
+
+  const decreased = await coach.client.rpc('adjust_lesson_pack_sessions', {
+    p_pack_id: assigned.data.id,
+    p_delta: -1,
+  });
+  assert.equal(decreased.error, null);
+  assert.equal(decreased.data.included_sessions, 2);
+  assert.equal(decreased.data.used_sessions, 0);
+  assert.equal(decreased.data.remaining_sessions, 2);
+
+  const adjustmentHistory = await coach.client
+    .from('student_history_events')
+    .select('event_type', { count: 'exact' })
+    .eq('source_id', assigned.data.id)
+    .eq('event_type', 'lesson_pack_adjusted');
+  assert.equal(adjustmentHistory.error, null);
+  assert.equal(adjustmentHistory.count, 2);
+
   const firstUse = await coach.client.rpc('consume_lesson_pack_session', {
     p_pack_id: assigned.data.id,
   });
@@ -212,6 +238,34 @@ try {
     status: 'exhausted',
   });
 
+  const minimumPack = await coach.client.rpc('assign_lesson_pack', {
+    p_student_id: student.userId,
+    p_included_sessions: 1,
+  });
+  assert.equal(minimumPack.error, null);
+
+  const underMinimum = await coach.client.rpc(
+    'adjust_lesson_pack_sessions',
+    {
+      p_pack_id: minimumPack.data.id,
+      p_delta: -1,
+    }
+  );
+  assert.notEqual(underMinimum.error, null);
+
+  const afterMinimumRefusal = await coach.client
+    .from('lesson_packs')
+    .select('included_sessions, used_sessions, remaining_sessions, status')
+    .eq('id', minimumPack.data.id)
+    .single();
+  assert.equal(afterMinimumRefusal.error, null);
+  assert.deepEqual(afterMinimumRefusal.data, {
+    included_sessions: 1,
+    used_sessions: 0,
+    remaining_sessions: 1,
+    status: 'active',
+  });
+
   const studentConsume = await student.client.rpc(
     'consume_lesson_pack_session',
     { p_pack_id: assigned.data.id }
@@ -227,7 +281,7 @@ try {
   );
 
   console.log(
-    'LESSON_PACKS_INTEGRATION_OK coach assignment, consumption, counters, history, participant read, non-owner denial, zero floor, no payment data'
+    'LESSON_PACKS_INTEGRATION_OK coach assignment, independent adjustment and consumption, counters, history, participant read, non-owner denial, zero and minimum floors, no payment data'
   );
 } finally {
   for (const userId of createdUserIds) {

@@ -16,11 +16,13 @@ export function ProfileLocaleSync() {
     const profileRequest =
       role === 'coach' ? getCoachProfile(user.id) : getStudentProfile(user.id);
 
-    void profileRequest.then((result) => {
-      if (active && result.ok && result.data) {
-        setLocale(result.data.preferredLanguage);
-      }
-    });
+    void profileRequest
+      .then((result) => {
+        if (active && result.ok && result.data) {
+          setLocale(result.data.preferredLanguage);
+        }
+      })
+      .catch(() => undefined);
 
     return () => {
       active = false;

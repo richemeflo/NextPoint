@@ -3,6 +3,7 @@ import type { AppRole, StudentAccountStatus } from '@nextpoint/shared';
 import type { Session } from '@supabase/supabase-js';
 
 import { AuthContext } from './auth-context';
+import { createAuthSessionTransitionGuard } from './auth-session-transition';
 import {
   signInWithPassword,
   signOutSession,
@@ -25,10 +26,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     if (!supabase) return;
 
-    let active = true;
+    const transitionGuard = createAuthSessionTransitionGuard();
 
     const applySession = async (nextSession: Session | null) => {
-      if (!active) return;
+      const transitionVersion = transitionGuard.begin();
+      if (!transitionGuard.isCurrent(transitionVersion)) return;
 
       setSession(nextSession);
       setRole(null);
@@ -40,23 +42,41 @@ export function AuthProvider({ children }: PropsWithChildren) {
       }
 
       setStatus('loading');
-      const access = await getCurrentUserAccess(nextSession.user.id);
 
-      if (!active) return;
+      try {
+        const access = await getCurrentUserAccess(nextSession.user.id);
+        if (!transitionGuard.isCurrent(transitionVersion)) return;
 
-      setRole(access?.role ?? null);
-      setAccountStatus(access?.accountStatus ?? null);
-      setStatus(
-        access &&
-          (access.role === 'coach' || access.accountStatus === 'active')
-          ? 'authenticated'
-          : 'access-error'
-      );
+        setRole(access?.role ?? null);
+        setAccountStatus(access?.accountStatus ?? null);
+        setStatus(
+          access &&
+            (access.role === 'coach' || access.accountStatus === 'active')
+            ? 'authenticated'
+            : 'access-error'
+        );
+      } catch {
+        if (!transitionGuard.isCurrent(transitionVersion)) return;
+        setRole(null);
+        setAccountStatus(null);
+        setStatus('access-error');
+      }
     };
 
-    void supabase.auth.getSession().then(({ data, error }) => {
-      void applySession(error ? null : data.session);
-    });
+    const initialSessionVersion = transitionGuard.begin();
+    void supabase.auth
+      .getSession()
+      .then(({ data, error }) => {
+        if (!transitionGuard.isCurrent(initialSessionVersion)) return;
+        return applySession(error ? null : data.session);
+      })
+      .catch(() => {
+        if (!transitionGuard.isCurrent(initialSessionVersion)) return;
+        setSession(null);
+        setRole(null);
+        setAccountStatus(null);
+        setStatus('access-error');
+      });
 
     const {
       data: { subscription },
@@ -65,7 +85,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     });
 
     return () => {
-      active = false;
+      transitionGuard.deactivate();
       subscription.unsubscribe();
     };
   }, []);

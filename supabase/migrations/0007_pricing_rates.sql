@@ -5,7 +5,7 @@ create table public.pricing_rates (
   amount_cents integer not null check (amount_cents between 1 and 10000000),
   currency text not null default 'EUR' check (currency = 'EUR'),
   duration_minutes integer not null check (duration_minutes in (60, 90)),
-  lesson_type text not null check (lesson_type in ('individual', 'group')),
+  lesson_type text not null check (lesson_type in ('individual', 'duo', 'group')),
   is_active boolean not null default true,
   applicability_contexts text[] not null default '{}'
     check (

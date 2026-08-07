@@ -18,7 +18,7 @@ create table public.bookings (
   coach_id uuid not null references auth.users(id) on delete cascade,
   student_id uuid not null references auth.users(id) on delete cascade,
   pricing_rate_id uuid not null references public.pricing_rates(id),
-  lesson_type text not null check (lesson_type in ('individual', 'group')),
+  lesson_type text not null check (lesson_type in ('individual', 'duo', 'group')),
   status public.booking_status not null default 'pending',
   origin public.booking_origin not null default 'student_request',
   starts_at timestamptz not null,
@@ -55,7 +55,7 @@ comment on table public.bookings is
   'Transactional booking requests and confirmed lessons for Epic 4.';
 
 comment on table public.booking_participants is
-  'Participants attached to individual and group bookings, including requester.';
+  'Participants attached to individual, duo and group bookings, including requester.';
 
 create unique index bookings_single_confirmed_slot_idx
   on public.bookings (availability_slot_id)
@@ -263,9 +263,22 @@ as $$
 declare
   participant_id uuid;
   normalized_ids uuid[] := array[p_requester_id] || coalesce(p_participant_ids, '{}');
+  booking_lesson_type text;
+  participant_count integer;
 begin
-  if cardinality(array(select distinct unnest(normalized_ids))) > 4 then
-    raise exception 'too many participants' using errcode = '22023';
+  select lesson_type
+    into booking_lesson_type
+  from public.bookings
+  where id = p_booking_id;
+
+  participant_count := cardinality(array(select distinct unnest(normalized_ids)));
+
+  if booking_lesson_type is null
+    or (booking_lesson_type = 'individual' and participant_count <> 1)
+    or (booking_lesson_type = 'duo' and participant_count <> 2)
+    or (booking_lesson_type = 'group' and participant_count > 4)
+  then
+    raise exception 'invalid participants' using errcode = '22023';
   end if;
 
   foreach participant_id in array normalized_ids
@@ -384,7 +397,7 @@ begin
     raise exception 'student pending limit reached' using errcode = '22023';
   end if;
 
-  if p_lesson_type = 'group' then
+  if p_lesson_type in ('duo', 'group') then
     foreach participant_id in array coalesce(p_participant_ids, '{}')
     loop
       perform public.assert_active_student_for_coach(target_slot.coach_id, participant_id);
@@ -433,7 +446,10 @@ begin
   perform public.add_booking_participants(
     created_booking.id,
     requester_id,
-    case when p_lesson_type = 'group' then p_participant_ids else '{}'::uuid[] end
+    case
+      when p_lesson_type in ('duo', 'group') then p_participant_ids
+      else '{}'::uuid[]
+    end
   );
   perform public.add_booking_history(
     created_booking,

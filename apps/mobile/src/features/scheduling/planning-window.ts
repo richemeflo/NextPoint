@@ -1,3 +1,9 @@
+import {
+  getSchedulingDateKey,
+  getSchedulingTimeMinutes,
+  schedulingLocalDateTimeToIso,
+} from '@nextpoint/shared';
+
 export const planningViewModes = ['week', 'day'] as const;
 
 export type PlanningViewMode = (typeof planningViewModes)[number];
@@ -17,7 +23,7 @@ export type PlanningWindow = {
 };
 
 export const agendaStartHour = 8;
-export const agendaEndHour = 22;
+export const agendaEndHour = 23;
 export const agendaHourMarks = Array.from(
   { length: agendaEndHour - agendaStartHour + 1 },
   (_, index) => agendaStartHour + index
@@ -42,6 +48,12 @@ function addUtcDays(date: Date, days: number) {
   return next;
 }
 
+function getSchedulingMidnight(date: Date) {
+  const iso = schedulingLocalDateTimeToIso(formatUtcDate(date), '00:00');
+  if (!iso) throw new RangeError('Invalid Europe/Paris planning boundary');
+  return iso;
+}
+
 export function getPlanningWindow(
   anchorDate: string,
   mode: PlanningViewMode
@@ -59,8 +71,8 @@ export function getPlanningWindow(
     anchorDate,
     startDate: formatUtcDate(start),
     endDate: formatUtcDate(end),
-    startsAt: start.toISOString(),
-    endsAt: exclusiveEnd.toISOString(),
+    startsAt: getSchedulingMidnight(start),
+    endsAt: getSchedulingMidnight(exclusiveEnd),
     days: Array.from({ length: dayCount }, (_, index) => ({
       date: formatUtcDate(addUtcDays(start, index)),
     })),
@@ -80,7 +92,7 @@ export function movePlanningAnchor(
 }
 
 export function getSlotDateKey(startsAt: string) {
-  return startsAt.slice(0, 10);
+  return getSchedulingDateKey(startsAt);
 }
 
 export function getAgendaSlotPosition(
@@ -89,10 +101,8 @@ export function getAgendaSlotPosition(
   startHour = agendaStartHour,
   endHour = agendaEndHour
 ) {
-  const start = new Date(startsAt);
-  const end = new Date(endsAt);
-  const startMinutes = start.getHours() * 60 + start.getMinutes();
-  const endMinutes = end.getHours() * 60 + end.getMinutes();
+  const startMinutes = getSchedulingTimeMinutes(startsAt);
+  const endMinutes = getSchedulingTimeMinutes(endsAt);
   const agendaStartMinutes = startHour * 60;
   const agendaEndMinutes = endHour * 60;
   const agendaDuration = agendaEndMinutes - agendaStartMinutes;

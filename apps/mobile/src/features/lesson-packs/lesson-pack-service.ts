@@ -1,10 +1,12 @@
 import type {
+  LessonPackAdjustment,
   LessonPackInput,
   LessonPackStatus,
   Tables,
 } from '@nextpoint/shared';
 
 import { supabase } from '@/lib/supabase/client';
+import { runLessonPackRequest } from '@/features/lesson-packs/lesson-pack-request';
 
 type LessonPackRow = Tables<'lesson_packs'>;
 
@@ -25,6 +27,10 @@ type LessonPacksResult =
 type LessonPackResult =
   | { ok: true; data: LessonPack }
   | { ok: false; code?: 'active_pack_exists' };
+
+type AdjustLessonPackResult =
+  | { ok: true; data: LessonPack }
+  | { ok: false; code: 'adjust_refused' };
 
 type ConsumeLessonPackResult =
   | { ok: true; data: LessonPack }
@@ -63,11 +69,16 @@ export async function assignLessonPack(
   input: LessonPackInput
 ): Promise<LessonPackResult> {
   if (!supabase) return { ok: false };
+  const client = supabase;
 
-  const { data, error } = await supabase.rpc('assign_lesson_pack', {
-    p_student_id: studentId,
-    p_included_sessions: input.includedSessions,
-  });
+  const { data, error } = await runLessonPackRequest((signal) =>
+    client
+      .rpc('assign_lesson_pack', {
+        p_student_id: studentId,
+        p_included_sessions: input.includedSessions,
+      })
+      .abortSignal(signal)
+  );
 
   if (error || !data) {
     return {
@@ -79,14 +90,42 @@ export async function assignLessonPack(
   return { ok: true, data: mapLessonPack(data) };
 }
 
+export async function adjustLessonPackSessions(
+  packId: string,
+  adjustment: LessonPackAdjustment
+): Promise<AdjustLessonPackResult> {
+  if (!supabase) return { ok: false, code: 'adjust_refused' };
+  const client = supabase;
+
+  const { data, error } = await runLessonPackRequest((signal) =>
+    client
+      .rpc('adjust_lesson_pack_sessions', {
+        p_pack_id: packId,
+        p_delta: adjustment,
+      })
+      .abortSignal(signal)
+  );
+
+  if (error || !data) {
+    return { ok: false, code: 'adjust_refused' };
+  }
+
+  return { ok: true, data: mapLessonPack(data) };
+}
+
 export async function consumeLessonPackSession(
   packId: string
 ): Promise<ConsumeLessonPackResult> {
   if (!supabase) return { ok: false, code: 'consume_refused' };
+  const client = supabase;
 
-  const { data, error } = await supabase.rpc('consume_lesson_pack_session', {
-    p_pack_id: packId,
-  });
+  const { data, error } = await runLessonPackRequest((signal) =>
+    client
+      .rpc('consume_lesson_pack_session', {
+        p_pack_id: packId,
+      })
+      .abortSignal(signal)
+  );
 
   if (error || !data) {
     return { ok: false, code: 'consume_refused' };

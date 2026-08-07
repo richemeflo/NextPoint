@@ -14,6 +14,17 @@ function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
 
+export async function isCoachRegistrationOpen(): Promise<boolean> {
+  if (!supabase) return false;
+
+  try {
+    const { data, error } = await supabase.rpc('is_coach_registration_open');
+    return !error && data === true;
+  } catch {
+    return false;
+  }
+}
+
 export async function signInWithPassword(email: string, password: string): Promise<AuthResult> {
   if (!supabase) return { ok: false, code: 'configuration_error' };
 

@@ -8,7 +8,7 @@ import {
 } from '@nextpoint/shared';
 import { useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -21,6 +21,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { AuthFailureCode } from './auth-error';
 import { useAuth } from './auth-context';
+import { isCoachRegistrationOpen } from './auth-service';
 
 import { AnimatedIcon } from '@/components/animated-icon';
 import { ThemedText } from '@/components/themed-text';
@@ -206,6 +207,7 @@ function SignUpForm() {
     status === 'configuration-error' ? 'configuration_error' : null
   );
   const [confirmationRequired, setConfirmationRequired] = useState(false);
+  const [coachRegistrationOpen, setCoachRegistrationOpen] = useState(false);
   const {
     control,
     handleSubmit,
@@ -214,6 +216,22 @@ function SignUpForm() {
     resolver: zodResolver(signUpSchema),
     defaultValues: { email: '', password: '', confirmPassword: '', role: 'eleve' },
   });
+
+  useEffect(() => {
+    let active = true;
+
+    void isCoachRegistrationOpen()
+      .then((isOpen) => {
+        if (active) setCoachRegistrationOpen(isOpen);
+      })
+      .catch(() => {
+        if (active) setCoachRegistrationOpen(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const onSubmit = handleSubmit(async ({ email, password, role }) => {
     setAuthError(null);
@@ -230,13 +248,15 @@ function SignUpForm() {
 
   return (
     <View style={styles.form}>
-      <Controller
-        control={control}
-        name="role"
-        render={({ field: { onChange, value } }) => (
-          <RoleSelector onChange={onChange} value={value} />
-        )}
-      />
+      {coachRegistrationOpen ? (
+        <Controller
+          control={control}
+          name="role"
+          render={({ field: { onChange, value } }) => (
+            <RoleSelector onChange={onChange} value={value} />
+          )}
+        />
+      ) : null}
       <Controller
         control={control}
         name="email"

@@ -1,5 +1,10 @@
 import { z } from 'zod';
 
+import {
+  getSchedulingDateKey,
+  schedulingLocalDateTimeToIso,
+} from '../domain/scheduling-time';
+
 export const coachStatsPeriods = ['month', 'quarter', 'year'] as const;
 
 export const coachStatsPeriodSchema = z.enum(coachStatsPeriods);
@@ -29,22 +34,38 @@ export function getCoachStatsPeriodRange(
   period: CoachStatsPeriod = 'month',
   referenceDate = new Date()
 ) {
-  const year = referenceDate.getFullYear();
-  const month = referenceDate.getMonth();
+  const [year, calendarMonth] = getSchedulingDateKey(referenceDate)
+    .split('-')
+    .map(Number);
+  const month = calendarMonth - 1;
   const startMonth = period === 'quarter' ? Math.floor(month / 3) * 3 : month;
-  const startsAt =
-    period === 'year' ? new Date(year, 0, 1) : new Date(year, startMonth, 1);
-  const endsAt =
+  const start =
+    period === 'year'
+      ? new Date(Date.UTC(year, 0, 1))
+      : new Date(Date.UTC(year, startMonth, 1));
+  const end =
     period === 'month'
-      ? new Date(year, month + 1, 1)
+      ? new Date(Date.UTC(year, month + 1, 1))
       : period === 'quarter'
-        ? new Date(year, startMonth + 3, 1)
-        : new Date(year + 1, 0, 1);
+        ? new Date(Date.UTC(year, startMonth + 3, 1))
+        : new Date(Date.UTC(year + 1, 0, 1));
+  const formatDate = (date: Date) =>
+    [
+      date.getUTCFullYear(),
+      String(date.getUTCMonth() + 1).padStart(2, '0'),
+      String(date.getUTCDate()).padStart(2, '0'),
+    ].join('-');
+  const startsAt = schedulingLocalDateTimeToIso(formatDate(start), '00:00');
+  const endsAt = schedulingLocalDateTimeToIso(formatDate(end), '00:00');
+
+  if (!startsAt || !endsAt) {
+    throw new RangeError('Invalid Europe/Paris stats period');
+  }
 
   return {
     period,
-    startsAt: startsAt.toISOString(),
-    endsAt: endsAt.toISOString(),
+    startsAt,
+    endsAt,
   };
 }
 

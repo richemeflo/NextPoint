@@ -8,12 +8,17 @@ import {
   calculateAvailabilityEndLocalTime,
   defaultAvailabilityLocation,
   getDefaultAvailabilityRecurrenceEndsOn,
+  getSchedulingDateKey,
+  getSchedulingDateLabelInstant,
+  getSchedulingTime,
+  getSchedulingToday,
+  schedulingTimeZone,
   toAvailabilityRangeInput,
   type AvailabilityRangeFormInput,
   type AvailabilityRecurrenceType,
 } from '@nextpoint/shared';
 import { Controller, useForm, useWatch } from 'react-hook-form';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -30,6 +35,10 @@ import { Feedback } from '@/components/ui/feedback';
 import { TextField } from '@/components/ui/text-field';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/auth-context';
+import {
+  acquireMutationLock,
+  releaseMutationLock,
+} from '@/features/mutations/mutation-lock';
 import { ProfileOptionSelector } from '@/features/profiles/profile-option-selector';
 import {
   createAvailabilityRange,
@@ -40,30 +49,18 @@ import {
   type AvailabilityRange,
   type AvailabilitySlot,
 } from '@/features/scheduling/availability-service';
+import { isCoachPlanningSlotVisible } from '@/features/scheduling/coach-planning-visibility';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
-
-function formatLocalDate(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function formatLocalTime(date: Date) {
-  return `${String(date.getHours()).padStart(2, '0')}:${String(
-    date.getMinutes()
-  ).padStart(2, '0')}`;
-}
 
 function slotToFormInput(slot: AvailabilitySlot): AvailabilityRangeFormInput {
   const startsAt = new Date(slot.startsAt);
   const endsAt = new Date(slot.endsAt);
 
   return {
-    date: formatLocalDate(startsAt),
-    startsAtLocalTime: formatLocalTime(startsAt),
-    endsAtLocalTime: formatLocalTime(endsAt),
+    date: getSchedulingDateKey(startsAt),
+    startsAtLocalTime: getSchedulingTime(startsAt),
+    endsAtLocalTime: getSchedulingTime(endsAt),
     slotDurationMinutes: String(slot.durationMinutes) as '60' | '90',
     location: defaultAvailabilityLocation,
     recurrenceType: 'none',
@@ -72,7 +69,7 @@ function slotToFormInput(slot: AvailabilitySlot): AvailabilityRangeFormInput {
 }
 
 const defaultValues: AvailabilityRangeFormInput = {
-  date: formatLocalDate(new Date()),
+  date: getSchedulingToday(),
   startsAtLocalTime: '18:00',
   endsAtLocalTime: '19:30',
   slotDurationMinutes: '90',
@@ -103,6 +100,8 @@ export default function CoachAvailabilityScreen() {
   const [editingSlotId, setEditingSlotId] = useState<string | null>(null);
   const [editingSlotValues, setEditingSlotValues] =
     useState<AvailabilityRangeFormInput | null>(null);
+  const availabilityMutationLock = useRef(false);
+  const [mutationPending, setMutationPending] = useState(false);
   const {
     control,
     handleSubmit,
@@ -166,17 +165,22 @@ export default function CoachAvailabilityScreen() {
     void Promise.all([
       getCoachAvailabilityRanges(user.id),
       getCoachAvailabilitySlots(user.id),
-    ]).then(([rangesResult, slotsResult]) => {
-      if (!active) return;
-      if (!rangesResult.ok || !slotsResult.ok) {
-        setLoadState('error');
-        return;
-      }
+    ])
+      .then(([rangesResult, slotsResult]) => {
+        if (!active) return;
+        if (!rangesResult.ok || !slotsResult.ok) {
+          setLoadState('error');
+          return;
+        }
 
-      setRanges(rangesResult.data);
-      setSlots(slotsResult.data);
-      setLoadState('ready');
-    });
+        setRanges(rangesResult.data);
+        setSlots(slotsResult.data);
+        setLoadState('ready');
+      })
+      .catch(() => {
+        if (!active) return;
+        setLoadState('error');
+      });
 
     return () => {
       active = false;
@@ -230,12 +234,14 @@ export default function CoachAvailabilityScreen() {
       month: 'short',
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: schedulingTimeZone,
     }).format(new Date(value));
 
   const formatTime = (value: string) =>
     new Intl.DateTimeFormat(locale, {
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: schedulingTimeZone,
     }).format(new Date(value));
 
   const formatDate = (value: string) =>
@@ -243,7 +249,8 @@ export default function CoachAvailabilityScreen() {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
-    }).format(new Date(`${value}T00:00:00`));
+      timeZone: schedulingTimeZone,
+    }).format(getSchedulingDateLabelInstant(value) ?? new Date(value));
 
   const slotsByRangeId = useMemo(() => {
     const grouped = new Map<string, AvailabilitySlot[]>();
@@ -257,6 +264,19 @@ export default function CoachAvailabilityScreen() {
     return grouped;
   }, [slots]);
 
+  const visibleSlotsByRangeId = useMemo(
+    () =>
+      new Map(
+        [...slotsByRangeId].map(([rangeId, rangeSlots]) => [
+          rangeId,
+          rangeSlots.filter((slot) =>
+            isCoachPlanningSlotVisible(slot.status)
+          ),
+        ])
+      ),
+    [slotsByRangeId]
+  );
+
   const rangeById = useMemo(() => {
     const byId = new Map<string, AvailabilityRange>();
 
@@ -267,25 +287,41 @@ export default function CoachAvailabilityScreen() {
     return byId;
   }, [ranges]);
 
-  const onSubmit = handleSubmit(async (form) => {
+  const submitAvailability = async (form: AvailabilityRangeFormInput) => {
+    if (!acquireMutationLock(availabilityMutationLock)) return;
+
+    setMutationPending(true);
     setFeedback('none');
-    const result = await createAvailabilityRange(toAvailabilityRangeInput(form));
-
-    if (!result.ok) {
-      setFeedback(
-        result.code === 'conflict'
-          ? 'conflict'
-          : result.code === 'forbidden'
-            ? 'forbidden'
-            : 'error'
+    try {
+      const result = await createAvailabilityRange(
+        toAvailabilityRangeInput(form)
       );
-      return;
-    }
 
-    reset({ ...defaultValues, date: form.date });
-    setFeedback('saved');
-    await loadRanges();
-  });
+      if (!result.ok) {
+        setFeedback(
+          result.code === 'conflict'
+            ? 'conflict'
+            : result.code === 'forbidden'
+              ? 'forbidden'
+              : 'error'
+        );
+        return;
+      }
+
+      reset({ ...defaultValues, date: form.date });
+      setFeedback('saved');
+      await loadRanges();
+    } catch {
+      setFeedback('error');
+    } finally {
+      setMutationPending(false);
+      releaseMutationLock(availabilityMutationLock);
+    }
+  };
+
+  const onSubmit = () => {
+    void handleSubmit(submitAvailability)();
+  };
 
   const startEditingSlot = (slot: AvailabilitySlot) => {
     setFeedback('none');
@@ -379,14 +415,29 @@ export default function CoachAvailabilityScreen() {
     slot: AvailabilitySlot,
     action: 'save' | 'delete'
   ) => {
+    if (!acquireMutationLock(availabilityMutationLock)) return;
+    setMutationPending(true);
+
+    const releasePendingMutation = () => {
+      setMutationPending(false);
+      releaseMutationLock(availabilityMutationLock);
+    };
+    const runMutation = async (applyToSeries: boolean) => {
+      try {
+        if (action === 'save') {
+          await saveEditedSlot(slot, applyToSeries);
+        } else {
+          await deleteSlot(slot, applyToSeries);
+        }
+      } catch {
+        setFeedback('error');
+      } finally {
+        releasePendingMutation();
+      }
+    };
     const applyOccurrence = () =>
-      action === 'save'
-        ? void saveEditedSlot(slot, false)
-        : void deleteSlot(slot, false);
-    const applySeries = () =>
-      action === 'save'
-        ? void saveEditedSlot(slot, true)
-        : void deleteSlot(slot, true);
+      void runMutation(false);
+    const applySeries = () => void runMutation(true);
 
     if (!canOfferSeriesScope(slot)) {
       applyOccurrence();
@@ -407,9 +458,11 @@ export default function CoachAvailabilityScreen() {
         },
         {
           text: t('availability.cancelAction'),
+          onPress: releasePendingMutation,
           style: 'cancel',
         },
-      ]
+      ],
+      { cancelable: false }
     );
   };
 
@@ -629,7 +682,9 @@ export default function CoachAvailabilityScreen() {
 
             <View style={styles.actions}>
               <Button
-                disabled={isSubmitting || loadState === 'error'}
+                disabled={
+                  isSubmitting || mutationPending || loadState === 'error'
+                }
                 label={
                   isSubmitting
                     ? t('availability.saving')
@@ -685,7 +740,7 @@ export default function CoachAvailabilityScreen() {
                       <ThemedText type="smallBold">
                         {t('availability.generatedSlotsTitle')}
                       </ThemedText>
-                      {(slotsByRangeId.get(range.id) ?? []).map((slot) => (
+                      {(visibleSlotsByRangeId.get(range.id) ?? []).map((slot) => (
                         <View key={slot.id} style={styles.slotRow}>
                           <ThemedText type="small" themeColor="textMuted">
                             {t('availability.generatedSlot', {
@@ -741,15 +796,18 @@ export default function CoachAvailabilityScreen() {
                               />
                               <View style={styles.slotActions}>
                                 <Button
+                                  disabled={mutationPending}
                                   label={t('availability.updateAction')}
                                   onPress={() => requestMutationScope(slot, 'save')}
                                 />
                                 <Button
+                                  disabled={mutationPending}
                                   label={t('availability.deleteAction')}
                                   onPress={() => requestMutationScope(slot, 'delete')}
                                   variant="secondary"
                                 />
                                 <Button
+                                  disabled={mutationPending}
                                   label={t('availability.cancelAction')}
                                   onPress={cancelEditingSlot}
                                   variant="secondary"
@@ -759,11 +817,13 @@ export default function CoachAvailabilityScreen() {
                           ) : (
                             <View style={styles.slotActions}>
                               <Button
+                                disabled={mutationPending}
                                 label={t('availability.editAction')}
                                 onPress={() => startEditingSlot(slot)}
                                 variant="secondary"
                               />
                               <Button
+                                disabled={mutationPending}
                                 label={t('availability.deleteAction')}
                                 onPress={() => requestMutationScope(slot, 'delete')}
                                 variant="secondary"

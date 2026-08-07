@@ -1,16 +1,13 @@
 import {
   isAppRole,
-  isStudentAccountStatus,
-  type AppRole,
-  type StudentAccountStatus,
 } from '@nextpoint/shared';
 
-import { supabase } from '@/lib/supabase/client';
+import {
+  resolveCurrentUserAccess,
+  type CurrentUserAccess,
+} from './user-access';
 
-export type CurrentUserAccess = {
-  role: AppRole;
-  accountStatus: StudentAccountStatus | null;
-};
+import { supabase } from '@/lib/supabase/client';
 
 export async function getCurrentUserAccess(
   userId: string
@@ -24,9 +21,7 @@ export async function getCurrentUserAccess(
     .single();
 
   if (error || !isAppRole(data?.role)) return null;
-  if (data.role === 'coach') {
-    return { role: data.role, accountStatus: null };
-  }
+  if (data.role === 'coach') return resolveCurrentUserAccess(data.role, null);
 
   const profile = await supabase
     .from('student_profiles')
@@ -34,9 +29,6 @@ export async function getCurrentUserAccess(
     .eq('user_id', userId)
     .maybeSingle();
 
-  if (profile.error) return null;
-  const accountStatus = profile.data?.account_status ?? 'active';
-  if (!isStudentAccountStatus(accountStatus)) return null;
-
-  return { role: data.role, accountStatus };
+  if (profile.error || !profile.data) return null;
+  return resolveCurrentUserAccess(data.role, profile.data.account_status);
 }
