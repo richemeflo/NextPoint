@@ -37,6 +37,7 @@ const adminClient = createClient(
 );
 const createdUserIds = [];
 const createdRangeIds = [];
+const createdRateIds = [];
 const password = 'NextPoint-test-2026';
 
 async function createUser(role, suffix) {
@@ -100,6 +101,21 @@ try {
     ? await authenticateExistingCoach(existingCoach.data.user_id)
     : await createUser('coach', 'coach');
   const student = await createUser('eleve', 'student');
+  const concurrentStudent = await createUser('eleve', 'concurrent-student');
+
+  const concurrencyRate = await coach.client.rpc('save_pricing_rate', {
+    p_rate_id: null,
+    p_label: `Concurrency ${Date.now()}`,
+    p_amount_cents: 4500,
+    p_currency: 'EUR',
+    p_duration_minutes: 60,
+    p_lesson_type: 'individual',
+    p_is_active: true,
+    p_applicability_contexts: [],
+    p_target_student_ids: [],
+  });
+  assert.equal(concurrencyRate.error, null);
+  createdRateIds.push(concurrencyRate.data.id);
 
   const created = await coach.client.rpc('create_availability_range', {
     p_starts_at: '2026-07-01T16:00:00.000Z',
@@ -111,7 +127,7 @@ try {
   });
   assert.equal(created.error, null);
   assert.equal(created.data.coach_id, coach.userId);
-  assert.equal(created.data.slot_duration_minutes, 90);
+  assert.equal(created.data.slot_duration_minutes, 60);
   assert.equal(created.data.location, 'Les Bruyères Centre Sportif');
   assert.equal(created.data.recurrence_type, 'weekly');
   assert.equal(created.data.recurrence_ends_on, '2026-07-15');
@@ -139,8 +155,8 @@ try {
         coach_id: coach.userId,
         availability_range_id: created.data.id,
         starts_at: '2026-07-01T16:00:00+00:00',
-        ends_at: '2026-07-01T17:30:00+00:00',
-        duration_minutes: 90,
+        ends_at: '2026-07-01T18:15:00+00:00',
+        duration_minutes: 135,
         location: 'Les Bruyères Centre Sportif',
         status: 'available',
       },
@@ -148,8 +164,8 @@ try {
         coach_id: coach.userId,
         availability_range_id: created.data.id,
         starts_at: '2026-07-08T16:00:00+00:00',
-        ends_at: '2026-07-08T17:30:00+00:00',
-        duration_minutes: 90,
+        ends_at: '2026-07-08T18:15:00+00:00',
+        duration_minutes: 135,
         location: 'Les Bruyères Centre Sportif',
         status: 'available',
       },
@@ -157,8 +173,8 @@ try {
         coach_id: coach.userId,
         availability_range_id: created.data.id,
         starts_at: '2026-07-15T16:00:00+00:00',
-        ends_at: '2026-07-15T17:30:00+00:00',
-        duration_minutes: 90,
+        ends_at: '2026-07-15T18:15:00+00:00',
+        duration_minutes: 135,
         location: 'Les Bruyères Centre Sportif',
         status: 'available',
       },
@@ -185,33 +201,18 @@ try {
   assert.deepEqual(dailySlots.data, [
     {
       starts_at: '2026-08-03T16:00:00+00:00',
-      ends_at: '2026-08-03T17:00:00+00:00',
-      duration_minutes: 60,
-    },
-    {
-      starts_at: '2026-08-03T17:00:00+00:00',
       ends_at: '2026-08-03T18:00:00+00:00',
-      duration_minutes: 60,
+      duration_minutes: 120,
     },
     {
       starts_at: '2026-08-04T16:00:00+00:00',
-      ends_at: '2026-08-04T17:00:00+00:00',
-      duration_minutes: 60,
-    },
-    {
-      starts_at: '2026-08-04T17:00:00+00:00',
       ends_at: '2026-08-04T18:00:00+00:00',
-      duration_minutes: 60,
+      duration_minutes: 120,
     },
     {
       starts_at: '2026-08-05T16:00:00+00:00',
-      ends_at: '2026-08-05T17:00:00+00:00',
-      duration_minutes: 60,
-    },
-    {
-      starts_at: '2026-08-05T17:00:00+00:00',
       ends_at: '2026-08-05T18:00:00+00:00',
-      duration_minutes: 60,
+      duration_minutes: 120,
     },
   ]);
 
@@ -485,8 +486,69 @@ try {
   assert.equal(visibleAfterSeriesDelete.error, null);
   assert.deepEqual(visibleAfterSeriesDelete.data, []);
 
+  const concurrentRange = await coach.client.rpc('create_availability_range', {
+    p_starts_at: '2027-11-03T14:00:00.000Z',
+    p_ends_at: '2027-11-03T16:00:00.000Z',
+    p_slot_duration_minutes: 60,
+    p_location: 'Les Bruyères Centre Sportif',
+    p_recurrence_type: 'none',
+    p_recurrence_ends_on: null,
+  });
+  assert.equal(concurrentRange.error, null);
+  createdRangeIds.push(concurrentRange.data.id);
+
+  const concurrentOccurrence = await coach.client
+    .from('availability_slots')
+    .select('id')
+    .eq('availability_range_id', concurrentRange.data.id)
+    .single();
+  assert.equal(concurrentOccurrence.error, null);
+
+  const [firstRequest, secondRequest] = await Promise.all([
+    student.client.rpc('request_booking', {
+      p_slot_id: concurrentOccurrence.data.id,
+      p_starts_at: '2027-11-03T14:00:00.000Z',
+      p_duration_minutes: 60,
+      p_lesson_type: 'individual',
+      p_student_comment: '',
+      p_participant_ids: [],
+    }),
+    concurrentStudent.client.rpc('request_booking', {
+      p_slot_id: concurrentOccurrence.data.id,
+      p_starts_at: '2027-11-03T14:00:00.000Z',
+      p_duration_minutes: 60,
+      p_lesson_type: 'individual',
+      p_student_comment: '',
+      p_participant_ids: [],
+    }),
+  ]);
+  assert.equal(firstRequest.error, null);
+  assert.equal(secondRequest.error, null);
+
+  const approvals = await Promise.all([
+    coach.client.rpc('approve_booking', {
+      p_booking_id: firstRequest.data.id,
+    }),
+    coach.client.rpc('approve_booking', {
+      p_booking_id: secondRequest.data.id,
+    }),
+  ]);
+  assert.equal(approvals.filter((result) => !result.error).length, 1);
+  assert.equal(approvals.filter((result) => result.error?.code === '55000').length, 1);
+  assert.equal(approvals.some((result) => result.error?.code === '40P01'), false);
+
+  const concurrentStatuses = await adminClient
+    .from('bookings')
+    .select('status')
+    .in('id', [firstRequest.data.id, secondRequest.data.id]);
+  assert.equal(concurrentStatuses.error, null);
+  assert.deepEqual(
+    concurrentStatuses.data.map((booking) => booking.status).sort(),
+    ['confirmed', 'refused']
+  );
+
   console.log(
-    'AVAILABILITY_RANGES_INTEGRATION_OK atomic range and recurring Paris-local slot generation across DST, complete-slot truncation, coach read, associated student requestable read, direct mutation/update/delete refusal, safe occurrence and series updates/deletes, overlap guard, duration/location/recurrence constraints, booked slots hidden from requestable reads'
+    'AVAILABILITY_RANGES_INTEGRATION_OK continuous ranges, Paris-local recurrence across DST, coach/student reads, safe occurrence and series mutations, overlap guards, and deadlock-free concurrent approvals'
   );
 } finally {
   for (const rangeId of createdRangeIds) {
@@ -512,5 +574,25 @@ try {
   for (const userId of createdUserIds) {
     const { error } = await adminClient.auth.admin.deleteUser(userId);
     if (error && error.code !== 'user_not_found') throw error;
+  }
+
+  for (const rateId of createdRateIds) {
+    execFileSync(
+      'docker',
+      [
+        'exec',
+        'supabase_db_nextpoint',
+        'psql',
+        '-U',
+        'postgres',
+        '-d',
+        'postgres',
+        '-v',
+        'ON_ERROR_STOP=1',
+        '-c',
+        `delete from public.pricing_rates where id = '${rateId}'::uuid;`,
+      ],
+      { stdio: 'ignore' }
+    );
   }
 }

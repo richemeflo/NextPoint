@@ -10,6 +10,8 @@ import {
   buildAvailabilityPreviewSlots,
   calculateAvailabilityEndLocalTime,
   defaultAvailabilityLocation,
+  findNearestAvailableStart,
+  getAvailabilityFreeFragments,
   getDefaultAvailabilityRecurrenceEndsOn,
   isAvailabilitySlotRequestable,
   toAvailabilityRangeInput,
@@ -275,7 +277,7 @@ test('getDefaultAvailabilityRecurrenceEndsOn proposes one month by default', () 
   assert.equal(getDefaultAvailabilityRecurrenceEndsOn('2026-01-31'), '2026-02-28');
 });
 
-test('buildAvailabilityPreviewSlots keeps generated slot location and duration', () => {
+test('buildAvailabilityPreviewSlots keeps the availability as one continuous occurrence', () => {
   const slots = buildAvailabilityPreviewSlots({
     startsAt: '2026-07-01T16:00:00.000Z',
     endsAt: '2026-07-01T18:00:00.000Z',
@@ -285,23 +287,15 @@ test('buildAvailabilityPreviewSlots keeps generated slot location and duration',
     recurrenceEndsOn: null,
   });
 
-  assert.deepEqual(slots, [
-    {
-      startsAt: '2026-07-01T16:00:00.000Z',
-      endsAt: '2026-07-01T17:00:00.000Z',
-      durationMinutes: 60,
-      location: defaultAvailabilityLocation,
-    },
-    {
-      startsAt: '2026-07-01T17:00:00.000Z',
-      endsAt: '2026-07-01T18:00:00.000Z',
-      durationMinutes: 60,
-      location: defaultAvailabilityLocation,
-    },
-  ]);
+  assert.deepEqual(slots, [{
+    startsAt: '2026-07-01T16:00:00.000Z',
+    endsAt: '2026-07-01T18:00:00.000Z',
+    durationMinutes: 120,
+    location: defaultAvailabilityLocation,
+  }]);
 });
 
-test('buildAvailabilityPreviewSlots creates only complete slots', () => {
+test('buildAvailabilityPreviewSlots does not truncate a continuous occurrence', () => {
   const slots = buildAvailabilityPreviewSlots({
     startsAt: '2026-07-01T16:00:00.000Z',
     endsAt: '2026-07-01T18:15:00.000Z',
@@ -314,11 +308,77 @@ test('buildAvailabilityPreviewSlots creates only complete slots', () => {
   assert.deepEqual(slots, [
     {
       startsAt: '2026-07-01T16:00:00.000Z',
-      endsAt: '2026-07-01T17:30:00.000Z',
-      durationMinutes: 90,
+      endsAt: '2026-07-01T18:15:00.000Z',
+      durationMinutes: 135,
       location: defaultAvailabilityLocation,
     },
   ]);
+});
+
+test('buildAvailabilityPreviewSlots rejects invalid or reversed bounds', () => {
+  const base = {
+    slotDurationMinutes: 60 as const,
+    location: defaultAvailabilityLocation,
+    recurrenceType: 'none' as const,
+    recurrenceEndsOn: null,
+  };
+
+  assert.deepEqual(
+    buildAvailabilityPreviewSlots({
+      ...base,
+      startsAt: 'invalid',
+      endsAt: '2026-07-01T18:00:00.000Z',
+    }),
+    []
+  );
+  assert.deepEqual(
+    buildAvailabilityPreviewSlots({
+      ...base,
+      startsAt: '2026-07-01T18:00:00.000Z',
+      endsAt: '2026-07-01T16:00:00.000Z',
+    }),
+    []
+  );
+});
+
+test('free fragments subtract only confirmed occupations and merge overlaps', () => {
+  assert.deepEqual(
+    getAvailabilityFreeFragments({
+      startsAt: '2026-07-01T14:00:00.000Z',
+      endsAt: '2026-07-01T18:00:00.000Z',
+      occupations: [
+        { startsAt: '2026-07-01T15:00:00.000Z', endsAt: '2026-07-01T15:30:00.000Z' },
+        { startsAt: '2026-07-01T15:20:00.000Z', endsAt: '2026-07-01T16:00:00.000Z' },
+      ],
+    }),
+    [
+      { startsAt: '2026-07-01T14:00:00.000Z', endsAt: '2026-07-01T15:00:00.000Z' },
+      { startsAt: '2026-07-01T16:00:00.000Z', endsAt: '2026-07-01T18:00:00.000Z' },
+    ]
+  );
+});
+
+test('nearest start uses the exact click and prefers the future on a tie', () => {
+  const occurrence = {
+    startsAt: '2026-07-01T14:00:00.000Z',
+    endsAt: '2026-07-01T18:00:00.000Z',
+    occupations: [
+      { startsAt: '2026-07-01T15:00:00.000Z', endsAt: '2026-07-01T16:00:00.000Z' },
+    ],
+  };
+
+  assert.equal(
+    findNearestAvailableStart(occurrence, '2026-07-01T16:15:00.000Z', 60),
+    '2026-07-01T16:15:00.000Z'
+  );
+  assert.equal(
+    findNearestAvailableStart(occurrence, '2026-07-01T15:00:00.000Z', 60),
+    '2026-07-01T16:00:00.000Z'
+  );
+  assert.equal(
+    findNearestAvailableStart(occurrence, '2026-07-01T17:45:00.000Z', 90),
+    '2026-07-01T16:30:00.000Z'
+  );
 });
 
 test('isAvailabilitySlotRequestable only exposes available slots', () => {

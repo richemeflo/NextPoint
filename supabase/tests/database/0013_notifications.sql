@@ -174,7 +174,7 @@ select ok(
 select has_function(
   'public',
   'request_booking',
-  array['uuid', 'text', 'text', 'uuid[]'],
+  array['uuid', 'timestamp with time zone', 'integer', 'text', 'text', 'uuid[]'],
   'booking request command remains available'
 );
 select has_function(

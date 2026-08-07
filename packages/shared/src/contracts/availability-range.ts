@@ -120,8 +120,24 @@ export type AvailabilityRangeInput = {
 export type AvailabilityPreviewSlot = {
   startsAt: string;
   endsAt: string;
-  durationMinutes: AvailabilitySlotDuration;
+  durationMinutes: number;
   location: AvailabilityLocation;
+};
+
+export type AvailabilityOccupation = {
+  startsAt: string;
+  endsAt: string;
+};
+
+export type AvailabilityOccurrenceCandidate = {
+  startsAt: string;
+  endsAt: string;
+  occupations: AvailabilityOccupation[];
+};
+
+export type AvailabilityFreeFragment = {
+  startsAt: string;
+  endsAt: string;
 };
 
 export type AvailabilitySlotRequestabilityCandidate = {
@@ -233,25 +249,99 @@ export function toAvailabilityRangeInput(
 export function buildAvailabilityPreviewSlots(
   range: AvailabilityRangeInput
 ): AvailabilityPreviewSlot[] {
-  const startsAtMs = new Date(range.startsAt).getTime();
-  const endsAtMs = new Date(range.endsAt).getTime();
-  const durationMs = range.slotDurationMinutes * 60_000;
-  const slots: AvailabilityPreviewSlot[] = [];
+  const bounds = toValidBounds(range.startsAt, range.endsAt);
+  if (!bounds) return [];
 
-  for (
-    let cursor = startsAtMs;
-    cursor + durationMs <= endsAtMs;
-    cursor += durationMs
-  ) {
-    slots.push({
-      startsAt: new Date(cursor).toISOString(),
-      endsAt: new Date(cursor + durationMs).toISOString(),
-      durationMinutes: range.slotDurationMinutes,
+  return [
+    {
+      startsAt: range.startsAt,
+      endsAt: range.endsAt,
+      durationMinutes: Math.round((bounds.end - bounds.start) / 60_000),
       location: range.location,
+    },
+  ];
+}
+
+function toValidBounds(startsAt: string, endsAt: string) {
+  const start = new Date(startsAt).getTime();
+  const end = new Date(endsAt).getTime();
+  return Number.isFinite(start) && Number.isFinite(end) && end > start
+    ? { start, end }
+    : null;
+}
+
+export function getAvailabilityFreeFragments(
+  occurrence: AvailabilityOccurrenceCandidate,
+  minimumDurationMinutes = 60
+): AvailabilityFreeFragment[] {
+  const bounds = toValidBounds(occurrence.startsAt, occurrence.endsAt);
+  if (!bounds) return [];
+
+  const occupied = occurrence.occupations
+    .map((item) => toValidBounds(item.startsAt, item.endsAt))
+    .filter((item): item is { start: number; end: number } => item !== null)
+    .map((item) => ({
+      start: Math.max(bounds.start, item.start),
+      end: Math.min(bounds.end, item.end),
+    }))
+    .filter((item) => item.end > item.start)
+    .sort((first, second) => first.start - second.start);
+  const merged: { start: number; end: number }[] = [];
+
+  for (const item of occupied) {
+    const previous = merged.at(-1);
+    if (previous && item.start <= previous.end) {
+      previous.end = Math.max(previous.end, item.end);
+    } else {
+      merged.push({ ...item });
+    }
+  }
+
+  const fragments: AvailabilityFreeFragment[] = [];
+  let cursor = bounds.start;
+  for (const item of merged) {
+    if (item.start - cursor >= minimumDurationMinutes * 60_000) {
+      fragments.push({
+        startsAt: new Date(cursor).toISOString(),
+        endsAt: new Date(item.start).toISOString(),
+      });
+    }
+    cursor = Math.max(cursor, item.end);
+  }
+  if (bounds.end - cursor >= minimumDurationMinutes * 60_000) {
+    fragments.push({
+      startsAt: new Date(cursor).toISOString(),
+      endsAt: new Date(bounds.end).toISOString(),
     });
   }
 
-  return slots;
+  return fragments;
+}
+
+export function findNearestAvailableStart(
+  occurrence: AvailabilityOccurrenceCandidate,
+  desiredStartsAt: string,
+  durationMinutes: AvailabilitySlotDuration
+) {
+  const desired = new Date(desiredStartsAt).getTime();
+  if (!Number.isFinite(desired)) return null;
+
+  const durationMs = durationMinutes * 60_000;
+  const candidates = getAvailabilityFreeFragments(occurrence, durationMinutes)
+    .flatMap((fragment) => {
+      const start = new Date(fragment.startsAt).getTime();
+      const latestStart = new Date(fragment.endsAt).getTime() - durationMs;
+      return [Math.max(start, Math.min(desired, latestStart))];
+    })
+    .sort((first, second) => {
+      const firstDistance = Math.abs(first - desired);
+      const secondDistance = Math.abs(second - desired);
+      return firstDistance === secondDistance
+        ? second - first
+        : firstDistance - secondDistance;
+    });
+
+  return candidates.length > 0 ? new Date(candidates[0]).toISOString() : null;
 }
 
 export function isAvailabilitySlotRequestable(

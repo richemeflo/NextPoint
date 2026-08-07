@@ -134,6 +134,8 @@ export function isBookingParticipantCountValid(
 export const requestBookingSchema = z
   .object({
     slotId: z.uuid(),
+    startsAt: z.iso.datetime({ offset: true }),
+    durationMinutes: z.union([z.literal(60), z.literal(90)]),
     lessonType: z.enum(pricingLessonTypes),
     studentComment: z.string().trim().max(bookingCommentMaxLength).optional(),
     participantIds: z

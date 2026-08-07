@@ -149,6 +149,8 @@ test('duo bookings require exactly two participants', () => {
 
   const duoRequest = {
     slotId: '20000000-0000-4000-8000-000000000001',
+    startsAt: '2026-07-01T15:00:00.000Z',
+    durationMinutes: 60,
     lessonType: 'duo',
     participantIds: ['30000000-0000-4000-8000-000000000001'],
   } as const;

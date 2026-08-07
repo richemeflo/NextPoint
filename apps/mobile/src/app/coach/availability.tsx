@@ -3,9 +3,7 @@ import {
   availabilityLocations,
   availabilityRangeSchema,
   availabilityRecurrenceTypes,
-  availabilitySlotDurations,
   buildAvailabilityPreviewSlots,
-  calculateAvailabilityEndLocalTime,
   defaultAvailabilityLocation,
   getDefaultAvailabilityRecurrenceEndsOn,
   getSchedulingDateKey,
@@ -61,7 +59,7 @@ function slotToFormInput(slot: AvailabilitySlot): AvailabilityRangeFormInput {
     date: getSchedulingDateKey(startsAt),
     startsAtLocalTime: getSchedulingTime(startsAt),
     endsAtLocalTime: getSchedulingTime(endsAt),
-    slotDurationMinutes: String(slot.durationMinutes) as '60' | '90',
+    slotDurationMinutes: '60',
     location: defaultAvailabilityLocation,
     recurrenceType: 'none',
     recurrenceEndsOn: '',
@@ -72,7 +70,7 @@ const defaultValues: AvailabilityRangeFormInput = {
   date: getSchedulingToday(),
   startsAtLocalTime: '18:00',
   endsAtLocalTime: '19:30',
-  slotDurationMinutes: '90',
+  slotDurationMinutes: '60',
   location: defaultAvailabilityLocation,
   recurrenceType: 'none',
   recurrenceEndsOn: '',
@@ -114,31 +112,6 @@ export default function CoachAvailabilityScreen() {
   });
   const watchedValues = useWatch({ control });
   const selectedRecurrenceType = watchedValues.recurrenceType ?? 'none';
-  const calculatedCreationEnd = useMemo(
-    () =>
-      calculateAvailabilityEndLocalTime(
-        watchedValues.date ?? '',
-        watchedValues.startsAtLocalTime ?? '',
-        Number(watchedValues.slotDurationMinutes)
-      ),
-    [
-      watchedValues.date,
-      watchedValues.slotDurationMinutes,
-      watchedValues.startsAtLocalTime,
-    ]
-  );
-
-  useEffect(() => {
-    const endsAtLocalTime = calculatedCreationEnd ?? '';
-
-    if (watchedValues.endsAtLocalTime !== endsAtLocalTime) {
-      setValue('endsAtLocalTime', endsAtLocalTime, { shouldValidate: true });
-    }
-  }, [
-    calculatedCreationEnd,
-    setValue,
-    watchedValues.endsAtLocalTime,
-  ]);
 
   const loadRanges = useCallback(async () => {
     if (!user) return;
@@ -379,11 +352,15 @@ export default function CoachAvailabilityScreen() {
     }
 
     const input = toAvailabilityRangeInput(parsed.data);
+    const durationMinutes = Math.round(
+      (new Date(input.endsAt).getTime() - new Date(input.startsAt).getTime()) /
+        60_000
+    );
     const result = await updateAvailabilitySlot({
       slotId: slot.id,
       startsAt: input.startsAt,
       endsAt: input.endsAt,
-      durationMinutes: input.slotDurationMinutes,
+      durationMinutes,
       location: input.location,
       applyToSeries,
     });
@@ -466,10 +443,6 @@ export default function CoachAvailabilityScreen() {
     );
   };
 
-  const durationOptions = availabilitySlotDurations.map((duration) => ({
-    value: String(duration) as '60' | '90',
-    label: t(`availability.duration.${duration}` as TranslationKey),
-  }));
   const recurrenceOptions = availabilityRecurrenceTypes.map((recurrence) => ({
     value: recurrence,
     label: t(`availability.recurrence.${recurrence}` as TranslationKey),
@@ -533,10 +506,7 @@ export default function CoachAvailabilityScreen() {
                 render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
                   <TextField
                     error={
-                      translateError(error?.message) ??
-                      (value.length === 5 && !calculatedCreationEnd
-                        ? t('availability.validation.endBeforeStart')
-                        : undefined)
+                      translateError(error?.message)
                     }
                     label={t('availability.startsAtLabel')}
                     onBlur={onBlur}
@@ -546,20 +516,21 @@ export default function CoachAvailabilityScreen() {
                   />
                 )}
               />
+              <Controller
+                control={control}
+                name="endsAtLocalTime"
+                render={({ field: { onBlur, onChange, value }, fieldState: { error } }) => (
+                  <TextField
+                    error={translateError(error?.message)}
+                    label={t('availability.endsAtLabel')}
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    placeholder={t('availability.timePlaceholder')}
+                    value={value}
+                  />
+                )}
+              />
             </View>
-
-            <Controller
-              control={control}
-              name="slotDurationMinutes"
-              render={({ field: { onChange, value } }) => (
-                <ProfileOptionSelector
-                  label={t('availability.durationLabel')}
-                  onChange={onChange}
-                  options={durationOptions}
-                  value={value}
-                />
-              )}
-            />
             <Controller
               control={control}
               name="location"
@@ -718,9 +689,6 @@ export default function CoachAvailabilityScreen() {
                     </ThemedText>
                     <ThemedText type="small" themeColor="textMuted">
                       {t('availability.rangeMeta', {
-                        duration: t(
-                          `availability.duration.${range.slotDurationMinutes}` as TranslationKey
-                        ),
                         location: range.location,
                       })}
                     </ThemedText>
@@ -747,9 +715,6 @@ export default function CoachAvailabilityScreen() {
                               date: formatDateTime(slot.startsAt),
                               start: formatTime(slot.startsAt),
                               end: formatTime(slot.endsAt),
-                              duration: t(
-                                `availability.duration.${slot.durationMinutes}` as TranslationKey
-                              ),
                               location: slot.location,
                             })}
                           </ThemedText>
@@ -786,14 +751,6 @@ export default function CoachAvailabilityScreen() {
                                   value={editingSlotValues.endsAtLocalTime}
                                 />
                               </View>
-                              <ProfileOptionSelector
-                                label={t('availability.durationLabel')}
-                                onChange={(value) =>
-                                  setEditingSlotField('slotDurationMinutes', value)
-                                }
-                                options={durationOptions}
-                                value={editingSlotValues.slotDurationMinutes}
-                              />
                               <View style={styles.slotActions}>
                                 <Button
                                   disabled={mutationPending}

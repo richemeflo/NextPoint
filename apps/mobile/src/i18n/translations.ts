@@ -347,7 +347,7 @@ export const dictionaries = {
     'availability.loading': 'Chargement des disponibilités...',
     'availability.manageTitle': 'Gestion des disponibilités',
     'availability.manageBody':
-      'Créez des plages datées avec durée, lieu et récurrence limitée pour préparer les créneaux demandables.',
+      'Créez des plages continues avec une heure de début, une heure de fin, un lieu et une récurrence.',
     'availability.createTitle': 'Nouvelle plage',
     'availability.dateLabel': 'Date',
     'availability.datePlaceholder': 'AAAA-MM-JJ',
@@ -357,6 +357,7 @@ export const dictionaries = {
     'availability.durationLabel': 'Durée du créneau',
     'availability.duration.60': '1 heure',
     'availability.duration.90': '1 h 30',
+    'availability.continuousRange': 'Plage disponible',
     'availability.locationLabel': 'Lieu',
     'availability.recurrenceLabel': 'Récurrence',
     'availability.recurrence.none': 'Ponctuelle',
@@ -364,7 +365,7 @@ export const dictionaries = {
     'availability.recurrence.weekly': 'Hebdomadaire',
     'availability.recurrenceEndsOnLabel': 'Générer jusqu’au',
     'availability.recurrenceUntil': 'Générée jusqu’au {{date}}',
-    'availability.previewTitle': 'Aperçu des créneaux',
+    'availability.previewTitle': 'Aperçu de la plage',
     'availability.previewEmpty':
       'Complétez une plage cohérente pour afficher l’aperçu.',
     'availability.previewSlot': '{{start}}–{{end}} · {{location}}',
@@ -376,7 +377,7 @@ export const dictionaries = {
     'availability.saving': 'Enregistrement...',
     'availability.saveSuccessTitle': 'Disponibilité créée',
     'availability.saveSuccessBody':
-      'La plage est enregistrée et conserve la durée et le lieu pour la génération des créneaux.',
+      'La plage continue est enregistrée avec ses heures et son lieu.',
     'availability.updateSuccessTitle': 'Créneau modifié',
     'availability.updateSuccessBody':
       'La disponibilité sélectionnée a été mise à jour sans conflit.',
@@ -403,10 +404,10 @@ export const dictionaries = {
     'availability.emptyBody':
       'Créez une première plage pour préparer les créneaux réservables.',
     'availability.rangeTime': '{{start}}–{{end}}',
-    'availability.rangeMeta': '{{duration}} · {{location}}',
-    'availability.generatedSlotsTitle': 'Créneaux générés',
+    'availability.rangeMeta': '{{location}}',
+    'availability.generatedSlotsTitle': 'Occurrences disponibles',
     'availability.generatedSlot':
-      '{{date}}–{{end}} · {{duration}} · {{location}}',
+      '{{date}}–{{end}} · {{location}}',
     'availability.slotStatus.available': 'Disponible',
     'availability.slotStatus.booked': 'Réservé',
     'availability.slotStatus.cancelled': 'Annulé',
@@ -600,6 +601,11 @@ export const dictionaries = {
       'Le compteur n’a pas été modifié. Rechargez la fiche puis réessayez.',
     'booking.openRequestAction': 'Demander',
     'booking.requestAction': 'Envoyer la demande',
+    'booking.durationLabel': 'Durée du cours',
+    'booking.proposedTime': 'Créneau proposé : {{start}}–{{end}}',
+    'booking.noDurationFitTitle': 'Aucun créneau adapté',
+    'booking.noDurationFitBody':
+      'Cette durée ne tient dans aucune portion libre de la plage.',
     'booking.lessonTypeLabel': 'Type de cours',
     'booking.commentLabel': 'Commentaire',
     'booking.commentPlaceholder':
@@ -1140,7 +1146,7 @@ export const dictionaries = {
     'availability.loading': 'Loading availability...',
     'availability.manageTitle': 'Availability management',
     'availability.manageBody':
-      'Create dated ranges with duration, location, and limited recurrence to prepare requestable slots.',
+      'Create continuous ranges with a start time, end time, location, and recurrence.',
     'availability.createTitle': 'New range',
     'availability.dateLabel': 'Date',
     'availability.datePlaceholder': 'YYYY-MM-DD',
@@ -1150,6 +1156,7 @@ export const dictionaries = {
     'availability.durationLabel': 'Slot duration',
     'availability.duration.60': '1 hour',
     'availability.duration.90': '1 h 30',
+    'availability.continuousRange': 'Available range',
     'availability.locationLabel': 'Location',
     'availability.recurrenceLabel': 'Recurrence',
     'availability.recurrence.none': 'One-off',
@@ -1157,7 +1164,7 @@ export const dictionaries = {
     'availability.recurrence.weekly': 'Weekly',
     'availability.recurrenceEndsOnLabel': 'Generate until',
     'availability.recurrenceUntil': 'Generated until {{date}}',
-    'availability.previewTitle': 'Slot preview',
+    'availability.previewTitle': 'Range preview',
     'availability.previewEmpty':
       'Complete a coherent range to display the preview.',
     'availability.previewSlot': '{{start}}–{{end}} · {{location}}',
@@ -1169,7 +1176,7 @@ export const dictionaries = {
     'availability.saving': 'Saving...',
     'availability.saveSuccessTitle': 'Availability created',
     'availability.saveSuccessBody':
-      'The range is saved and keeps its duration and location for slot generation.',
+      'The continuous range is saved with its times and location.',
     'availability.updateSuccessTitle': 'Slot updated',
     'availability.updateSuccessBody':
       'The selected availability was updated without conflict.',
@@ -1196,10 +1203,10 @@ export const dictionaries = {
     'availability.emptyBody':
       'Create a first range to prepare requestable slots.',
     'availability.rangeTime': '{{start}}–{{end}}',
-    'availability.rangeMeta': '{{duration}} · {{location}}',
-    'availability.generatedSlotsTitle': 'Generated slots',
+    'availability.rangeMeta': '{{location}}',
+    'availability.generatedSlotsTitle': 'Available occurrences',
     'availability.generatedSlot':
-      '{{date}}–{{end}} · {{duration}} · {{location}}',
+      '{{date}}–{{end}} · {{location}}',
     'availability.slotStatus.available': 'Available',
     'availability.slotStatus.booked': 'Booked',
     'availability.slotStatus.cancelled': 'Cancelled',
@@ -1386,6 +1393,11 @@ export const dictionaries = {
       'The counter was not changed. Reload the student record and try again.',
     'booking.openRequestAction': 'Request',
     'booking.requestAction': 'Send request',
+    'booking.durationLabel': 'Lesson duration',
+    'booking.proposedTime': 'Proposed time: {{start}}–{{end}}',
+    'booking.noDurationFitTitle': 'No suitable time',
+    'booking.noDurationFitBody':
+      'This duration does not fit in any free part of the range.',
     'booking.lessonTypeLabel': 'Lesson type',
     'booking.commentLabel': 'Comment',
     'booking.commentPlaceholder': 'Add your goal or scheduling context.',
@@ -1930,7 +1942,7 @@ export const dictionaries = {
     'availability.loading': 'Cargando disponibilidades...',
     'availability.manageTitle': 'Gestión de disponibilidad',
     'availability.manageBody':
-      'Crea franjas con fecha, duración, lugar y recurrencia limitada para preparar horarios solicitables.',
+      'Crea franjas continuas con hora de inicio, hora de fin, lugar y recurrencia.',
     'availability.createTitle': 'Nueva franja',
     'availability.dateLabel': 'Fecha',
     'availability.datePlaceholder': 'AAAA-MM-DD',
@@ -1940,6 +1952,7 @@ export const dictionaries = {
     'availability.durationLabel': 'Duración del horario',
     'availability.duration.60': '1 hora',
     'availability.duration.90': '1 h 30',
+    'availability.continuousRange': 'Franja disponible',
     'availability.locationLabel': 'Lugar',
     'availability.recurrenceLabel': 'Recurrencia',
     'availability.recurrence.none': 'Puntual',
@@ -1947,7 +1960,7 @@ export const dictionaries = {
     'availability.recurrence.weekly': 'Semanal',
     'availability.recurrenceEndsOnLabel': 'Generar hasta',
     'availability.recurrenceUntil': 'Generada hasta {{date}}',
-    'availability.previewTitle': 'Vista previa de horarios',
+    'availability.previewTitle': 'Vista previa de la franja',
     'availability.previewEmpty':
       'Completa una franja coherente para mostrar la vista previa.',
     'availability.previewSlot': '{{start}}–{{end}} · {{location}}',
@@ -1959,7 +1972,7 @@ export const dictionaries = {
     'availability.saving': 'Guardando...',
     'availability.saveSuccessTitle': 'Disponibilidad creada',
     'availability.saveSuccessBody':
-      'La franja está guardada y conserva la duración y el lugar para generar horarios.',
+      'La franja continua está guardada con sus horas y su lugar.',
     'availability.updateSuccessTitle': 'Horario modificado',
     'availability.updateSuccessBody':
       'La disponibilidad seleccionada se actualizó sin conflicto.',
@@ -1986,10 +1999,10 @@ export const dictionaries = {
     'availability.emptyBody':
       'Crea una primera franja para preparar horarios reservables.',
     'availability.rangeTime': '{{start}}–{{end}}',
-    'availability.rangeMeta': '{{duration}} · {{location}}',
-    'availability.generatedSlotsTitle': 'Horarios generados',
+    'availability.rangeMeta': '{{location}}',
+    'availability.generatedSlotsTitle': 'Ocurrencias disponibles',
     'availability.generatedSlot':
-      '{{date}}–{{end}} · {{duration}} · {{location}}',
+      '{{date}}–{{end}} · {{location}}',
     'availability.slotStatus.available': 'Disponible',
     'availability.slotStatus.booked': 'Reservado',
     'availability.slotStatus.cancelled': 'Cancelado',
@@ -2182,6 +2195,11 @@ export const dictionaries = {
       'El contador no se ha modificado. Recarga la ficha e inténtalo de nuevo.',
     'booking.openRequestAction': 'Solicitar',
     'booking.requestAction': 'Enviar solicitud',
+    'booking.durationLabel': 'Duración de la clase',
+    'booking.proposedTime': 'Horario propuesto: {{start}}–{{end}}',
+    'booking.noDurationFitTitle': 'Sin horario adecuado',
+    'booking.noDurationFitBody':
+      'Esta duración no cabe en ninguna parte libre de la franja.',
     'booking.lessonTypeLabel': 'Tipo de clase',
     'booking.commentLabel': 'Comentario',
     'booking.commentPlaceholder': 'Añade tu objetivo o disponibilidad.',

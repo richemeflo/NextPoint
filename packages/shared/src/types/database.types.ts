@@ -1181,6 +1181,21 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_student_availability_occurrences: {
+        Args: { p_ends_at: string; p_starts_at: string }
+        Returns: {
+          availability_range_id: string
+          coach_id: string
+          duration_minutes: number
+          ends_at: string
+          id: string
+          location: string
+          occupations: Json
+          starts_at: string
+          status: Database["public"]["Enums"]["availability_slot_status"]
+          updated_at: string
+        }[]
+      }
       is_coach_registration_open: { Args: never; Returns: boolean }
       mark_all_notifications_read: { Args: never; Returns: number }
       mark_coach_message_thread_read: {
@@ -1297,11 +1312,17 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      refuse_overlapping_pending_bookings: {
+        Args: { p_coach_id: string; p_ends_at: string; p_starts_at: string }
+        Returns: undefined
+      }
       request_booking: {
         Args: {
+          p_duration_minutes: number
           p_lesson_type: string
           p_participant_ids: string[]
           p_slot_id: string
+          p_starts_at: string
           p_student_comment: string
         }
         Returns: {

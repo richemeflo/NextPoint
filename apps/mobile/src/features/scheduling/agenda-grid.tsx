@@ -1,5 +1,10 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
+  getSchedulingDateKey,
+  schedulingLocalDateTimeToIso,
+} from '@nextpoint/shared';
+import {
+  Pressable,
   StyleSheet,
   useWindowDimensions,
   View,
@@ -10,7 +15,9 @@ import {
 import { ThemedText } from '@/components/themed-text';
 import { BorderWidth, Radii, Spacing } from '@/constants/theme';
 import {
+  agendaEndHour,
   agendaHourMarks,
+  agendaStartHour,
   getAgendaSlotPosition,
   getSlotDateKey,
   type PlanningDay,
@@ -29,7 +36,67 @@ type AgendaGridProps<TItem extends AgendaGridItem> = {
   getSlotStyle?: (slot: TItem) => StyleProp<ViewStyle>;
   renderSlot: (slot: TItem) => ReactNode;
   slots: TItem[];
+  onSlotPress?: (slot: TItem, desiredStartsAt: string) => void;
+  isSlotPressable?: (slot: TItem) => boolean;
 };
+
+function AgendaSlotBlock<TItem extends AgendaGridItem>({
+  children,
+  onPress,
+  slot,
+  style,
+}: {
+  children: ReactNode;
+  onPress?: (slot: TItem, desiredStartsAt: string) => void;
+  slot: TItem;
+  style: StyleProp<ViewStyle>;
+}) {
+  const [height, setHeight] = useState(0);
+  const Component = onPress ? Pressable : View;
+
+  return (
+    <Component
+      accessibilityRole={onPress ? 'button' : undefined}
+      onLayout={(event) => setHeight(event.nativeEvent.layout.height)}
+      onPress={
+        onPress
+          ? (event) => {
+              const start = new Date(slot.startsAt).getTime();
+              const end = new Date(slot.endsAt).getTime();
+              const date = getSchedulingDateKey(slot.startsAt);
+              const agendaStart = schedulingLocalDateTimeToIso(
+                date,
+                `${String(agendaStartHour).padStart(2, '0')}:00`
+              );
+              const agendaEnd = schedulingLocalDateTimeToIso(
+                date,
+                `${String(agendaEndHour).padStart(2, '0')}:00`
+              );
+              if (height <= 0 || !agendaStart || !agendaEnd) return;
+
+              const visibleStart = Math.max(start, new Date(agendaStart).getTime());
+              const visibleEnd = Math.min(end, new Date(agendaEnd).getTime());
+              if (visibleEnd <= visibleStart) return;
+
+              const ratio = event.nativeEvent.locationY / height;
+              const raw =
+                visibleStart +
+                Math.max(0, Math.min(1, ratio)) * (visibleEnd - visibleStart);
+              const roundedToMinute = Math.round(raw / 60_000) * 60_000;
+              onPress(
+                slot,
+                new Date(
+                  Math.max(visibleStart, Math.min(visibleEnd, roundedToMinute))
+                ).toISOString()
+              );
+            }
+          : undefined
+      }
+      style={style}>
+      {children}
+    </Component>
+  );
+}
 
 export function AgendaGrid<TItem extends AgendaGridItem>({
   days,
@@ -37,6 +104,8 @@ export function AgendaGrid<TItem extends AgendaGridItem>({
   getSlotStyle,
   renderSlot,
   slots,
+  onSlotPress,
+  isSlotPressable,
 }: AgendaGridProps<TItem>) {
   const theme = useTheme();
   const { width } = useWindowDimensions();
@@ -85,8 +154,14 @@ export function AgendaGrid<TItem extends AgendaGridItem>({
                     />
                   ))}
                   {daySlots.map((slot) => (
-                    <View
+                    <AgendaSlotBlock
                       key={slot.id}
+                      onPress={
+                        onSlotPress && (isSlotPressable?.(slot) ?? true)
+                          ? onSlotPress
+                          : undefined
+                      }
+                      slot={slot}
                       style={[
                         styles.slotBlock,
                         getAgendaSlotPosition(slot.startsAt, slot.endsAt),
@@ -97,7 +172,7 @@ export function AgendaGrid<TItem extends AgendaGridItem>({
                         getSlotStyle?.(slot),
                       ]}>
                       {renderSlot(slot)}
-                    </View>
+                    </AgendaSlotBlock>
                   ))}
                 </View>
               </View>
@@ -154,8 +229,14 @@ export function AgendaGrid<TItem extends AgendaGridItem>({
                 />
               ))}
               {daySlots.map((slot) => (
-                <View
+                <AgendaSlotBlock
                   key={slot.id}
+                  onPress={
+                    onSlotPress && (isSlotPressable?.(slot) ?? true)
+                      ? onSlotPress
+                      : undefined
+                  }
+                  slot={slot}
                   style={[
                     styles.slotBlock,
                     getAgendaSlotPosition(slot.startsAt, slot.endsAt),
@@ -166,7 +247,7 @@ export function AgendaGrid<TItem extends AgendaGridItem>({
                     getSlotStyle?.(slot),
                   ]}>
                   {renderSlot(slot)}
-                </View>
+                </AgendaSlotBlock>
               ))}
             </View>
           );

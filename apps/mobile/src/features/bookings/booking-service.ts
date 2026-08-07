@@ -5,6 +5,7 @@ import {
   bookingReadModelSchema,
   coachCreateBookingSchema,
   coachModifyBookingSchema,
+  requestBookingSchema,
   type BookingParticipantProfileReadModel,
   type BookingPricingReadModel,
   type BookingReadModel,
@@ -225,13 +226,17 @@ export async function getRequestableBookingParticipants(): Promise<RequestablePa
 export async function requestBooking(
   input: RequestBookingInput
 ): Promise<BookingResult> {
+  const parsed = requestBookingSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: 'invalid_input' };
   if (!supabase) return { ok: false, error: 'unknown' };
 
   const { data, error } = await supabase.rpc('request_booking', {
-    p_slot_id: input.slotId,
-    p_lesson_type: input.lessonType,
-    p_student_comment: input.studentComment ?? '',
-    p_participant_ids: input.participantIds,
+    p_slot_id: parsed.data.slotId,
+    p_starts_at: parsed.data.startsAt,
+    p_duration_minutes: parsed.data.durationMinutes,
+    p_lesson_type: parsed.data.lessonType,
+    p_student_comment: parsed.data.studentComment ?? '',
+    p_participant_ids: parsed.data.participantIds,
   });
 
   if (error || !data) {

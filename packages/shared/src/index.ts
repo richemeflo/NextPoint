@@ -19,6 +19,8 @@ export {
   buildAvailabilityPreviewSlots,
   calculateAvailabilityEndLocalTime,
   defaultAvailabilityLocation,
+  findNearestAvailableStart,
+  getAvailabilityFreeFragments,
   getDefaultAvailabilityRecurrenceEndsOn,
   isAvailabilitySlotRequestable,
   toAvailabilityRangeInput,
@@ -127,6 +129,9 @@ export { appRoles, isAppRole } from './domain/roles';
 export type { SignInInput, SignUpInput } from './contracts/auth';
 export type {
   AvailabilityLocation,
+  AvailabilityFreeFragment,
+  AvailabilityOccupation,
+  AvailabilityOccurrenceCandidate,
   AvailabilityPreviewSlot,
   AvailabilityRangeFormInput,
   AvailabilityRangeInput,
