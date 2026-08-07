@@ -30,6 +30,7 @@ export function Button({
 
   return (
     <Pressable
+      accessibilityRole="button"
       disabled={disabled}
       style={({ pressed }) => [
         styles.button,
