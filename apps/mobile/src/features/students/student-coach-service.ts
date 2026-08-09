@@ -10,6 +10,7 @@ import {
 } from '@nextpoint/shared';
 
 import { supabase } from '@/lib/supabase/client';
+import { getStudentHistoryDisplayEvents } from '@/features/students/student-history-view';
 
 type RelationshipRow = Tables<'student_coach_relationships'>;
 type StudentHistoryRow = Tables<'student_history_events'>;
@@ -57,6 +58,7 @@ export type StudentHistoryEvent = {
   title: string;
   description: string | null;
   occurredAt: string;
+  sourceId: string | null;
 };
 
 export type AssociatedStudentDetail = {
@@ -151,6 +153,7 @@ function mapHistoryEvent(row: StudentHistoryRow): StudentHistoryEvent {
     title: row.title,
     description: row.description,
     occurredAt: row.occurred_at,
+    sourceId: row.source_id,
   };
 }
 
@@ -214,7 +217,7 @@ export async function getAssociatedStudentDetail(
     ok: true,
     data: {
       student: mapAssociatedStudent(student),
-      history: history.data.map(mapHistoryEvent),
+      history: getStudentHistoryDisplayEvents(history.data.map(mapHistoryEvent)),
     },
   };
 }

@@ -1,6 +1,8 @@
+import { SymbolView, type SymbolViewProps } from 'expo-symbols';
 import {
   Pressable,
   StyleSheet,
+  View,
   type PressableProps,
   type StyleProp,
   type ViewStyle,
@@ -11,16 +13,21 @@ import { Radii, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 type ButtonVariant = 'primary' | 'secondary';
+export type ButtonIcon = SymbolViewProps['name'];
 
 export type ButtonProps = Omit<PressableProps, 'style'> & {
   label: string;
   variant?: ButtonVariant;
+  icon?: ButtonIcon;
+  iconPosition?: 'left' | 'right';
   style?: StyleProp<ViewStyle>;
 };
 
 export function Button({
   label,
   variant = 'primary',
+  icon,
+  iconPosition = 'left',
   style,
   disabled = false,
   ...props
@@ -42,9 +49,27 @@ export function Button({
         style,
       ]}
       {...props}>
-      <ThemedText type="smallBold" themeColor={isPrimary ? 'surface' : 'text'}>
-        {label}
-      </ThemedText>
+      <View pointerEvents="none" style={styles.content}>
+        {icon && iconPosition === 'left' ? (
+          <SymbolView
+            name={icon}
+            size={18}
+            weight="semibold"
+            tintColor={isPrimary ? theme.surface : theme.text}
+          />
+        ) : null}
+        <ThemedText type="smallBold" themeColor={isPrimary ? 'surface' : 'text'}>
+          {label}
+        </ThemedText>
+        {icon && iconPosition === 'right' ? (
+          <SymbolView
+            name={icon}
+            size={18}
+            weight="semibold"
+            tintColor={isPrimary ? theme.surface : theme.text}
+          />
+        ) : null}
+      </View>
     </Pressable>
   );
 }
@@ -57,5 +82,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.four,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  content: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: Spacing.one,
+    justifyContent: 'center',
+    maxWidth: '100%',
   },
 });

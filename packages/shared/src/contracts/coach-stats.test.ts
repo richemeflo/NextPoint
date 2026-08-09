@@ -26,6 +26,28 @@ test('coach stats read model accepts a bounded aggregate without payment data', 
   assert.equal(hasCoachStatsData(parsed), true);
 });
 
+test('coach stats read model accepts PostgreSQL timestamps with UTC offsets', () => {
+  const parsed = coachStatsReadModelSchema.parse({
+    periodStart: '2026-07-31T22:00:00+00:00',
+    periodEnd: '2026-08-31T22:00:00+00:00',
+    generatedAt: '2026-08-09T18:00:03.880026+00:00',
+    completedCourses: 2,
+    completedMinutes: 150,
+    estimatedRevenueCents: 4000,
+    currency: 'EUR',
+    activeStudents: [
+      {
+        fullName: 'Test',
+        studentId: '627201d9-fbe4-45ca-bc0a-9887055329cc',
+        courseCount: 2,
+      },
+    ],
+  });
+
+  assert.equal(parsed.completedCourses, 2);
+  assert.equal(parsed.activeStudents[0]?.fullName, 'Test');
+});
+
 test('coach stats read model rejects negative aggregates', () => {
   assert.equal(
     coachStatsReadModelSchema.safeParse({

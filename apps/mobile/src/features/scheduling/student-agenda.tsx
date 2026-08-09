@@ -21,6 +21,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from 'react-native';
 
@@ -55,6 +56,7 @@ import {
 } from '@/features/pricing/pricing-service';
 import { ProfileOptionSelector } from '@/features/profiles/profile-option-selector';
 import { AgendaGrid } from '@/features/scheduling/agenda-grid';
+import { planningControlIcons } from '@/features/scheduling/planning-control-icons';
 import {
   beginPlanningRequest,
   invalidatePlanningRequest,
@@ -126,6 +128,8 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
   const { user } = useAuth();
   const { locale, t } = useTranslation();
   const theme = useTheme();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 760;
   const [mode, setMode] = useState<PlanningViewMode>('week');
   const [displayMode, setDisplayMode] = useState<'agenda' | 'list'>('agenda');
   const [anchorDate, setAnchorDate] = useState(today);
@@ -1129,13 +1133,15 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
                 : 'studentAgenda.title'
             )}
           </ThemedText>
-          <ThemedText type="small" themeColor="textMuted">
-            {t(
-              surface === 'bookings'
-                ? 'booking.studentListBody'
-                : 'studentAgenda.body'
-            )}
-          </ThemedText>
+          {isMobile && surface === 'requestable' ? null : (
+            <ThemedText type="small" themeColor="textMuted">
+              {t(
+                surface === 'bookings'
+                  ? 'booking.studentListBody'
+                  : 'studentAgenda.body'
+              )}
+            </ThemedText>
+          )}
         </View>
         {isRefreshing ? (
           <ThemedText type="small" themeColor="textMuted">
@@ -1150,6 +1156,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
             {(['agenda', 'list'] as const).map((candidate) => (
               <Button
                 key={candidate}
+                icon={planningControlIcons[candidate]}
                 label={t(`planning.display.${candidate}` as TranslationKey)}
                 onPress={() => setDisplayMode(candidate)}
                 style={styles.toolbarButton}
@@ -1170,6 +1177,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
           </View>
           <View style={styles.periodActions}>
             <Button
+              icon={planningControlIcons.previous}
               label={t('planning.previousAction')}
               onPress={() => move(-1)}
               style={[styles.toolbarButton, styles.periodButton]}
@@ -1182,6 +1190,8 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
               variant="secondary"
             />
             <Button
+              icon={planningControlIcons.next}
+              iconPosition="right"
               label={t('planning.nextAction')}
               onPress={() => move(1)}
               style={[styles.toolbarButton, styles.periodButton]}

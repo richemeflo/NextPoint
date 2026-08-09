@@ -53,13 +53,19 @@ export const dictionaries = {
     'nav.coach.stats': 'Stats',
     'stats.loading': 'Chargement des statistiques...',
     'stats.title': 'Statistiques',
-    'stats.subtitle': 'Une vue légère de votre activité confirmée.',
+    'stats.subtitle': 'Suivez vos cours terminés et votre activité sur la période.',
     'stats.period.month': 'Mois',
     'stats.period.quarter': 'Trimestre',
     'stats.period.year': 'Année',
+    'stats.periodRange': 'Du {{start}} au {{end}}',
+    'stats.lastUpdated': 'Actualisé à {{time}}',
+    'stats.activityAvailable': 'Activité enregistrée',
+    'stats.activityEmpty': 'Période sans activité',
     'stats.completedCourses': 'Cours effectués',
     'stats.completedHours': 'Heures effectuées',
-    'stats.estimatedRevenue': 'revenu estimé',
+    'stats.averageDuration': 'Durée moyenne',
+    'stats.estimatedRevenue': 'Revenu estimé',
+    'stats.averageRevenue': 'Revenu moyen par cours',
     'stats.estimatedRevenueHint':
       'Estimation calculée depuis les tarifs appliqués, sans paiement intégré.',
     'stats.emptyTitle': 'Aucune activité sur cette période',
@@ -68,6 +74,7 @@ export const dictionaries = {
     'stats.activeStudentsEmpty':
       'Pas encore assez de cours pour afficher des élèves actifs.',
     'stats.activeStudentCourses': '{{count}} cours',
+    'stats.openStudentAction': 'Ouvrir la fiche de {{name}}',
     'stats.unknownStudent': 'Élève',
     'stats.loadErrorTitle': 'Statistiques indisponibles',
     'stats.loadErrorBody':
@@ -88,7 +95,7 @@ export const dictionaries = {
       'Retrouvez les demandes, validations, refus et changements de réservation.',
     'notifications.pushTitle': 'Notifications push',
     'notifications.pushBody':
-      'État système : {{status}}. Le centre in-app reste disponible dans tous les cas.',
+      'Recevoir les alertes même lorsque l’application est fermée.',
     'notifications.pushAcceptAction': 'Autoriser',
     'notifications.pushRefuseAction': 'Refuser',
     'notifications.pushStatus.granted': 'autorisées',
@@ -98,6 +105,13 @@ export const dictionaries = {
     'notifications.listTitle': 'Récentes',
     'notifications.unreadCount': '{{count}} non lue(s)',
     'notifications.markAllReadAction': 'Tout marquer comme lu',
+    'notifications.deleteAction': 'Supprimer la notification',
+    'notifications.deleteConfirm': 'Supprimer cette notification ?',
+    'notifications.confirmDeleteAction': 'Confirmer la suppression',
+    'notifications.cancelDeleteAction': 'Annuler la suppression',
+    'notifications.deleteErrorTitle': 'Suppression impossible',
+    'notifications.deleteErrorBody':
+      'La notification n’a pas pu être supprimée. Réessayez.',
     'notifications.emptyTitle': 'Aucune notification',
     'notifications.emptyBody':
       'Les événements importants apparaîtront ici même si le push système est refusé.',
@@ -347,8 +361,7 @@ export const dictionaries = {
     'pricing.validation.invalidStudent': 'Un élève ciblé n’est pas valide.',
     'availability.loading': 'Chargement des disponibilités...',
     'availability.manageTitle': 'Gestion des disponibilités',
-    'availability.manageBody':
-      'Créez des plages continues avec une heure de début, une heure de fin, un lieu et une récurrence.',
+    'availability.manageBody': 'Gérez ses plages horaires.',
     'availability.createTitle': 'Nouvelle plage',
     'availability.dateLabel': 'Date',
     'availability.datePlaceholder': 'AAAA-MM-JJ',
@@ -404,6 +417,9 @@ export const dictionaries = {
     'availability.emptyTitle': 'Aucune disponibilité',
     'availability.emptyBody':
       'Créez une première plage pour préparer les créneaux réservables.',
+    'availability.emptyPeriodTitle': 'Aucune plage sur cette période',
+    'availability.emptyPeriodBody':
+      'Utilisez les boutons de navigation pour consulter une autre période.',
     'availability.rangeTime': '{{start}}–{{end}}',
     'availability.rangeMeta': '{{location}}',
     'availability.generatedSlotsTitle': 'Occurrences disponibles',
@@ -664,6 +680,7 @@ export const dictionaries = {
     'booking.refusalCommentLabel': 'Commentaire de refus',
     'booking.refusalCommentPlaceholder': 'Message optionnel pour l’élève',
     'booking.cancelAction': 'Annuler la demande ou le cours',
+    'booking.cancelLessonAction': 'Annuler le cours',
     'booking.cancellationTitle': 'Annuler la demande ou le cours',
     'booking.cancellationBody':
       'Expliquez la raison de l’annulation. Ce message sera transmis au coach.',
@@ -885,13 +902,19 @@ export const dictionaries = {
     'nav.coach.stats': 'Stats',
     'stats.loading': 'Loading statistics...',
     'stats.title': 'Statistics',
-    'stats.subtitle': 'A lightweight view of your confirmed activity.',
+    'stats.subtitle': 'Track completed lessons and activity for the period.',
     'stats.period.month': 'Month',
     'stats.period.quarter': 'Quarter',
     'stats.period.year': 'Year',
+    'stats.periodRange': '{{start}} to {{end}}',
+    'stats.lastUpdated': 'Updated at {{time}}',
+    'stats.activityAvailable': 'Activity recorded',
+    'stats.activityEmpty': 'No activity in period',
     'stats.completedCourses': 'Completed lessons',
     'stats.completedHours': 'Completed hours',
-    'stats.estimatedRevenue': 'estimated revenue',
+    'stats.averageDuration': 'Average duration',
+    'stats.estimatedRevenue': 'Estimated revenue',
+    'stats.averageRevenue': 'Average revenue per lesson',
     'stats.estimatedRevenueHint':
       'Estimated from applied rates, with no integrated payment.',
     'stats.emptyTitle': 'No activity for this period',
@@ -900,6 +923,7 @@ export const dictionaries = {
     'stats.activeStudentsEmpty':
       'There are not enough lessons to show active students yet.',
     'stats.activeStudentCourses': '{{count}} lessons',
+    'stats.openStudentAction': 'Open {{name}}’s profile',
     'stats.unknownStudent': 'Student',
     'stats.loadErrorTitle': 'Statistics unavailable',
     'stats.loadErrorBody': 'Statistics cannot be loaded right now. Try again.',
@@ -919,7 +943,7 @@ export const dictionaries = {
       'Find requests, approvals, refusals and booking changes.',
     'notifications.pushTitle': 'Push notifications',
     'notifications.pushBody':
-      'System status: {{status}}. The in-app center remains available either way.',
+      'Receive alerts even when the app is closed.',
     'notifications.pushAcceptAction': 'Allow',
     'notifications.pushRefuseAction': 'Refuse',
     'notifications.pushStatus.granted': 'allowed',
@@ -929,6 +953,13 @@ export const dictionaries = {
     'notifications.listTitle': 'Recent',
     'notifications.unreadCount': '{{count}} unread',
     'notifications.markAllReadAction': 'Mark all read',
+    'notifications.deleteAction': 'Delete notification',
+    'notifications.deleteConfirm': 'Delete this notification?',
+    'notifications.confirmDeleteAction': 'Confirm deletion',
+    'notifications.cancelDeleteAction': 'Cancel deletion',
+    'notifications.deleteErrorTitle': 'Unable to delete',
+    'notifications.deleteErrorBody':
+      'The notification could not be deleted. Try again.',
     'notifications.emptyTitle': 'No notifications',
     'notifications.emptyBody':
       'Important events will appear here even when system push is refused.',
@@ -1225,6 +1256,9 @@ export const dictionaries = {
     'availability.emptyTitle': 'No availability',
     'availability.emptyBody':
       'Create a first range to prepare requestable slots.',
+    'availability.emptyPeriodTitle': 'No availability in this period',
+    'availability.emptyPeriodBody':
+      'Use the navigation buttons to view another period.',
     'availability.rangeTime': '{{start}}–{{end}}',
     'availability.rangeMeta': '{{location}}',
     'availability.generatedSlotsTitle': 'Available occurrences',
@@ -1476,6 +1510,7 @@ export const dictionaries = {
     'booking.refusalCommentLabel': 'Refusal comment',
     'booking.refusalCommentPlaceholder': 'Optional message for the student',
     'booking.cancelAction': 'Cancel request or lesson',
+    'booking.cancelLessonAction': 'Cancel lesson',
     'booking.cancellationTitle': 'Cancel request or lesson',
     'booking.cancellationBody':
       'Explain why you are cancelling. This message will be sent to your coach.',
@@ -1692,13 +1727,19 @@ export const dictionaries = {
     'nav.coach.stats': 'Estadísticas',
     'stats.loading': 'Cargando estadísticas...',
     'stats.title': 'Estadísticas',
-    'stats.subtitle': 'Una vista ligera de tu actividad confirmada.',
+    'stats.subtitle': 'Consulta las clases terminadas y tu actividad del período.',
     'stats.period.month': 'Mes',
     'stats.period.quarter': 'Trimestre',
     'stats.period.year': 'Año',
+    'stats.periodRange': 'Del {{start}} al {{end}}',
+    'stats.lastUpdated': 'Actualizado a las {{time}}',
+    'stats.activityAvailable': 'Actividad registrada',
+    'stats.activityEmpty': 'Período sin actividad',
     'stats.completedCourses': 'Clases realizadas',
     'stats.completedHours': 'Horas realizadas',
-    'stats.estimatedRevenue': 'ingresos estimados',
+    'stats.averageDuration': 'Duración media',
+    'stats.estimatedRevenue': 'Ingresos estimados',
+    'stats.averageRevenue': 'Ingreso medio por clase',
     'stats.estimatedRevenueHint':
       'Estimación calculada con las tarifas aplicadas, sin pago integrado.',
     'stats.emptyTitle': 'Sin actividad en este periodo',
@@ -1707,6 +1748,7 @@ export const dictionaries = {
     'stats.activeStudentsEmpty':
       'Todavía no hay suficientes clases para mostrar alumnos activos.',
     'stats.activeStudentCourses': '{{count}} clases',
+    'stats.openStudentAction': 'Abrir la ficha de {{name}}',
     'stats.unknownStudent': 'Alumno',
     'stats.loadErrorTitle': 'Estadísticas no disponibles',
     'stats.loadErrorBody':
@@ -1727,7 +1769,7 @@ export const dictionaries = {
       'Encuentra solicitudes, validaciones, rechazos y cambios de reserva.',
     'notifications.pushTitle': 'Notificaciones push',
     'notifications.pushBody':
-      'Estado del sistema: {{status}}. El centro in-app sigue disponible en todos los casos.',
+      'Recibe alertas incluso cuando la aplicación esté cerrada.',
     'notifications.pushAcceptAction': 'Permitir',
     'notifications.pushRefuseAction': 'Rechazar',
     'notifications.pushStatus.granted': 'permitidas',
@@ -1737,6 +1779,13 @@ export const dictionaries = {
     'notifications.listTitle': 'Recientes',
     'notifications.unreadCount': '{{count}} sin leer',
     'notifications.markAllReadAction': 'Marcar todo como leído',
+    'notifications.deleteAction': 'Eliminar notificación',
+    'notifications.deleteConfirm': '¿Eliminar esta notificación?',
+    'notifications.confirmDeleteAction': 'Confirmar eliminación',
+    'notifications.cancelDeleteAction': 'Cancelar eliminación',
+    'notifications.deleteErrorTitle': 'No se puede eliminar',
+    'notifications.deleteErrorBody':
+      'No se pudo eliminar la notificación. Inténtalo de nuevo.',
     'notifications.emptyTitle': 'Sin notificaciones',
     'notifications.emptyBody':
       'Los eventos importantes aparecerán aquí aunque el push del sistema esté rechazado.',
@@ -2040,6 +2089,9 @@ export const dictionaries = {
     'availability.emptyTitle': 'Sin disponibilidad',
     'availability.emptyBody':
       'Crea una primera franja para preparar horarios reservables.',
+    'availability.emptyPeriodTitle': 'No hay disponibilidad en este período',
+    'availability.emptyPeriodBody':
+      'Usa los botones de navegación para consultar otro período.',
     'availability.rangeTime': '{{start}}–{{end}}',
     'availability.rangeMeta': '{{location}}',
     'availability.generatedSlotsTitle': 'Ocurrencias disponibles',
@@ -2299,6 +2351,7 @@ export const dictionaries = {
     'booking.refusalCommentLabel': 'Comentario de rechazo',
     'booking.refusalCommentPlaceholder': 'Mensaje opcional para el alumno',
     'booking.cancelAction': 'Cancelar solicitud o clase',
+    'booking.cancelLessonAction': 'Cancelar la clase',
     'booking.cancellationTitle': 'Cancelar solicitud o clase',
     'booking.cancellationBody':
       'Explica por qué cancelas. Este mensaje se enviará al coach.',

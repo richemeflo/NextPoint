@@ -139,6 +139,19 @@ export async function markAllNotificationsRead(): Promise<
   return { ok: true, count: data };
 }
 
+export async function deleteNotification(
+  notificationId: string
+): Promise<{ ok: true; id: string } | { ok: false }> {
+  if (!supabase) return { ok: false };
+
+  const { data, error } = await supabase.rpc('delete_notification', {
+    p_notification_id: notificationId,
+  });
+
+  if (error || data !== notificationId) return { ok: false };
+  return { ok: true, id: data };
+}
+
 export async function processPendingPushNotifications(): Promise<void> {
   if (!supabase) return;
 

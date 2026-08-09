@@ -1214,6 +1214,10 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["student_account_status"]
       }
+      delete_notification: {
+        Args: { p_notification_id: string }
+        Returns: string
+      }
       is_coach_registration_open: { Args: never; Returns: boolean }
       mark_all_notifications_read: { Args: never; Returns: number }
       mark_coach_message_thread_read: {

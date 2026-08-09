@@ -3,7 +3,6 @@ import {
   availabilityLocations,
   availabilityRangeSchema,
   availabilityRecurrenceTypes,
-  buildAvailabilityPreviewSlots,
   defaultAvailabilityLocation,
   getDefaultAvailabilityRecurrenceEndsOn,
   getSchedulingDateKey,
@@ -20,6 +19,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Modal,
+  Pressable,
   ScrollView,
   StyleSheet,
   View,
@@ -31,7 +32,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Feedback } from '@/components/ui/feedback';
 import { TextField } from '@/components/ui/text-field';
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { MaxContentWidth, Radii, Spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/auth-context';
 import {
   acquireMutationLock,
@@ -47,20 +48,30 @@ import {
   type AvailabilityRange,
   type AvailabilitySlot,
 } from '@/features/scheduling/availability-service';
+import { AgendaGrid } from '@/features/scheduling/agenda-grid';
 import { isCoachPlanningSlotVisible } from '@/features/scheduling/coach-planning-visibility';
+import { planningControlIcons } from '@/features/scheduling/planning-control-icons';
+import {
+  getPlanningWindow,
+  movePlanningAnchor,
+  type PlanningViewMode,
+} from '@/features/scheduling/planning-window';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
 
 function slotToFormInput(slot: AvailabilitySlot): AvailabilityRangeFormInput {
   const startsAt = new Date(slot.startsAt);
   const endsAt = new Date(slot.endsAt);
+  const location =
+    availabilityLocations.find((candidate) => candidate === slot.location) ??
+    defaultAvailabilityLocation;
 
   return {
     date: getSchedulingDateKey(startsAt),
     startsAtLocalTime: getSchedulingTime(startsAt),
     endsAtLocalTime: getSchedulingTime(endsAt),
     slotDurationMinutes: '60',
-    location: defaultAvailabilityLocation,
+    location,
     recurrenceType: 'none',
     recurrenceEndsOn: '',
   };
@@ -98,6 +109,8 @@ export default function CoachAvailabilityScreen() {
   const [editingSlotId, setEditingSlotId] = useState<string | null>(null);
   const [editingSlotValues, setEditingSlotValues] =
     useState<AvailabilityRangeFormInput | null>(null);
+  const [agendaMode, setAgendaMode] = useState<PlanningViewMode>('week');
+  const [agendaAnchorDate, setAgendaAnchorDate] = useState(getSchedulingToday);
   const availabilityMutationLock = useRef(false);
   const [mutationPending, setMutationPending] = useState(false);
   const {
@@ -112,6 +125,10 @@ export default function CoachAvailabilityScreen() {
   });
   const watchedValues = useWatch({ control });
   const selectedRecurrenceType = watchedValues.recurrenceType ?? 'none';
+  const agendaWindow = useMemo(
+    () => getPlanningWindow(agendaAnchorDate, agendaMode),
+    [agendaAnchorDate, agendaMode]
+  );
 
   const loadRanges = useCallback(async () => {
     if (!user) return;
@@ -182,13 +199,6 @@ export default function CoachAvailabilityScreen() {
     watchedValues.recurrenceEndsOn,
   ]);
 
-  const previewSlots = useMemo(() => {
-    const parsed = availabilityRangeSchema.safeParse(watchedValues);
-    if (!parsed.success) return [];
-
-    return buildAvailabilityPreviewSlots(toAvailabilityRangeInput(parsed.data));
-  }, [watchedValues]);
-
   const validationKeys: Record<string, TranslationKey> = {
     invalid_date: 'availability.validation.invalidDate',
     invalid_time: 'availability.validation.invalidTime',
@@ -225,6 +235,14 @@ export default function CoachAvailabilityScreen() {
       timeZone: schedulingTimeZone,
     }).format(getSchedulingDateLabelInstant(value) ?? new Date(value));
 
+  const formatAgendaDay = (value: string) =>
+    new Intl.DateTimeFormat(locale, {
+      weekday: 'short',
+      day: '2-digit',
+      month: 'short',
+      timeZone: schedulingTimeZone,
+    }).format(getSchedulingDateLabelInstant(value) ?? new Date(value));
+
   const slotsByRangeId = useMemo(() => {
     const grouped = new Map<string, AvailabilitySlot[]>();
 
@@ -237,18 +255,19 @@ export default function CoachAvailabilityScreen() {
     return grouped;
   }, [slots]);
 
-  const visibleSlotsByRangeId = useMemo(
-    () =>
-      new Map(
-        [...slotsByRangeId].map(([rangeId, rangeSlots]) => [
-          rangeId,
-          rangeSlots.filter((slot) =>
-            isCoachPlanningSlotVisible(slot.status)
-          ),
-        ])
-      ),
-    [slotsByRangeId]
+  const visibleSlots = useMemo(
+    () => slots.filter((slot) => isCoachPlanningSlotVisible(slot.status)),
+    [slots]
   );
+  const agendaSlots = useMemo(() => {
+    const startsAt = new Date(agendaWindow.startsAt).getTime();
+    const endsAt = new Date(agendaWindow.endsAt).getTime();
+
+    return visibleSlots.filter((slot) => {
+      const slotStartsAt = new Date(slot.startsAt).getTime();
+      return slotStartsAt >= startsAt && slotStartsAt < endsAt;
+    });
+  }, [agendaWindow.endsAt, agendaWindow.startsAt, visibleSlots]);
 
   const rangeById = useMemo(() => {
     const byId = new Map<string, AvailabilityRange>();
@@ -259,6 +278,11 @@ export default function CoachAvailabilityScreen() {
 
     return byId;
   }, [ranges]);
+  const selectedSlot = useMemo(
+    () => visibleSlots.find((slot) => slot.id === editingSlotId) ?? null,
+    [editingSlotId, visibleSlots]
+  );
+  const selectedRange = selectedSlot ? rangeById.get(selectedSlot.rangeId) : null;
 
   const submitAvailability = async (form: AvailabilityRangeFormInput) => {
     if (!acquireMutationLock(availabilityMutationLock)) return;
@@ -305,6 +329,13 @@ export default function CoachAvailabilityScreen() {
   const cancelEditingSlot = () => {
     setEditingSlotId(null);
     setEditingSlotValues(null);
+  };
+
+  const moveAgenda = (direction: -1 | 1) => {
+    cancelEditingSlot();
+    setAgendaAnchorDate((current) =>
+      movePlanningAnchor(current, agendaMode, direction)
+    );
   };
 
   const setEditingSlotField = <Key extends keyof AvailabilityRangeFormInput>(
@@ -554,6 +585,7 @@ export default function CoachAvailabilityScreen() {
                   label={t('availability.recurrenceLabel')}
                   onChange={onChange}
                   options={recurrenceOptions}
+                  singleLine
                   value={value}
                 />
               )}
@@ -574,32 +606,6 @@ export default function CoachAvailabilityScreen() {
                 )}
               />
             ) : null}
-
-            <View style={styles.preview}>
-              <ThemedText type="smallBold">
-                {t('availability.previewTitle')}
-              </ThemedText>
-              {previewSlots.length > 0 ? (
-                <View style={styles.previewList}>
-                  {previewSlots.map((slot) => (
-                    <ThemedText
-                      key={`${slot.startsAt}-${slot.endsAt}`}
-                      type="small"
-                      themeColor="textMuted">
-                      {t('availability.previewSlot', {
-                        start: formatTime(slot.startsAt),
-                        end: formatTime(slot.endsAt),
-                        location: slot.location,
-                      })}
-                    </ThemedText>
-                  ))}
-                </View>
-              ) : (
-                <ThemedText type="small" themeColor="textMuted">
-                  {t('availability.previewEmpty')}
-                </ThemedText>
-              )}
-            </View>
 
             {feedback === 'saved' ? (
               <Feedback
@@ -668,135 +674,204 @@ export default function CoachAvailabilityScreen() {
 
           <View style={styles.list}>
             <ThemedText type="subtitle">{t('availability.listTitle')}</ThemedText>
-            {ranges.length === 0 ? (
+            {visibleSlots.length === 0 ? (
               <Feedback
                 message={t('availability.emptyBody')}
                 title={t('availability.emptyTitle')}
                 tone="info"
               />
             ) : (
-              <View style={styles.grid}>
-                {ranges.map((range) => (
-                  <Card key={range.id} style={styles.rangeCard}>
-                    <ThemedText type="smallBold">
-                      {formatDateTime(range.startsAt)}
-                    </ThemedText>
-                    <ThemedText type="small" themeColor="textMuted">
-                      {t('availability.rangeTime', {
-                        start: formatTime(range.startsAt),
-                        end: formatTime(range.endsAt),
-                      })}
-                    </ThemedText>
-                    <ThemedText type="small" themeColor="textMuted">
-                      {t('availability.rangeMeta', {
-                        location: range.location,
-                      })}
-                    </ThemedText>
-                    <ThemedText type="small" themeColor="textMuted">
-                      {t(
-                        `availability.recurrence.${range.recurrenceType}` as TranslationKey
-                      )}
-                    </ThemedText>
-                    {range.recurrenceEndsOn ? (
-                      <ThemedText type="small" themeColor="textMuted">
-                        {t('availability.recurrenceUntil', {
-                          date: formatDate(range.recurrenceEndsOn),
+              <View style={styles.savedAgenda}>
+                <View style={styles.toolbar}>
+                  <View style={styles.toolbarSegmented}>
+                    {(['week', 'day'] as const).map((candidate) => (
+                      <Button
+                        key={candidate}
+                        label={t(`planning.mode.${candidate}` as TranslationKey)}
+                        onPress={() => {
+                          cancelEditingSlot();
+                          setAgendaMode(candidate);
+                        }}
+                        style={styles.toolbarButton}
+                        variant={agendaMode === candidate ? 'primary' : 'secondary'}
+                      />
+                    ))}
+                  </View>
+                  <View style={styles.periodActions}>
+                    <Button
+                      icon={planningControlIcons.previous}
+                      label={t('planning.previousAction')}
+                      onPress={() => moveAgenda(-1)}
+                      style={[styles.toolbarButton, styles.periodButton]}
+                      variant="secondary"
+                    />
+                    <Button
+                      label={t('planning.todayAction')}
+                      onPress={() => {
+                        cancelEditingSlot();
+                        setAgendaAnchorDate(getSchedulingToday());
+                      }}
+                      style={[styles.toolbarButton, styles.periodButton]}
+                      variant="secondary"
+                    />
+                    <Button
+                      icon={planningControlIcons.next}
+                      iconPosition="right"
+                      label={t('planning.nextAction')}
+                      onPress={() => moveAgenda(1)}
+                      style={[styles.toolbarButton, styles.periodButton]}
+                      variant="secondary"
+                    />
+                  </View>
+                </View>
+
+                {agendaSlots.length === 0 ? (
+                  <Feedback
+                    message={t('availability.emptyPeriodBody')}
+                    title={t('availability.emptyPeriodTitle')}
+                    tone="info"
+                  />
+                ) : null}
+
+                <AgendaGrid
+                  days={agendaWindow.days}
+                  formatDay={formatAgendaDay}
+                  getSlotStyle={(slot) => ({
+                    backgroundColor:
+                      editingSlotId === slot.id
+                        ? theme.backgroundSelected
+                        : theme.successSurface,
+                    borderColor:
+                      editingSlotId === slot.id ? theme.primary : theme.success,
+                    borderLeftWidth: 5,
+                  })}
+                  onSlotPress={(slot) => startEditingSlot(slot)}
+                  renderSlot={(slot) => (
+                    <>
+                      <ThemedText numberOfLines={1} type="smallBold">
+                        {t('availability.rangeTime', {
+                          start: formatTime(slot.startsAt),
+                          end: formatTime(slot.endsAt),
                         })}
                       </ThemedText>
-                    ) : null}
-                    <View style={styles.slotList}>
-                      <ThemedText type="smallBold">
-                        {t('availability.generatedSlotsTitle')}
+                      <ThemedText numberOfLines={1} type="small" themeColor="textMuted">
+                        {`${slot.location} · ${t(
+                          `availability.slotStatus.${slot.status}` as TranslationKey
+                        )}`}
                       </ThemedText>
-                      {(visibleSlotsByRangeId.get(range.id) ?? []).map((slot) => (
-                        <View key={slot.id} style={styles.slotRow}>
-                          <ThemedText type="small" themeColor="textMuted">
-                            {t('availability.generatedSlot', {
-                              date: formatDateTime(slot.startsAt),
-                              start: formatTime(slot.startsAt),
-                              end: formatTime(slot.endsAt),
-                              location: slot.location,
-                            })}
-                          </ThemedText>
-                          <ThemedText type="smallBold" themeColor="primary">
-                            {t(
-                              `availability.slotStatus.${slot.status}` as TranslationKey
-                            )}
-                          </ThemedText>
-                          {editingSlotId === slot.id && editingSlotValues ? (
-                            <View style={styles.slotEditPanel}>
-                              <View style={styles.formGrid}>
-                                <TextField
-                                  label={t('availability.dateLabel')}
-                                  onChangeText={(value) =>
-                                    setEditingSlotField('date', value)
-                                  }
-                                  placeholder={t('availability.datePlaceholder')}
-                                  value={editingSlotValues.date}
-                                />
-                                <TextField
-                                  label={t('availability.startsAtLabel')}
-                                  onChangeText={(value) =>
-                                    setEditingSlotField('startsAtLocalTime', value)
-                                  }
-                                  placeholder={t('availability.timePlaceholder')}
-                                  value={editingSlotValues.startsAtLocalTime}
-                                />
-                                <TextField
-                                  label={t('availability.endsAtLabel')}
-                                  onChangeText={(value) =>
-                                    setEditingSlotField('endsAtLocalTime', value)
-                                  }
-                                  placeholder={t('availability.timePlaceholder')}
-                                  value={editingSlotValues.endsAtLocalTime}
-                                />
-                              </View>
-                              <View style={styles.slotActions}>
-                                <Button
-                                  disabled={mutationPending}
-                                  label={t('availability.updateAction')}
-                                  onPress={() => requestMutationScope(slot, 'save')}
-                                />
-                                <Button
-                                  disabled={mutationPending}
-                                  label={t('availability.deleteAction')}
-                                  onPress={() => requestMutationScope(slot, 'delete')}
-                                  variant="secondary"
-                                />
-                                <Button
-                                  disabled={mutationPending}
-                                  label={t('availability.cancelAction')}
-                                  onPress={cancelEditingSlot}
-                                  variant="secondary"
-                                />
-                              </View>
-                            </View>
-                          ) : (
-                            <View style={styles.slotActions}>
-                              <Button
-                                disabled={mutationPending}
-                                label={t('availability.editAction')}
-                                onPress={() => startEditingSlot(slot)}
-                                variant="secondary"
-                              />
-                              <Button
-                                disabled={mutationPending}
-                                label={t('availability.deleteAction')}
-                                onPress={() => requestMutationScope(slot, 'delete')}
-                                variant="secondary"
-                              />
-                            </View>
-                          )}
-                        </View>
-                      ))}
-                    </View>
-                  </Card>
-                ))}
+                    </>
+                  )}
+                  slots={agendaSlots}
+                />
+
               </View>
             )}
           </View>
         </View>
       </ScrollView>
+
+      <Modal
+        animationType="fade"
+        onRequestClose={cancelEditingSlot}
+        transparent
+        visible={Boolean(selectedSlot && editingSlotValues)}>
+        <View style={styles.modalRoot}>
+          <Pressable
+            accessibilityLabel={t('availability.cancelAction')}
+            accessibilityRole="button"
+            onPress={cancelEditingSlot}
+            style={styles.modalBackdrop}
+          />
+          {selectedSlot && editingSlotValues ? (
+            <View
+              style={[
+                styles.modalSurface,
+                { backgroundColor: theme.surface, borderColor: theme.border },
+              ]}>
+              <ScrollView
+                contentContainerStyle={styles.slotEditPanel}
+                keyboardShouldPersistTaps="handled">
+                <View style={styles.slotEditHeading}>
+                  <View style={styles.slotEditTitle}>
+                    <ThemedText type="smallBold">
+                      {formatDateTime(selectedSlot.startsAt)}
+                    </ThemedText>
+                    <ThemedText type="small" themeColor="textMuted">
+                      {t(
+                        `availability.slotStatus.${selectedSlot.status}` as TranslationKey
+                      )}
+                    </ThemedText>
+                  </View>
+                  {selectedRange ? (
+                    <ThemedText type="small" themeColor="textMuted">
+                      {t(
+                        `availability.recurrence.${selectedRange.recurrenceType}` as TranslationKey
+                      )}
+                      {selectedRange.recurrenceEndsOn
+                        ? ` · ${t('availability.recurrenceUntil', {
+                            date: formatDate(selectedRange.recurrenceEndsOn),
+                          })}`
+                        : ''}
+                    </ThemedText>
+                  ) : null}
+                </View>
+                <View style={styles.formGrid}>
+                  <TextField
+                    label={t('availability.dateLabel')}
+                    onChangeText={(value) => setEditingSlotField('date', value)}
+                    placeholder={t('availability.datePlaceholder')}
+                    value={editingSlotValues.date}
+                  />
+                  <TextField
+                    label={t('availability.startsAtLabel')}
+                    onChangeText={(value) =>
+                      setEditingSlotField('startsAtLocalTime', value)
+                    }
+                    placeholder={t('availability.timePlaceholder')}
+                    value={editingSlotValues.startsAtLocalTime}
+                  />
+                  <TextField
+                    label={t('availability.endsAtLabel')}
+                    onChangeText={(value) =>
+                      setEditingSlotField('endsAtLocalTime', value)
+                    }
+                    placeholder={t('availability.timePlaceholder')}
+                    value={editingSlotValues.endsAtLocalTime}
+                  />
+                </View>
+                <ProfileOptionSelector
+                  label={t('availability.locationLabel')}
+                  onChange={(value) => setEditingSlotField('location', value)}
+                  options={availabilityLocations.map((location) => ({
+                    value: location,
+                    label: location,
+                  }))}
+                  value={editingSlotValues.location}
+                />
+                <View style={styles.slotActions}>
+                  <Button
+                    disabled={mutationPending}
+                    label={t('availability.updateAction')}
+                    onPress={() => requestMutationScope(selectedSlot, 'save')}
+                  />
+                  <Button
+                    disabled={mutationPending}
+                    label={t('availability.deleteAction')}
+                    onPress={() => requestMutationScope(selectedSlot, 'delete')}
+                    variant="secondary"
+                  />
+                  <Button
+                    disabled={mutationPending}
+                    label={t('availability.cancelAction')}
+                    onPress={cancelEditingSlot}
+                    variant="secondary"
+                  />
+                </View>
+              </ScrollView>
+            </View>
+          ) : null}
+        </View>
+      </Modal>
     </ThemedView>
   );
 }
@@ -833,12 +908,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: Spacing.three,
   },
-  preview: {
-    gap: Spacing.two,
-  },
-  previewList: {
-    gap: Spacing.one,
-  },
   actions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -847,25 +916,62 @@ const styles = StyleSheet.create({
   list: {
     gap: Spacing.three,
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  savedAgenda: {
     gap: Spacing.three,
   },
-  rangeCard: {
-    minWidth: 280,
+  toolbar: {
+    gap: Spacing.two,
+  },
+  toolbarSegmented: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+  },
+  periodActions: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+  },
+  toolbarButton: {
     flex: 1,
-    gap: Spacing.two,
+    paddingHorizontal: Spacing.one,
   },
-  slotList: {
-    gap: Spacing.two,
-    paddingTop: Spacing.two,
+  periodButton: {
+    minWidth: 0,
   },
-  slotRow: {
-    gap: Spacing.two,
+  modalRoot: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.three,
+  },
+  modalBackdrop: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.58)',
+  },
+  modalSurface: {
+    borderWidth: 1,
+    borderRadius: Radii.medium,
+    maxHeight: '90%',
+    maxWidth: 720,
+    overflow: 'hidden',
+    width: '100%',
   },
   slotEditPanel: {
     gap: Spacing.three,
+    padding: Spacing.four,
+  },
+  slotEditHeading: {
+    gap: Spacing.one,
+  },
+  slotEditTitle: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+    justifyContent: 'space-between',
   },
   slotActions: {
     flexDirection: 'row',

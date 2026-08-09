@@ -1,6 +1,6 @@
 begin;
 
-select plan(32);
+select plan(38);
 
 select ok(
   to_regtype('public.notification_type') is not null,
@@ -147,6 +147,12 @@ select has_function(
   array[]::name[],
   'guarded mark all read RPC exists'
 );
+select has_function(
+  'public',
+  'delete_notification',
+  array['uuid'],
+  'guarded notification deletion RPC exists'
+);
 select ok(
   has_function_privilege(
     'authenticated',
@@ -154,6 +160,14 @@ select ok(
     'execute'
   ),
   'authenticated users can update their push preference through RPC'
+);
+select ok(
+  has_function_privilege(
+    'authenticated',
+    'public.delete_notification(uuid)',
+    'execute'
+  ),
+  'authenticated users can delete own notifications through RPC'
 );
 select ok(
   has_function_privilege(
@@ -200,6 +214,79 @@ select ok(
     'execute'
   ),
   'authenticated users can cancel through the guarded command'
+);
+
+insert into auth.users (
+  id, instance_id, aud, role, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+)
+values
+  (
+    '13000000-0000-4000-8000-000000000001',
+    '00000000-0000-0000-0000-000000000000',
+    'authenticated', 'authenticated', 'notification-owner@example.test', '',
+    now(), '{}', '{"role":"eleve"}', now(), now()
+  ),
+  (
+    '13000000-0000-4000-8000-000000000002',
+    '00000000-0000-0000-0000-000000000000',
+    'authenticated', 'authenticated', 'notification-other@example.test', '',
+    now(), '{}', '{"role":"eleve"}', now(), now()
+  );
+
+insert into public.notifications (
+  id, recipient_id, type, title, body, created_at
+)
+values
+  (
+    '13000000-0000-4000-8000-000000000011',
+    '13000000-0000-4000-8000-000000000001',
+    'booking_approved', 'Cours confirmé', 'Votre cours est confirmé.', now()
+  ),
+  (
+    '13000000-0000-4000-8000-000000000012',
+    '13000000-0000-4000-8000-000000000002',
+    'booking_approved', 'Cours confirmé', 'Votre cours est confirmé.', now()
+  );
+
+select set_config(
+  'request.jwt.claim.sub',
+  '13000000-0000-4000-8000-000000000001',
+  true
+);
+set local role authenticated;
+
+select is(
+  public.delete_notification('13000000-0000-4000-8000-000000000011'),
+  '13000000-0000-4000-8000-000000000011'::uuid,
+  'a recipient can delete their own notification'
+);
+select throws_ok(
+  $$select public.delete_notification('13000000-0000-4000-8000-000000000012')$$,
+  '42501',
+  'notification not found',
+  'a recipient cannot delete another user notification'
+);
+
+reset role;
+
+select is(
+  (
+    select count(*)
+    from public.notifications
+    where id = '13000000-0000-4000-8000-000000000011'
+  ),
+  0::bigint,
+  'the owned notification is removed'
+);
+select is(
+  (
+    select count(*)
+    from public.notifications
+    where id = '13000000-0000-4000-8000-000000000012'
+  ),
+  1::bigint,
+  'the other user notification remains stored'
 );
 
 select * from finish();

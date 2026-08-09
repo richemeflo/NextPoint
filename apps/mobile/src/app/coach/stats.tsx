@@ -1,3 +1,5 @@
+import { SymbolView, type SymbolViewProps } from 'expo-symbols';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -12,7 +14,12 @@ import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Feedback } from '@/components/ui/feedback';
-import { MaxContentWidth, Radii, Spacing } from '@/constants/theme';
+import {
+  MaxContentWidth,
+  Radii,
+  Spacing,
+  type ThemeColor,
+} from '@/constants/theme';
 import type { CoachStatsError } from '@/features/stats/coach-stats-error';
 import {
   formatCoachStatsHours,
@@ -25,7 +32,11 @@ import {
 } from '@/features/stats/coach-stats-view';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
-import type { CoachStatsPeriod, CoachStatsReadModel } from '@nextpoint/shared';
+import {
+  schedulingTimeZone,
+  type CoachStatsPeriod,
+  type CoachStatsReadModel,
+} from '@nextpoint/shared';
 
 function getErrorMessageKey(error: CoachStatsError): TranslationKey {
   if (error === 'unauthorized') return 'stats.accessDenied';
@@ -33,7 +44,55 @@ function getErrorMessageKey(error: CoachStatsError): TranslationKey {
   return 'stats.loadErrorBody';
 }
 
+const metricIcons = {
+  courses: {
+    ios: 'calendar.badge.checkmark',
+    android: 'event_available',
+    web: 'event_available',
+  },
+  hours: { ios: 'clock', android: 'schedule', web: 'schedule' },
+  duration: { ios: 'timer', android: 'timer', web: 'timer' },
+  revenue: { ios: 'eurosign.circle', android: 'euro', web: 'euro' },
+  average: { ios: 'chart.bar', android: 'analytics', web: 'analytics' },
+} satisfies Record<string, SymbolViewProps['name']>;
+
+function StatsMetric({
+  icon,
+  iconColor,
+  iconSurface,
+  label,
+  value,
+}: {
+  icon: SymbolViewProps['name'];
+  iconColor: ThemeColor;
+  iconSurface: ThemeColor;
+  label: string;
+  value: string;
+}) {
+  const theme = useTheme();
+
+  return (
+    <Card elevated style={styles.metricCard}>
+      <View style={[styles.metricIcon, { backgroundColor: theme[iconSurface] }]}>
+        <SymbolView
+          name={icon}
+          size={22}
+          weight="semibold"
+          tintColor={theme[iconColor]}
+        />
+      </View>
+      <View style={styles.metricCopy}>
+        <ThemedText type="smallBold" themeColor="textMuted">
+          {label}
+        </ThemedText>
+        <ThemedText style={styles.metricValue}>{value}</ThemedText>
+      </View>
+    </Card>
+  );
+}
+
 export default function CoachStatsScreen() {
+  const router = useRouter();
   const { locale, t } = useTranslation();
   const theme = useTheme();
   const [stats, setStats] = useState<CoachStatsReadModel | null>(null);
@@ -89,6 +148,19 @@ export default function CoachStatsScreen() {
   };
 
   const hasActivity = (stats?.completedCourses ?? 0) > 0;
+  const formatPeriodDate = (value: string | number) =>
+    new Intl.DateTimeFormat(locale, {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      timeZone: schedulingTimeZone,
+    }).format(new Date(value));
+  const formatGeneratedAt = (value: string) =>
+    new Intl.DateTimeFormat(locale, {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: schedulingTimeZone,
+    }).format(new Date(value));
 
   return (
     <ThemedView style={styles.screen}>
@@ -152,6 +224,47 @@ export default function CoachStatsScreen() {
             </Card>
           ) : stats ? (
             <View style={styles.sections}>
+              <View
+                style={[
+                  styles.periodSummary,
+                  { borderColor: theme.border, backgroundColor: theme.surface },
+                ]}>
+                <View style={styles.periodSummaryCopy}>
+                  <ThemedText type="smallBold">
+                    {t('stats.periodRange', {
+                      start: formatPeriodDate(stats.periodStart),
+                      end: formatPeriodDate(
+                        new Date(stats.periodEnd).getTime() - 1
+                      ),
+                    })}
+                  </ThemedText>
+                  <ThemedText type="small" themeColor="textMuted">
+                    {t('stats.lastUpdated', {
+                      time: formatGeneratedAt(stats.generatedAt),
+                    })}
+                  </ThemedText>
+                </View>
+                <View
+                  style={[
+                    styles.activityStatus,
+                    {
+                      backgroundColor: hasActivity
+                        ? theme.successSurface
+                        : theme.warningSurface,
+                    },
+                  ]}>
+                  <ThemedText
+                    type="smallBold"
+                    themeColor={hasActivity ? 'success' : 'warning'}>
+                    {t(
+                      hasActivity
+                        ? 'stats.activityAvailable'
+                        : 'stats.activityEmpty'
+                    )}
+                  </ThemedText>
+                </View>
+              </View>
+
               {!hasActivity ? (
                 <Feedback
                   message={t('stats.emptyBody')}
@@ -160,58 +273,164 @@ export default function CoachStatsScreen() {
               ) : null}
 
               <View style={styles.metrics}>
-                <Card elevated style={styles.metricCard}>
-                  <ThemedText type="smallBold" themeColor="textMuted">
-                    {t('stats.completedCourses')}
-                  </ThemedText>
-                  <ThemedText type="subtitle">{stats.completedCourses}</ThemedText>
-                </Card>
-                <Card elevated style={styles.metricCard}>
-                  <ThemedText type="smallBold" themeColor="textMuted">
-                    {t('stats.completedHours')}
-                  </ThemedText>
-                  <ThemedText type="subtitle">
-                    {formatCoachStatsHours(stats.completedMinutes, locale)}
-                  </ThemedText>
-                </Card>
-                <Card elevated style={styles.metricCard}>
-                  <ThemedText type="smallBold" themeColor="textMuted">
-                    {t('stats.estimatedRevenue')}
-                  </ThemedText>
-                  <ThemedText type="subtitle">
-                    {formatCoachStatsRevenue(
-                      stats.estimatedRevenueCents,
-                      locale,
-                      stats.currency
-                    )}
-                  </ThemedText>
-                  <ThemedText type="small" themeColor="textMuted">
-                    {t('stats.estimatedRevenueHint')}
-                  </ThemedText>
-                </Card>
+                <StatsMetric
+                  icon={metricIcons.courses}
+                  iconColor="primary"
+                  iconSurface="backgroundSelected"
+                  label={t('stats.completedCourses')}
+                  value={new Intl.NumberFormat(locale).format(
+                    stats.completedCourses
+                  )}
+                />
+                <StatsMetric
+                  icon={metricIcons.hours}
+                  iconColor="secondary"
+                  iconSurface="successSurface"
+                  label={t('stats.completedHours')}
+                  value={formatCoachStatsHours(stats.completedMinutes, locale)}
+                />
+                <StatsMetric
+                  icon={metricIcons.duration}
+                  iconColor="secondary"
+                  iconSurface="successSurface"
+                  label={t('stats.averageDuration')}
+                  value={formatCoachStatsHours(
+                    stats.completedCourses > 0
+                      ? stats.completedMinutes / stats.completedCourses
+                      : 0,
+                    locale
+                  )}
+                />
+                <StatsMetric
+                  icon={metricIcons.revenue}
+                  iconColor="warning"
+                  iconSurface="warningSurface"
+                  label={t('stats.estimatedRevenue')}
+                  value={formatCoachStatsRevenue(
+                    stats.estimatedRevenueCents,
+                    locale,
+                    stats.currency
+                  )}
+                />
+                <StatsMetric
+                  icon={metricIcons.average}
+                  iconColor="success"
+                  iconSurface="successSurface"
+                  label={t('stats.averageRevenue')}
+                  value={formatCoachStatsRevenue(
+                    stats.completedCourses > 0
+                      ? stats.estimatedRevenueCents / stats.completedCourses
+                      : 0,
+                    locale,
+                    stats.currency
+                  )}
+                />
               </View>
+              <ThemedText type="small" themeColor="textMuted">
+                {t('stats.estimatedRevenueHint')}
+              </ThemedText>
 
               <Card style={styles.activeStudentsCard}>
-                <ThemedText type="smallBold">
-                  {t('stats.activeStudentsTitle')}
-                </ThemedText>
+                <View style={styles.sectionHeading}>
+                  <View
+                    style={[
+                      styles.sectionIcon,
+                      { backgroundColor: theme.backgroundSelected },
+                    ]}>
+                    <SymbolView
+                      name={{ ios: 'person.2', android: 'groups', web: 'groups' }}
+                      size={20}
+                      weight="semibold"
+                      tintColor={theme.primary}
+                    />
+                  </View>
+                  <ThemedText type="smallBold">
+                    {t('stats.activeStudentsTitle')}
+                  </ThemedText>
+                </View>
                 {stats.activeStudents.length > 0 ? (
                   <View style={styles.activeStudentsList}>
-                    {stats.activeStudents.map((student) => (
-                      <View key={student.studentId} style={styles.activeStudentRow}>
-                        <ThemedText style={styles.activeStudentName}>
-                          {getCoachStatsStudentName(
-                            student.fullName,
-                            t('stats.unknownStudent')
-                          )}
-                        </ThemedText>
-                        <ThemedText type="smallBold" themeColor="primary">
-                          {t('stats.activeStudentCourses', {
-                            count: student.courseCount,
+                    {stats.activeStudents.map((student, index) => {
+                      const maxCourses = stats.activeStudents[0]?.courseCount ?? 1;
+                      const studentName = getCoachStatsStudentName(
+                        student.fullName,
+                        t('stats.unknownStudent')
+                      );
+
+                      return (
+                        <Pressable
+                          accessibilityLabel={t('stats.openStudentAction', {
+                            name: studentName,
                           })}
-                        </ThemedText>
-                      </View>
-                    ))}
+                          accessibilityRole="button"
+                          key={student.studentId}
+                          onPress={() =>
+                            router.push({
+                              pathname: '/coach/students/[studentId]',
+                              params: { studentId: student.studentId },
+                            })
+                          }
+                          style={({ pressed }) => [
+                            styles.activeStudentRow,
+                            {
+                              borderColor: theme.border,
+                              opacity: pressed ? 0.72 : 1,
+                            },
+                          ]}>
+                          <View
+                            style={[
+                              styles.studentRank,
+                              { backgroundColor: theme.backgroundSelected },
+                            ]}>
+                            <ThemedText type="smallBold" themeColor="primary">
+                              {index + 1}
+                            </ThemedText>
+                          </View>
+                          <View style={styles.activeStudentMain}>
+                            <View style={styles.activeStudentCopy}>
+                              <ThemedText
+                                numberOfLines={1}
+                                style={styles.activeStudentName}>
+                                {studentName}
+                              </ThemedText>
+                              <ThemedText type="smallBold" themeColor="primary">
+                                {t('stats.activeStudentCourses', {
+                                  count: student.courseCount,
+                                })}
+                              </ThemedText>
+                            </View>
+                            <View
+                              style={[
+                                styles.studentBarTrack,
+                                { backgroundColor: theme.backgroundSelected },
+                              ]}>
+                              <View
+                                style={[
+                                  styles.studentBar,
+                                  {
+                                    backgroundColor: theme.secondary,
+                                    width: `${Math.max(
+                                      8,
+                                      (student.courseCount / maxCourses) * 100
+                                    )}%`,
+                                  },
+                                ]}
+                              />
+                            </View>
+                          </View>
+                          <SymbolView
+                            name={{
+                              ios: 'chevron.right',
+                              android: 'chevron_right',
+                              web: 'chevron_right',
+                            }}
+                            size={16}
+                            weight="semibold"
+                            tintColor={theme.textMuted}
+                          />
+                        </Pressable>
+                      );
+                    })}
                   </View>
                 ) : (
                   <ThemedText type="small" themeColor="textMuted">
@@ -251,16 +470,36 @@ const styles = StyleSheet.create({
   },
   periodOption: {
     minHeight: 44,
-    minWidth: 96,
-    flexGrow: 1,
+    minWidth: 0,
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderRadius: Radii.medium,
-    paddingHorizontal: Spacing.three,
+    paddingHorizontal: Spacing.one,
   },
   sections: {
     gap: Spacing.four,
+  },
+  periodSummary: {
+    minHeight: 64,
+    borderWidth: 1,
+    borderRadius: Radii.medium,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.two,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+  },
+  periodSummaryCopy: {
+    gap: Spacing.half,
+  },
+  activityStatus: {
+    borderRadius: Radii.small,
+    paddingHorizontal: Spacing.two,
+    paddingVertical: Spacing.one,
   },
   loadingCard: {
     alignItems: 'center',
@@ -276,23 +515,86 @@ const styles = StyleSheet.create({
   },
   metricCard: {
     flexGrow: 1,
-    flexBasis: 220,
+    flexBasis: 210,
     minWidth: 0,
-    gap: Spacing.two,
+    minHeight: 112,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+  },
+  metricIcon: {
+    width: 44,
+    height: 44,
+    flexShrink: 0,
+    borderRadius: Radii.small,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  metricCopy: {
+    minWidth: 0,
+    flex: 1,
+    gap: Spacing.one,
+  },
+  metricValue: {
+    fontSize: 28,
+    fontWeight: 700,
+    lineHeight: 34,
   },
   activeStudentsCard: {
     gap: Spacing.three,
   },
-  activeStudentsList: {
+  sectionHeading: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: Spacing.two,
+  },
+  sectionIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: Radii.small,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  activeStudentsList: {
+    gap: 0,
   },
   activeStudentRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    borderTopWidth: 1,
+    gap: Spacing.two,
+    minHeight: 72,
+    paddingVertical: Spacing.two,
+  },
+  studentRank: {
+    width: 32,
+    height: 32,
+    flexShrink: 0,
+    borderRadius: Radii.small,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  activeStudentMain: {
+    flex: 1,
+    minWidth: 0,
+    gap: Spacing.two,
+  },
+  activeStudentCopy: {
+    flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    gap: Spacing.three,
+    gap: Spacing.two,
   },
   activeStudentName: {
     flex: 1,
+  },
+  studentBarTrack: {
+    height: 6,
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  studentBar: {
+    height: '100%',
+    borderRadius: 3,
   },
 });

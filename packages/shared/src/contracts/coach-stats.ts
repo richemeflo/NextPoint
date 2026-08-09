@@ -16,9 +16,9 @@ export const coachStatsActiveStudentSchema = z.object({
 });
 
 export const coachStatsReadModelSchema = z.object({
-  periodStart: z.iso.datetime(),
-  periodEnd: z.iso.datetime(),
-  generatedAt: z.iso.datetime(),
+  periodStart: z.iso.datetime({ offset: true }),
+  periodEnd: z.iso.datetime({ offset: true }),
+  generatedAt: z.iso.datetime({ offset: true }),
   completedCourses: z.number().int().nonnegative(),
   completedMinutes: z.number().int().nonnegative(),
   estimatedRevenueCents: z.number().int().nonnegative(),

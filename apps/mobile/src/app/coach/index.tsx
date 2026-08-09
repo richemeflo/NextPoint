@@ -13,7 +13,13 @@ import {
 import { useLocalSearchParams } from 'expo-router';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -44,6 +50,7 @@ import {
 } from '@/features/pricing/pricing-service';
 import { ProfileOptionSelector } from '@/features/profiles/profile-option-selector';
 import { AgendaGrid } from '@/features/scheduling/agenda-grid';
+import { planningControlIcons } from '@/features/scheduling/planning-control-icons';
 import {
   isCoachPlanningBookingVisible,
   isCoachPlanningSlotVisible,
@@ -116,6 +123,8 @@ export default function CoachPlanningScreen() {
   const { user } = useAuth();
   const { locale, t } = useTranslation();
   const theme = useTheme();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 760;
   const [mode, setMode] = useState<PlanningViewMode>('week');
   const [displayMode, setDisplayMode] = useState<'agenda' | 'list'>('agenda');
   const [anchorDate, setAnchorDate] = useState(() =>
@@ -591,6 +600,7 @@ export default function CoachPlanningScreen() {
               {(['agenda', 'list'] as const).map((candidate) => (
                 <Button
                   key={candidate}
+                  icon={planningControlIcons[candidate]}
                   label={t(`planning.display.${candidate}` as TranslationKey)}
                   onPress={() => setDisplayMode(candidate)}
                   style={styles.toolbarButton}
@@ -611,6 +621,7 @@ export default function CoachPlanningScreen() {
             </View>
             <View style={styles.periodActions}>
               <Button
+                icon={planningControlIcons.previous}
                 label={t('planning.previousAction')}
                 onPress={() => move(-1)}
                 style={[styles.toolbarButton, styles.periodButton]}
@@ -623,6 +634,8 @@ export default function CoachPlanningScreen() {
                 variant="secondary"
               />
               <Button
+                icon={planningControlIcons.next}
+                iconPosition="right"
                 label={t('planning.nextAction')}
                 onPress={() => move(1)}
                 style={[styles.toolbarButton, styles.periodButton]}
@@ -632,7 +645,14 @@ export default function CoachPlanningScreen() {
           </View>
 
           <View style={styles.periodHeader}>
-            <ThemedText type="subtitle">{formatRange()}</ThemedText>
+            <ThemedText
+              adjustsFontSizeToFit={isMobile}
+              minimumFontScale={0.6}
+              numberOfLines={isMobile ? 1 : undefined}
+              style={isMobile ? styles.mobilePeriodTitle : undefined}
+              type="subtitle">
+              {formatRange()}
+            </ThemedText>
             {isRefreshing ? (
               <ThemedText type="small" themeColor="textMuted">
                 {t('planning.refreshing')}
@@ -1059,7 +1079,7 @@ export default function CoachPlanningScreen() {
                               />
                               <Button
                                 disabled={isBookingMutationPending}
-                                label={t('booking.cancelAction')}
+                                label={t('booking.cancelLessonAction')}
                                 onPress={() =>
                                   void runBookingMutation(
                                     () => cancelBooking(booking.id),
@@ -1153,6 +1173,11 @@ const styles = StyleSheet.create({
   },
   periodHeader: {
     gap: Spacing.one,
+  },
+  mobilePeriodTitle: {
+    width: '100%',
+    fontSize: 16,
+    lineHeight: 24,
   },
   days: {
     gap: Spacing.four,
