@@ -1,4 +1,9 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -10,6 +15,8 @@ import { useTranslation } from '@/i18n';
 
 export default function EleveHomeScreen() {
   const { t } = useTranslation();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 760;
 
   return (
     <ThemedView style={styles.screen}>
@@ -20,9 +27,11 @@ export default function EleveHomeScreen() {
               {t('role.eleveLabel')}
             </ThemedText>
             <ThemedText type="title">{t('studentHome.title')}</ThemedText>
-            <ThemedText type="default" themeColor="textMuted">
-              {t('studentHome.subtitle')}
-            </ThemedText>
+            {isMobile ? null : (
+              <ThemedText type="default" themeColor="textMuted">
+                {t('studentHome.subtitle')}
+              </ThemedText>
+            )}
           </View>
           <PublishedPricingList />
           <StudentAgenda />

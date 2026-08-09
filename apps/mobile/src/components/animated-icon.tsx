@@ -3,7 +3,6 @@ import { StyleSheet, View } from 'react-native';
 import Animated, { Easing, Keyframe } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
-import { Radii, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 const DURATION = 600;
@@ -39,16 +38,15 @@ const logoKeyframe = new Keyframe({
 });
 
 export function AnimatedIcon() {
-  const theme = useTheme();
-
   return (
-    <Animated.View entering={logoKeyframe.duration(DURATION)} style={styles.icon}>
-      <View style={[styles.outerCourt, { backgroundColor: theme.primary }]}>
-        <View style={[styles.innerCourt, { borderColor: theme.surface }]}>
-          <View style={[styles.net, { backgroundColor: theme.surface }]} />
-        </View>
-      </View>
-    </Animated.View>
+    <View style={styles.iconFrame}>
+      <Animated.Image
+        entering={logoKeyframe.duration(DURATION)}
+        resizeMode="contain"
+        source={require('../../assets/images/equation-padel-logo.png')}
+        style={styles.icon}
+      />
+    </View>
   );
 }
 
@@ -57,32 +55,14 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill,
     zIndex: 1000,
   },
+  iconFrame: {
+    width: 128,
+    height: 128,
+    flexShrink: 0,
+  },
   icon: {
-    width: 104,
-    height: 104,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  outerCourt: {
-    width: 92,
-    height: 92,
-    borderRadius: Radii.large,
-    alignItems: 'center',
-    justifyContent: 'center',
-    transform: [{ rotate: '-8deg' }],
-  },
-  innerCourt: {
-    width: 64,
-    height: 64,
-    borderWidth: 2,
-    borderRadius: Radii.medium,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.two,
-  },
-  net: {
-    width: 2,
+    width: '100%',
     height: '100%',
-    opacity: 0.86,
+    borderRadius: 12,
   },
 });

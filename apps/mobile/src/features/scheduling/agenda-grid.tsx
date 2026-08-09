@@ -18,6 +18,7 @@ import {
   agendaHourMarks,
   getAgendaSlotPosition,
   getAgendaTimePosition,
+  getNonPastPlanningDays,
   getSlotDateKey,
   type PlanningDay,
 } from '@/features/scheduling/planning-window';
@@ -116,6 +117,10 @@ export function AgendaGrid<TItem extends AgendaGridItem>({
   const currentDate = getSlotDateKey(new Date(nowMs).toISOString());
   const currentTimePosition = getAgendaTimePosition(nowMs);
   const currentTime = getSchedulingTime(nowMs);
+  const visibleDays =
+    compact && days.length === 7
+      ? getNonPastPlanningDays(days, currentDate)
+      : days;
 
   useEffect(() => {
     const timer = setInterval(() => setNowMs(Date.now()), 30_000);
@@ -187,7 +192,7 @@ export function AgendaGrid<TItem extends AgendaGridItem>({
   if (compact) {
     return (
       <View style={styles.compactDays}>
-        {days.map((day) => {
+        {visibleDays.map((day) => {
           const daySlots = slotsByDay.get(day.date) ?? [];
 
           return (

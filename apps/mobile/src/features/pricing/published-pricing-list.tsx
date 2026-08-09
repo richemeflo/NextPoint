@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 
 import {
   getPublishedPricingRates,
@@ -13,7 +18,7 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
 
-function PricingRow({ rate }: { rate: PricingRate }) {
+function PricingRow({ compact, rate }: { compact: boolean; rate: PricingRate }) {
   const { locale, t } = useTranslation();
   const price = new Intl.NumberFormat(locale, {
     style: 'currency',
@@ -22,6 +27,27 @@ function PricingRow({ rate }: { rate: PricingRate }) {
   const contextLabels = rate.applicabilityContexts.map((context) =>
     t(`pricing.context.${context}` as TranslationKey)
   );
+
+  if (compact) {
+    return (
+      <Card style={[styles.rate, styles.rateCompact]}>
+        <View style={styles.rateHeader}>
+          <View style={styles.compactRateInfo}>
+            <ThemedText numberOfLines={1} type="smallBold">
+              {rate.label}
+            </ThemedText>
+            <ThemedText numberOfLines={1} type="small" themeColor="textMuted">
+              {t(`pricing.type.${rate.lessonType}` as TranslationKey)} ·{' '}
+              {t(`pricing.duration.${rate.durationMinutes}` as TranslationKey)}
+            </ThemedText>
+          </View>
+          <ThemedText type="smallBold" themeColor="primary">
+            {price}
+          </ThemedText>
+        </View>
+      </Card>
+    );
+  }
 
   return (
     <Card style={styles.rate}>
@@ -49,6 +75,8 @@ function PricingRow({ rate }: { rate: PricingRate }) {
 export function PublishedPricingList() {
   const { t } = useTranslation();
   const theme = useTheme();
+  const { width } = useWindowDimensions();
+  const compact = width < 760;
   const [rates, setRates] = useState<PricingRate[]>([]);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
 
@@ -101,10 +129,16 @@ export function PublishedPricingList() {
   return (
     <View style={styles.section}>
       <View style={styles.heading}>
-        <ThemedText type="subtitle">{t('pricing.publishedTitle')}</ThemedText>
-        <ThemedText type="small" themeColor="textMuted">
-          {t('pricing.publishedBody')}
+        <ThemedText
+          style={compact ? styles.compactTitle : undefined}
+          type="subtitle">
+          {t('pricing.publishedTitle')}
         </ThemedText>
+        {compact ? null : (
+          <ThemedText type="small" themeColor="textMuted">
+            {t('pricing.publishedBody')}
+          </ThemedText>
+        )}
       </View>
       {rates.length === 0 ? (
         <Feedback
@@ -113,9 +147,9 @@ export function PublishedPricingList() {
           tone="info"
         />
       ) : (
-        <View style={styles.grid}>
+        <View style={[styles.grid, compact && styles.gridCompact]}>
           {rates.map((rate) => (
-            <PricingRow key={rate.id} rate={rate} />
+            <PricingRow compact={compact} key={rate.id} rate={rate} />
           ))}
         </View>
       )}
@@ -142,11 +176,31 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: Spacing.two,
   },
+  gridCompact: {
+    flexDirection: 'column',
+  },
   rate: {
     minWidth: 240,
     flexBasis: 280,
     flexGrow: 1,
     gap: Spacing.one,
+  },
+  rateCompact: {
+    width: '100%',
+    minWidth: 0,
+    flexBasis: 'auto',
+    flexGrow: 0,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+  },
+  compactRateInfo: {
+    minWidth: 0,
+    flex: 1,
+    gap: Spacing.half,
+  },
+  compactTitle: {
+    fontSize: 24,
+    lineHeight: 32,
   },
   rateHeader: {
     flexDirection: 'row',

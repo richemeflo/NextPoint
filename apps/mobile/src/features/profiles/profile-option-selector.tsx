@@ -13,11 +13,13 @@ type Option<T extends string> = {
 export function ProfileOptionSelector<T extends string>({
   label,
   options,
+  singleLine = false,
   value,
   onChange,
 }: {
   label: string;
   options: Option<T>[];
+  singleLine?: boolean;
   value: T;
   onChange: (value: T) => void;
 }) {
@@ -26,7 +28,7 @@ export function ProfileOptionSelector<T extends string>({
   return (
     <View style={styles.field}>
       <ThemedText type="smallBold">{label}</ThemedText>
-      <View style={styles.options}>
+      <View style={[styles.options, singleLine && styles.optionsSingleLine]}>
         {options.map((option) => {
           const selected = option.value === value;
           const disabled = option.disabled === true;
@@ -40,6 +42,7 @@ export function ProfileOptionSelector<T extends string>({
               onPress={() => onChange(option.value)}
               style={[
                 styles.option,
+                singleLine && styles.optionSingleLine,
                 {
                   backgroundColor: selected
                     ? theme.backgroundSelected
@@ -49,6 +52,10 @@ export function ProfileOptionSelector<T extends string>({
                 },
               ]}>
               <ThemedText
+                adjustsFontSizeToFit={singleLine}
+                minimumFontScale={0.75}
+                numberOfLines={singleLine ? 1 : undefined}
+                style={singleLine ? styles.optionTextSingleLine : undefined}
                 type="smallBold"
                 themeColor={selected ? 'primary' : 'textMuted'}>
                 {option.label}
@@ -70,6 +77,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: Spacing.two,
   },
+  optionsSingleLine: {
+    flexWrap: 'nowrap',
+  },
   option: {
     minWidth: 44,
     minHeight: 44,
@@ -78,5 +88,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: Radii.small,
     paddingHorizontal: Spacing.three,
+  },
+  optionSingleLine: {
+    minWidth: 0,
+    flex: 1,
+    paddingHorizontal: Spacing.two,
+  },
+  optionTextSingleLine: {
+    flexShrink: 1,
+    textAlign: 'center',
   },
 });

@@ -40,10 +40,12 @@ export default function PublicScreen() {
               <Button
                 label={t('public.signUpAction')}
                 onPress={() => router.navigate('/sign-up')}
+                style={styles.actionButton}
               />
               <Button
                 label={t('public.signInAction')}
                 onPress={() => router.navigate('/sign-in')}
+                style={styles.actionButton}
                 variant="secondary"
               />
             </View>
@@ -83,8 +85,13 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
   },
   actions: {
+    width: '100%',
     maxWidth: 420,
+    flexDirection: 'row',
     gap: Spacing.three,
+  },
+  actionButton: {
+    flex: 1,
   },
   publicGrid: {
     gap: Spacing.three,

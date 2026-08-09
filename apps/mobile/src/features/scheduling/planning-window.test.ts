@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   agendaHourMarks,
   getAgendaTimePosition,
+  getNonPastPlanningDays,
   getPlanningWindow,
   getAgendaSlotPosition,
   getSlotDateKey,
@@ -48,6 +49,18 @@ test('getPlanningWindow can target a single day', () => {
   assert.equal(window.startDate, '2026-07-01');
   assert.equal(window.endDate, '2026-07-01');
   assert.deepEqual(window.days, [{ date: '2026-07-01' }]);
+});
+
+test('getNonPastPlanningDays keeps today and future days only', () => {
+  const days = getPlanningWindow('2026-08-05', 'week').days;
+
+  assert.deepEqual(getNonPastPlanningDays(days, '2026-08-05'), [
+    { date: '2026-08-05' },
+    { date: '2026-08-06' },
+    { date: '2026-08-07' },
+    { date: '2026-08-08' },
+    { date: '2026-08-09' },
+  ]);
 });
 
 test('movePlanningAnchor moves by the active view span', () => {

@@ -22,6 +22,13 @@ export type PlanningWindow = {
   days: PlanningDay[];
 };
 
+export function getNonPastPlanningDays(
+  days: PlanningDay[],
+  currentDate: string
+) {
+  return days.filter((day) => day.date >= currentDate);
+}
+
 export const agendaStartHour = 8;
 export const agendaEndHour = 23;
 export const agendaHourMarks = Array.from(
