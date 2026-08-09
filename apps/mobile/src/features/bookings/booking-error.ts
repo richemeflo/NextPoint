@@ -3,6 +3,7 @@ export type BookingMutationError =
   | 'slot_unavailable'
   | 'pending_limit_reached'
   | 'student_pending_limit_reached'
+  | 'student_schedule_conflict'
   | 'already_processed'
   | 'past_booking'
   | 'invalid_participants'
@@ -20,6 +21,7 @@ export function mapBookingError(
     return message?.includes('pricing') ? 'pricing_rate_missing' : 'not_found';
   }
   if (code === '23505') return 'slot_unavailable';
+  if (code === '23P01') return 'student_schedule_conflict';
   if (code === '23514') {
     return message?.toLowerCase().includes('pending limit reached')
       ? 'pending_limit_reached'

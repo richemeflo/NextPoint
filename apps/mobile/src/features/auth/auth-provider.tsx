@@ -11,6 +11,7 @@ import {
 } from './auth-service';
 import type { AuthStatus } from './access-policy';
 import { getCurrentUserAccess } from './role-service';
+import { hasPrivateRouteAccess } from './user-access';
 
 import { supabase } from '@/lib/supabase/client';
 
@@ -50,10 +51,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         setRole(access?.role ?? null);
         setAccountStatus(access?.accountStatus ?? null);
         setStatus(
-          access &&
-            (access.role === 'coach' || access.accountStatus === 'active')
-            ? 'authenticated'
-            : 'access-error'
+          hasPrivateRouteAccess(access) ? 'authenticated' : 'access-error'
         );
       } catch {
         if (!transitionGuard.isCurrent(transitionVersion)) return;

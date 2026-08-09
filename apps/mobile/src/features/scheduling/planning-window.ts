@@ -126,3 +126,16 @@ export function getAgendaSlotPosition(
     height: `${clampedHeight}%` as `${number}%`,
   };
 }
+
+export function getAgendaTimePosition(
+  value: Date | number | string,
+  startHour = agendaStartHour,
+  endHour = agendaEndHour
+) {
+  const timeMinutes = getSchedulingTimeMinutes(value);
+  const startMinutes = startHour * 60;
+  const durationMinutes = (endHour - startHour) * 60;
+  const position = ((timeMinutes - startMinutes) / durationMinutes) * 100;
+
+  return `${Math.max(0, Math.min(position, 100))}%` as `${number}%`;
+}

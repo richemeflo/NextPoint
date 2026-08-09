@@ -324,14 +324,6 @@ export default function CoachPlanningScreen() {
     return 'primary';
   };
 
-  const getHighlightedSlotBooking = (slotBookings: Booking[]) =>
-    slotBookings.find(
-      (booking) =>
-        booking.status === 'confirmed' || booking.status === 'modified'
-    ) ??
-    slotBookings.find((booking) => booking.status === 'pending') ??
-    slotBookings.find((booking) => booking.status === 'refused');
-
   const studentName = (studentId: string) =>
     students.find((student) => student.userId === studentId)?.fullName ??
     t('booking.unknownStudent');
@@ -474,14 +466,13 @@ export default function CoachPlanningScreen() {
     ? (bookings.find((booking) => booking.id === linkedBookingId) ?? null)
     : null;
 
-  const getSlotBookingStyle = (slotId: string) =>
-    getBookingStatusStyle(
-      getHighlightedSlotBooking(bookingsBySlotId.get(slotId) ?? [])?.status
-    );
-
   const getPlanningItemStyle = (item: CoachPlanningItem) =>
     item.kind === 'availability'
-      ? getSlotBookingStyle(item.slot.id)
+      ? {
+          backgroundColor: theme.backgroundSelected,
+          borderColor: theme.secondary,
+          borderLeftWidth: 5,
+        }
       : getBookingStatusStyle(item.booking.status);
 
   const renderSlotContent = (slot: AvailabilitySlot) => (
@@ -596,22 +587,24 @@ export default function CoachPlanningScreen() {
           </View>
 
           <View style={styles.toolbar}>
-            <View style={styles.segmented}>
+            <View style={styles.toolbarSegmented}>
               {(['agenda', 'list'] as const).map((candidate) => (
                 <Button
                   key={candidate}
                   label={t(`planning.display.${candidate}` as TranslationKey)}
                   onPress={() => setDisplayMode(candidate)}
+                  style={styles.toolbarButton}
                   variant={displayMode === candidate ? 'primary' : 'secondary'}
                 />
               ))}
             </View>
-            <View style={styles.segmented}>
+            <View style={styles.toolbarSegmented}>
               {(['week', 'day'] as const).map((candidate) => (
                 <Button
                   key={candidate}
                   label={t(`planning.mode.${candidate}` as TranslationKey)}
                   onPress={() => setMode(candidate)}
+                  style={styles.toolbarButton}
                   variant={mode === candidate ? 'primary' : 'secondary'}
                 />
               ))}
@@ -620,16 +613,19 @@ export default function CoachPlanningScreen() {
               <Button
                 label={t('planning.previousAction')}
                 onPress={() => move(-1)}
+                style={[styles.toolbarButton, styles.periodButton]}
                 variant="secondary"
               />
               <Button
                 label={t('planning.todayAction')}
                 onPress={() => setAnchorDate(today())}
+                style={[styles.toolbarButton, styles.periodButton]}
                 variant="secondary"
               />
               <Button
                 label={t('planning.nextAction')}
                 onPress={() => move(1)}
+                style={[styles.toolbarButton, styles.periodButton]}
                 variant="secondary"
               />
             </View>
@@ -1120,10 +1116,19 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: Spacing.two,
   },
+  toolbarSegmented: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+  },
   periodActions: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: Spacing.two,
+  },
+  toolbarButton: {
+    flex: 1,
+  },
+  periodButton: {
+    paddingHorizontal: Spacing.one,
   },
   formCard: {
     gap: Spacing.three,

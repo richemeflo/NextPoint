@@ -5,6 +5,7 @@ import {
   type StudentHistoryEventStatus,
   type StudentHistoryEventType,
   type StudentSex,
+  type Database,
   type Tables,
 } from '@nextpoint/shared';
 
@@ -23,7 +24,7 @@ export type StudentCoachAssociation = {
   createdAt: string;
 };
 
-export type AssociatedStudent = {
+export type CompleteAssociatedStudent = {
   userId: string;
   fullName: string;
   email: string;
@@ -32,7 +33,22 @@ export type AssociatedStudent = {
   age: number;
   sex: StudentSex;
   accountStatus: StudentAccountStatus;
+  profileComplete: true;
 };
+
+export type AssociatedStudent =
+  | CompleteAssociatedStudent
+  | {
+      userId: string;
+      fullName: string;
+      email: string;
+      phone: null;
+      padelLevel: null;
+      age: null;
+      sex: null;
+      accountStatus: null;
+      profileComplete: false;
+    };
 
 export type StudentHistoryEvent = {
   id: string;
@@ -75,7 +91,7 @@ function mapAssociation(row: RelationshipRow): StudentCoachAssociation {
   };
 }
 
-function mapStudent(row: StudentProfileRow): AssociatedStudent {
+function mapStudent(row: StudentProfileRow): CompleteAssociatedStudent {
   return {
     userId: row.user_id,
     fullName: row.full_name,
@@ -85,6 +101,45 @@ function mapStudent(row: StudentProfileRow): AssociatedStudent {
     age: row.age,
     sex: row.sex,
     accountStatus: row.account_status,
+    profileComplete: true,
+  };
+}
+
+type AssociatedStudentReadRow =
+  Database['public']['Functions']['get_associated_students']['Returns'][number];
+
+function mapAssociatedStudent(row: AssociatedStudentReadRow): AssociatedStudent {
+  if (
+    row.profile_complete &&
+    row.phone !== null &&
+    row.padel_level !== null &&
+    row.age !== null &&
+    row.sex !== null &&
+    row.account_status !== null
+  ) {
+    return {
+      userId: row.user_id,
+      fullName: row.full_name,
+      email: row.email,
+      phone: row.phone,
+      padelLevel: row.padel_level,
+      age: row.age,
+      sex: row.sex,
+      accountStatus: row.account_status,
+      profileComplete: true,
+    };
+  }
+
+  return {
+    userId: row.user_id,
+    fullName: row.full_name,
+    email: row.email,
+    phone: null,
+    padelLevel: null,
+    age: null,
+    sex: null,
+    accountStatus: null,
+    profileComplete: false,
   };
 }
 
@@ -120,25 +175,12 @@ export async function getAssociatedStudents(
 ): Promise<AssociatedStudentsResult> {
   if (!supabase) return { ok: false };
 
-  const relationships = await supabase
-    .from('student_coach_relationships')
-    .select('student_id')
-    .eq('coach_id', coachId)
-    .eq('status', 'active');
+  const students = await supabase.rpc('get_associated_students', {
+    p_coach_id: coachId,
+  });
 
-  if (relationships.error) return { ok: false };
-
-  const studentIds = relationships.data.map(({ student_id }) => student_id);
-  if (studentIds.length === 0) return { ok: true, data: [] };
-
-  const profiles = await supabase
-    .from('student_profiles')
-    .select('*')
-    .in('user_id', studentIds)
-    .order('full_name');
-
-  if (profiles.error) return { ok: false };
-  return { ok: true, data: profiles.data.map(mapStudent) };
+  if (students.error) return { ok: false };
+  return { ok: true, data: students.data.map(mapAssociatedStudent) };
 }
 
 export async function getAssociatedStudentDetail(
@@ -146,14 +188,19 @@ export async function getAssociatedStudentDetail(
 ): Promise<AssociatedStudentDetailResult> {
   if (!supabase) return { ok: false, code: 'load_failed' };
 
-  const profile = await supabase
-    .from('student_profiles')
-    .select('*')
-    .eq('user_id', studentId)
-    .maybeSingle();
+  const session = await supabase.auth.getSession();
+  const coachId = session.data.session?.user.id;
+  if (session.error || !coachId) {
+    return { ok: false, code: 'load_failed' };
+  }
 
-  if (profile.error) return { ok: false, code: 'load_failed' };
-  if (!profile.data) return { ok: false, code: 'not_found' };
+  const students = await supabase.rpc('get_associated_students', {
+    p_coach_id: coachId,
+  });
+
+  if (students.error) return { ok: false, code: 'load_failed' };
+  const student = students.data.find((item) => item.user_id === studentId);
+  if (!student) return { ok: false, code: 'not_found' };
 
   const history = await supabase
     .from('student_history_events')
@@ -166,7 +213,7 @@ export async function getAssociatedStudentDetail(
   return {
     ok: true,
     data: {
-      student: mapStudent(profile.data),
+      student: mapAssociatedStudent(student),
       history: history.data.map(mapHistoryEvent),
     },
   };

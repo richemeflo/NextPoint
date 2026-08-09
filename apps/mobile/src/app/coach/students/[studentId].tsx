@@ -29,6 +29,7 @@ import {
   type GeneratedStudentActivationLink,
 } from '@/features/students/student-account-service';
 import { StudentLessonPackCard } from '@/features/lesson-packs/student-lesson-pack-card';
+import { ProfileOptionSelector } from '@/features/profiles/profile-option-selector';
 import {
   getAssociatedStudentDetail,
   type AssociatedStudentDetail,
@@ -79,6 +80,10 @@ const historyTypeKeys: Record<StudentHistoryEventType, TranslationKey> = {
   lesson_pack_adjusted: 'studentDetail.historyType.lessonPackAdjusted',
 };
 
+type HistoryStatusFilter =
+  | 'all'
+  | Extract<StudentHistoryEventStatus, 'cancelled' | 'confirmed' | 'refused'>;
+
 function HistoryRow({ event }: { event: StudentHistoryEvent }) {
   const { locale, t } = useTranslation();
   const occurredAt = new Intl.DateTimeFormat(locale, {
@@ -126,6 +131,8 @@ export default function CoachStudentDetailScreen() {
   const [activationState, setActivationState] = useState<
     'idle' | 'generating' | 'ready' | 'copied' | 'error'
   >('idle');
+  const [historyStatusFilter, setHistoryStatusFilter] =
+    useState<HistoryStatusFilter>('all');
 
   useEffect(() => {
     if (!studentId) return;
@@ -228,6 +235,25 @@ export default function CoachStudentDetailScreen() {
   }
 
   const { student, history } = detail;
+  const filteredHistory =
+    historyStatusFilter === 'all'
+      ? history
+      : history.filter((event) => event.status === historyStatusFilter);
+  const historyStatusOptions: {
+    value: HistoryStatusFilter;
+    label: string;
+  }[] = [
+    { value: 'all', label: t('studentDetail.historyFilter.all') },
+    {
+      value: 'cancelled',
+      label: t('studentDetail.historyFilter.cancelled'),
+    },
+    {
+      value: 'confirmed',
+      label: t('studentDetail.historyFilter.confirmed'),
+    },
+    { value: 'refused', label: t('studentDetail.historyFilter.refused') },
+  ];
   const expiresAt = activationLink
     ? new Intl.DateTimeFormat(locale, {
         dateStyle: 'medium',
@@ -253,11 +279,18 @@ export default function CoachStudentDetailScreen() {
                 {t('studentDetail.eyebrow')}
               </ThemedText>
               <ThemedText type="title">{student.fullName}</ThemedText>
-              <StatusBadge
-                status={accountBadgeStatuses[student.accountStatus]}
-              />
+              {student.profileComplete ? (
+                <StatusBadge
+                  status={accountBadgeStatuses[student.accountStatus]}
+                />
+              ) : (
+                <ThemedText type="smallBold" themeColor="warning">
+                  {t('students.incompleteProfile')}
+                </ThemedText>
+              )}
             </View>
-            {student.accountStatus === 'pending_activation' ? (
+            {student.profileComplete &&
+            student.accountStatus === 'pending_activation' ? (
               <Button
                 disabled={activationState === 'generating'}
                 label={
@@ -322,44 +355,54 @@ export default function CoachStudentDetailScreen() {
             <ThemedText type="subtitle">
               {t('studentDetail.profileTitle')}
             </ThemedText>
-            <View style={styles.profileGrid}>
-              <View style={styles.profileItem}>
-                <ThemedText type="small" themeColor="textMuted">
-                  {t('profile.levelLabel')}
-                </ThemedText>
-                <ThemedText type="default">
-                  {t('students.levelValue', { level: student.padelLevel })}
-                </ThemedText>
+            {student.profileComplete ? (
+              <View style={styles.profileGrid}>
+                <View style={styles.profileItem}>
+                  <ThemedText type="small" themeColor="textMuted">
+                    {t('profile.levelLabel')}
+                  </ThemedText>
+                  <ThemedText type="default">
+                    {t('students.levelValue', { level: student.padelLevel })}
+                  </ThemedText>
+                </View>
+                <View style={styles.profileItem}>
+                  <ThemedText type="small" themeColor="textMuted">
+                    {t('profile.ageLabel')}
+                  </ThemedText>
+                  <ThemedText type="default">
+                    {t('students.ageValue', { age: student.age })}
+                  </ThemedText>
+                </View>
+                <View style={styles.profileItem}>
+                  <ThemedText type="small" themeColor="textMuted">
+                    {t('profile.sexLabel')}
+                  </ThemedText>
+                  <ThemedText type="default">
+                    {t(
+                      `profile.sex.${
+                        student.sex === 'not_specified'
+                          ? 'notSpecified'
+                          : student.sex
+                      }`
+                    )}
+                  </ThemedText>
+                </View>
               </View>
-              <View style={styles.profileItem}>
-                <ThemedText type="small" themeColor="textMuted">
-                  {t('profile.ageLabel')}
-                </ThemedText>
-                <ThemedText type="default">
-                  {t('students.ageValue', { age: student.age })}
-                </ThemedText>
-              </View>
-              <View style={styles.profileItem}>
-                <ThemedText type="small" themeColor="textMuted">
-                  {t('profile.sexLabel')}
-                </ThemedText>
-                <ThemedText type="default">
-                  {t(
-                    `profile.sex.${
-                      student.sex === 'not_specified'
-                        ? 'notSpecified'
-                        : student.sex
-                    }`
-                  )}
-                </ThemedText>
-              </View>
-            </View>
+            ) : (
+              <Feedback
+                message={t('studentDetail.incompleteProfileBody')}
+                title={t('students.incompleteProfile')}
+                tone="info"
+              />
+            )}
             <View style={styles.contactList}>
-              <Pressable
-                accessibilityRole="link"
-                onPress={() => void Linking.openURL(`tel:${student.phone}`)}>
-                <ThemedText type="linkPrimary">{student.phone}</ThemedText>
-              </Pressable>
+              {student.phone ? (
+                <Pressable
+                  accessibilityRole="link"
+                  onPress={() => void Linking.openURL(`tel:${student.phone}`)}>
+                  <ThemedText type="linkPrimary">{student.phone}</ThemedText>
+                </Pressable>
+              ) : null}
               <Pressable
                 accessibilityRole="link"
                 onPress={() => void Linking.openURL(`mailto:${student.email}`)}>
@@ -377,18 +420,32 @@ export default function CoachStudentDetailScreen() {
                 {t('studentDetail.historyTitle')}
               </ThemedText>
               <ThemedText type="small" themeColor="textMuted">
-                {t('studentDetail.historyCount', { count: history.length })}
+                {t('studentDetail.historyCount', {
+                  count: filteredHistory.length,
+                })}
               </ThemedText>
             </View>
+            <ProfileOptionSelector
+              label={t('studentDetail.historyFilter.label')}
+              onChange={setHistoryStatusFilter}
+              options={historyStatusOptions}
+              value={historyStatusFilter}
+            />
             {history.length === 0 ? (
               <Feedback
                 message={t('studentDetail.historyEmptyBody')}
                 title={t('studentDetail.historyEmptyTitle')}
                 tone="info"
               />
+            ) : filteredHistory.length === 0 ? (
+              <Feedback
+                message={t('studentDetail.historyFilterEmptyBody')}
+                title={t('studentDetail.historyFilterEmptyTitle')}
+                tone="info"
+              />
             ) : (
               <View style={styles.historyList}>
-                {history.map((event) => (
+                {filteredHistory.map((event) => (
                   <HistoryRow event={event} key={event.id} />
                 ))}
               </View>

@@ -1,6 +1,6 @@
 begin;
 
-select plan(27);
+select plan(28);
 
 select has_function(
   'public', 'get_student_availability_occurrences',
@@ -118,7 +118,15 @@ select lives_ok(
     (select id from public.availability_slots where coach_id = '16000000-0000-4000-8000-000000000001'),
     '2027-07-01T13:30:00Z', 60, 'individual', '', '{}'
   )$$,
-  'an overlapping request with different bounds remains allowed'
+  'another student may request overlapping bounds'
+);
+select throws_ok(
+  $$select public.request_booking(
+    (select id from public.availability_slots where coach_id = '16000000-0000-4000-8000-000000000001'),
+    '2027-07-01T13:45:00Z', 60, 'individual', '', '{}'
+  )$$,
+  '23P01', 'student booking overlap',
+  'the same student cannot create an overlapping request'
 );
 select results_eq(
   $$select jsonb_array_length(occupations)

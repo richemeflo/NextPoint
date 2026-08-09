@@ -23,6 +23,7 @@ import { Feedback } from '@/components/ui/feedback';
 import { TextField } from '@/components/ui/text-field';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/auth-context';
+import { StudentLessonPacksReadonlyCard } from '@/features/lesson-packs/student-lesson-packs-readonly-card';
 import { ProfileOptionSelector } from '@/features/profiles/profile-option-selector';
 import {
   getStudentProfile,
@@ -336,6 +337,7 @@ export default function EleveAccountScreen() {
               onPress={() => void onSubmit()}
             />
           </Card>
+          {user ? <StudentLessonPacksReadonlyCard studentId={user.id} /> : null}
         </View>
       </ScrollView>
     </ThemedView>

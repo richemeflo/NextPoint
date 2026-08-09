@@ -28,3 +28,10 @@ test('booking errors preserve cancellation message validation', () => {
     'invalid_input'
   );
 });
+
+test('booking errors identify an overlapping student schedule', () => {
+  assert.equal(
+    mapBookingError('23P01', 'student booking overlap'),
+    'student_schedule_conflict'
+  );
+});

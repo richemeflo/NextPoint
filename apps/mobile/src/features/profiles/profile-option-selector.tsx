@@ -7,6 +7,7 @@ import { useTheme } from '@/hooks/use-theme';
 type Option<T extends string> = {
   value: T;
   label: string;
+  disabled?: boolean;
 };
 
 export function ProfileOptionSelector<T extends string>({
@@ -28,11 +29,13 @@ export function ProfileOptionSelector<T extends string>({
       <View style={styles.options}>
         {options.map((option) => {
           const selected = option.value === value;
+          const disabled = option.disabled === true;
 
           return (
             <Pressable
               accessibilityRole="radio"
-              accessibilityState={{ checked: selected }}
+              accessibilityState={{ checked: selected, disabled }}
+              disabled={disabled}
               key={option.value}
               onPress={() => onChange(option.value)}
               style={[
@@ -42,6 +45,7 @@ export function ProfileOptionSelector<T extends string>({
                     ? theme.backgroundSelected
                     : theme.surface,
                   borderColor: selected ? theme.primary : theme.border,
+                  opacity: disabled ? 0.45 : 1,
                 },
               ]}>
               <ThemedText

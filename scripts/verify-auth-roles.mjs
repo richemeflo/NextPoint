@@ -55,7 +55,7 @@ async function createUser(role, suffix) {
   assert.ok(data.session);
   createdUserIds.push(data.user.id);
 
-  return { client, userId: data.user.id };
+  return { client, email, userId: data.user.id };
 }
 
 try {
@@ -69,6 +69,38 @@ try {
     .single();
   assert.equal(ownRole.error, null);
   assert.equal(ownRole.data.role, 'eleve');
+
+  const onboardingStatus = await firstEleve.client.rpc(
+    'get_current_student_account_status'
+  );
+  assert.equal(onboardingStatus.error, null);
+  assert.equal(onboardingStatus.data, null);
+
+  const pendingProfile = await firstEleve.client
+    .from('student_profiles')
+    .insert({
+      user_id: firstEleve.userId,
+      full_name: 'Pending Student',
+      phone: `+336${Date.now().toString().slice(-8)}`,
+      email: firstEleve.email,
+      padel_level: 5,
+      age: 24,
+      account_status: 'pending_activation',
+    });
+  assert.equal(pendingProfile.error, null);
+
+  const hiddenPendingProfile = await firstEleve.client
+    .from('student_profiles')
+    .select('account_status')
+    .eq('user_id', firstEleve.userId);
+  assert.equal(hiddenPendingProfile.error, null);
+  assert.deepEqual(hiddenPendingProfile.data, []);
+
+  const pendingStatus = await firstEleve.client.rpc(
+    'get_current_student_account_status'
+  );
+  assert.equal(pendingStatus.error, null);
+  assert.equal(pendingStatus.data, 'pending_activation');
 
   const otherRole = await firstEleve.client
     .from('user_roles')
@@ -125,7 +157,7 @@ try {
   assert.ok(secondCoach.error);
 
   console.log(
-    'AUTH_ROLE_INTEGRATION_OK trigger, own-role RLS, cross-user denial, mutation denial, single coach'
+    'AUTH_ROLE_INTEGRATION_OK trigger, own-role RLS, lifecycle status lookup, cross-user denial, mutation denial, single coach'
   );
 } finally {
   for (const userId of createdUserIds) {

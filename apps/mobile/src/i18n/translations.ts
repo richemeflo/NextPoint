@@ -79,7 +79,7 @@ export const dictionaries = {
     'nav.coach.messaging': 'Messagerie',
     'nav.coach.profile': 'Profil',
     'nav.eleve.home': 'Accueil',
-    'nav.eleve.planning': 'Demandes',
+    'nav.eleve.planning': 'Mon agenda',
     'nav.eleve.notifications': 'Notifications',
     'nav.eleve.account': 'Compte',
     'notifications.loading': 'Chargement des notifications...',
@@ -170,6 +170,7 @@ export const dictionaries = {
     'planning.previousAction': 'Précédent',
     'planning.todayAction': 'Aujourd’hui',
     'planning.nextAction': 'Suivant',
+    'planning.nowLabel': 'Maintenant',
     'planning.weekRange': '{{start}} - {{end}}',
     'planning.loadErrorTitle': 'Planning indisponible',
     'planning.loadErrorBody':
@@ -406,8 +407,7 @@ export const dictionaries = {
     'availability.rangeTime': '{{start}}–{{end}}',
     'availability.rangeMeta': '{{location}}',
     'availability.generatedSlotsTitle': 'Occurrences disponibles',
-    'availability.generatedSlot':
-      '{{date}}–{{end}} · {{location}}',
+    'availability.generatedSlot': '{{date}}–{{end}} · {{location}}',
     'availability.slotStatus.available': 'Disponible',
     'availability.slotStatus.booked': 'Réservé',
     'availability.slotStatus.cancelled': 'Annulé',
@@ -451,8 +451,9 @@ export const dictionaries = {
     'students.loadErrorTitle': 'Liste indisponible',
     'students.loadErrorBody':
       'Impossible de charger les élèves pour le moment. Relancez l’application puis réessayez.',
-    'students.searchLabel': 'Recherche par nom',
-    'students.searchPlaceholder': 'Nom de l’élève',
+    'students.searchLabel': 'Recherche par nom ou email',
+    'students.searchPlaceholder': 'Nom ou email de l’élève',
+    'students.incompleteProfile': 'Profil incomplet',
     'students.levelFilterLabel': 'Niveau padel',
     'students.allLevels': 'Tous les niveaux',
     'students.sexFilterLabel': 'Sexe de l’élève',
@@ -485,8 +486,18 @@ export const dictionaries = {
     'studentDetail.loadErrorBody':
       'Impossible de charger cette fiche pour le moment.',
     'studentDetail.profileTitle': 'Informations élève',
+    'studentDetail.incompleteProfileBody':
+      'Cet élève n’a pas encore terminé sa fiche. Son email reste disponible pour le contacter.',
     'studentDetail.historyTitle': 'Historique',
     'studentDetail.historyCount': '{{count}} élément(s)',
+    'studentDetail.historyFilter.label': 'Filtrer par statut',
+    'studentDetail.historyFilter.all': 'Tous',
+    'studentDetail.historyFilter.cancelled': 'Annulé',
+    'studentDetail.historyFilter.confirmed': 'Confirmé',
+    'studentDetail.historyFilter.refused': 'Refusé',
+    'studentDetail.historyFilterEmptyTitle': 'Aucun résultat',
+    'studentDetail.historyFilterEmptyBody':
+      'Aucun événement ne correspond à ce filtre.',
     'studentDetail.historyEmptyTitle': 'Aucun historique',
     'studentDetail.historyEmptyBody':
       'Les demandes, cours, annulations, modifications et packs apparaîtront ici.',
@@ -541,6 +552,11 @@ export const dictionaries = {
     'studentPrivateNote.saveErrorBody':
       'La note existante n’a pas été modifiée. Réessayez.',
     'lessonPack.loading': 'Chargement des packs...',
+    'lessonPack.studentTitle': 'Mes packs de tickets',
+    'lessonPack.readonlyHint':
+      'Consultez vos crédits de cours. Seul votre coach peut les modifier.',
+    'lessonPack.studentEmptyBody':
+      'Aucun pack de tickets ne vous a encore été attribué.',
     'lessonPack.title': 'Pack de cours individuels',
     'lessonPack.trackingOnlyHint':
       'Suivi de crédits uniquement, sans achat ni paiement intégré.',
@@ -591,8 +607,7 @@ export const dictionaries = {
     'lessonPack.consumeErrorBody':
       'Aucun cours restant n’a été modifié. Le pack est peut-être épuisé ou l’accès refusé.',
     'lessonPack.maximumTitle': 'Maximum atteint',
-    'lessonPack.maximumBody':
-      'Un pack ne peut pas dépasser 100 cours inclus.',
+    'lessonPack.maximumBody': 'Un pack ne peut pas dépasser 100 cours inclus.',
     'lessonPack.minimumTitle': 'Minimum atteint',
     'lessonPack.minimumBody':
       'Un pack doit conserver au moins un cours inclus.',
@@ -601,6 +616,10 @@ export const dictionaries = {
       'Le compteur n’a pas été modifié. Rechargez la fiche puis réessayez.',
     'booking.openRequestAction': 'Demander',
     'booking.requestAction': 'Envoyer la demande',
+    'booking.startTimeLabel': 'Heure de début',
+    'booking.startTimePlaceholder': 'HH:mm',
+    'booking.invalidStartTime':
+      'Saisissez une heure par quart d’heure, par exemple 11:00 ou 11:15.',
     'booking.durationLabel': 'Durée du cours',
     'booking.proposedTime': 'Créneau proposé : {{start}}–{{end}}',
     'booking.noDurationFitTitle': 'Aucun créneau adapté',
@@ -691,9 +710,11 @@ export const dictionaries = {
       'Ce créneau a déjà atteint la limite de demandes en attente.',
     'booking.studentPendingLimit':
       'Vous avez déjà 10 demandes en attente auprès du coach.',
+    'booking.studentScheduleConflict':
+      'Vous avez déjà une demande ou un cours qui chevauche cet horaire.',
     'booking.alreadyProcessed': 'Cette demande a déjà été traitée.',
     'booking.pastBooking':
-      'Un cours passé ne peut plus être annulé par l’élève.',
+      'Ce créneau est déjà passé et ne peut plus être demandé ou annulé.',
     'booking.invalidParticipants':
       'La sélection de participants n’est pas autorisée.',
     'booking.invalidInput':
@@ -889,7 +910,7 @@ export const dictionaries = {
     'nav.coach.messaging': 'Messages',
     'nav.coach.profile': 'Profile',
     'nav.eleve.home': 'Home',
-    'nav.eleve.planning': 'Requests',
+    'nav.eleve.planning': 'My schedule',
     'nav.eleve.notifications': 'Notifications',
     'nav.eleve.account': 'Account',
     'notifications.loading': 'Loading notifications...',
@@ -977,6 +998,7 @@ export const dictionaries = {
     'planning.previousAction': 'Previous',
     'planning.todayAction': 'Today',
     'planning.nextAction': 'Next',
+    'planning.nowLabel': 'Now',
     'planning.weekRange': '{{start}} - {{end}}',
     'planning.loadErrorTitle': 'Schedule unavailable',
     'planning.loadErrorBody': 'Unable to load your slots for this period.',
@@ -1135,7 +1157,8 @@ export const dictionaries = {
     'pricing.saveErrorBody':
       'The rate was not changed. Check the information and try again.',
     'pricing.emptyCoachTitle': 'No pricing',
-    'pricing.emptyCoachBody': 'Create your first individual, duo or group rate.',
+    'pricing.emptyCoachBody':
+      'Create your first individual, duo or group rate.',
     'pricing.validation.labelTooShort':
       'The label must contain at least 2 characters.',
     'pricing.validation.labelTooLong':
@@ -1205,8 +1228,7 @@ export const dictionaries = {
     'availability.rangeTime': '{{start}}–{{end}}',
     'availability.rangeMeta': '{{location}}',
     'availability.generatedSlotsTitle': 'Available occurrences',
-    'availability.generatedSlot':
-      '{{date}}–{{end}} · {{location}}',
+    'availability.generatedSlot': '{{date}}–{{end}} · {{location}}',
     'availability.slotStatus.available': 'Available',
     'availability.slotStatus.booked': 'Booked',
     'availability.slotStatus.cancelled': 'Cancelled',
@@ -1248,8 +1270,9 @@ export const dictionaries = {
     'students.loadErrorTitle': 'List unavailable',
     'students.loadErrorBody':
       'Students cannot be loaded right now. Restart the application and try again.',
-    'students.searchLabel': 'Search by name',
-    'students.searchPlaceholder': 'Student name',
+    'students.searchLabel': 'Search by name or email',
+    'students.searchPlaceholder': 'Student name or email',
+    'students.incompleteProfile': 'Incomplete profile',
     'students.levelFilterLabel': 'Padel level',
     'students.allLevels': 'All levels',
     'students.sexFilterLabel': 'Student sex',
@@ -1282,8 +1305,17 @@ export const dictionaries = {
     'studentDetail.loadErrorBody':
       'This student record cannot be loaded right now.',
     'studentDetail.profileTitle': 'Student information',
+    'studentDetail.incompleteProfileBody':
+      'This student has not completed their profile yet. Their email remains available for contact.',
     'studentDetail.historyTitle': 'History',
     'studentDetail.historyCount': '{{count}} item(s)',
+    'studentDetail.historyFilter.label': 'Filter by status',
+    'studentDetail.historyFilter.all': 'All',
+    'studentDetail.historyFilter.cancelled': 'Cancelled',
+    'studentDetail.historyFilter.confirmed': 'Confirmed',
+    'studentDetail.historyFilter.refused': 'Refused',
+    'studentDetail.historyFilterEmptyTitle': 'No results',
+    'studentDetail.historyFilterEmptyBody': 'No event matches this filter.',
     'studentDetail.historyEmptyTitle': 'No history',
     'studentDetail.historyEmptyBody':
       'Requests, lessons, cancellations, changes, and packs will appear here.',
@@ -1334,6 +1366,11 @@ export const dictionaries = {
     'studentPrivateNote.saveErrorBody':
       'The existing note was not changed. Try again.',
     'lessonPack.loading': 'Loading lesson packs...',
+    'lessonPack.studentTitle': 'My ticket packs',
+    'lessonPack.readonlyHint':
+      'View your lesson credits. Only your coach can change them.',
+    'lessonPack.studentEmptyBody':
+      'No ticket pack has been assigned to you yet.',
     'lessonPack.title': 'Individual lesson pack',
     'lessonPack.trackingOnlyHint':
       'Credit tracking only, with no purchase or integrated payment.',
@@ -1386,13 +1423,16 @@ export const dictionaries = {
     'lessonPack.maximumBody':
       'A pack cannot contain more than 100 included lessons.',
     'lessonPack.minimumTitle': 'Minimum reached',
-    'lessonPack.minimumBody':
-      'A pack must keep at least one included lesson.',
+    'lessonPack.minimumBody': 'A pack must keep at least one included lesson.',
     'lessonPack.adjustErrorTitle': 'Unable to update',
     'lessonPack.adjustErrorBody':
       'The counter was not changed. Reload the student record and try again.',
     'booking.openRequestAction': 'Request',
     'booking.requestAction': 'Send request',
+    'booking.startTimeLabel': 'Start time',
+    'booking.startTimePlaceholder': 'HH:mm',
+    'booking.invalidStartTime':
+      'Enter a quarter-hour time, for example 11:00 or 11:15.',
     'booking.durationLabel': 'Lesson duration',
     'booking.proposedTime': 'Proposed time: {{start}}–{{end}}',
     'booking.noDurationFitTitle': 'No suitable time',
@@ -1482,9 +1522,11 @@ export const dictionaries = {
       'This slot already reached its pending request limit.',
     'booking.studentPendingLimit':
       'You already have 10 pending requests with the coach.',
+    'booking.studentScheduleConflict':
+      'You already have a request or lesson that overlaps this time.',
     'booking.alreadyProcessed': 'This request has already been processed.',
     'booking.pastBooking':
-      'A past lesson can no longer be cancelled by the student.',
+      'This time slot has passed and can no longer be requested or cancelled.',
     'booking.invalidParticipants': 'The participant selection is not allowed.',
     'booking.invalidInput':
       'Check the field formats and values before trying again.',
@@ -1676,7 +1718,7 @@ export const dictionaries = {
     'nav.coach.messaging': 'Mensajes',
     'nav.coach.profile': 'Perfil',
     'nav.eleve.home': 'Inicio',
-    'nav.eleve.planning': 'Solicitudes',
+    'nav.eleve.planning': 'Mi agenda',
     'nav.eleve.notifications': 'Notificaciones',
     'nav.eleve.account': 'Cuenta',
     'notifications.loading': 'Cargando notificaciones...',
@@ -1767,6 +1809,7 @@ export const dictionaries = {
     'planning.previousAction': 'Anterior',
     'planning.todayAction': 'Hoy',
     'planning.nextAction': 'Siguiente',
+    'planning.nowLabel': 'Ahora',
     'planning.weekRange': '{{start}} - {{end}}',
     'planning.loadErrorTitle': 'Planificación no disponible',
     'planning.loadErrorBody':
@@ -1904,8 +1947,7 @@ export const dictionaries = {
     'pricing.studentSearchPlaceholder': 'Nombre del alumno',
     'pricing.studentSearchHint':
       'Escribe un nombre para encontrar al alumno que quieres seleccionar.',
-    'pricing.studentSearchEmpty':
-      'Ningún alumno coincide con esta búsqueda.',
+    'pricing.studentSearchEmpty': 'Ningún alumno coincide con esta búsqueda.',
     'pricing.selectedStudentsLabel': 'Alumnos seleccionados ({{count}})',
     'pricing.selectStudentAction': 'Seleccionar',
     'pricing.selectedStudentAction': 'Seleccionado',
@@ -2001,8 +2043,7 @@ export const dictionaries = {
     'availability.rangeTime': '{{start}}–{{end}}',
     'availability.rangeMeta': '{{location}}',
     'availability.generatedSlotsTitle': 'Ocurrencias disponibles',
-    'availability.generatedSlot':
-      '{{date}}–{{end}} · {{location}}',
+    'availability.generatedSlot': '{{date}}–{{end}} · {{location}}',
     'availability.slotStatus.available': 'Disponible',
     'availability.slotStatus.booked': 'Reservado',
     'availability.slotStatus.cancelled': 'Cancelado',
@@ -2046,8 +2087,9 @@ export const dictionaries = {
     'students.loadErrorTitle': 'Lista no disponible',
     'students.loadErrorBody':
       'No se pueden cargar los alumnos en este momento. Reinicia la aplicación e inténtalo de nuevo.',
-    'students.searchLabel': 'Buscar por nombre',
-    'students.searchPlaceholder': 'Nombre del alumno',
+    'students.searchLabel': 'Buscar por nombre o email',
+    'students.searchPlaceholder': 'Nombre o email del alumno',
+    'students.incompleteProfile': 'Perfil incompleto',
     'students.levelFilterLabel': 'Nivel de pádel',
     'students.allLevels': 'Todos los niveles',
     'students.sexFilterLabel': 'Sexo del alumno',
@@ -2080,8 +2122,18 @@ export const dictionaries = {
     'studentDetail.loadErrorBody':
       'No se puede cargar esta ficha en este momento.',
     'studentDetail.profileTitle': 'Información del alumno',
+    'studentDetail.incompleteProfileBody':
+      'Este alumno aún no ha completado su perfil. Su email sigue disponible para contactarlo.',
     'studentDetail.historyTitle': 'Historial',
     'studentDetail.historyCount': '{{count}} elemento(s)',
+    'studentDetail.historyFilter.label': 'Filtrar por estado',
+    'studentDetail.historyFilter.all': 'Todos',
+    'studentDetail.historyFilter.cancelled': 'Cancelado',
+    'studentDetail.historyFilter.confirmed': 'Confirmado',
+    'studentDetail.historyFilter.refused': 'Rechazado',
+    'studentDetail.historyFilterEmptyTitle': 'Sin resultados',
+    'studentDetail.historyFilterEmptyBody':
+      'Ningún evento coincide con este filtro.',
     'studentDetail.historyEmptyTitle': 'Sin historial',
     'studentDetail.historyEmptyBody':
       'Las solicitudes, clases, cancelaciones, cambios y packs aparecerán aquí.',
@@ -2135,6 +2187,11 @@ export const dictionaries = {
     'studentPrivateNote.saveErrorBody':
       'La nota existente no se ha modificado. Inténtalo de nuevo.',
     'lessonPack.loading': 'Cargando los packs...',
+    'lessonPack.studentTitle': 'Mis packs de tickets',
+    'lessonPack.readonlyHint':
+      'Consulta tus créditos de clase. Solo tu coach puede modificarlos.',
+    'lessonPack.studentEmptyBody':
+      'Todavía no se te ha asignado ningún pack de tickets.',
     'lessonPack.title': 'Pack de clases individuales',
     'lessonPack.trackingOnlyHint':
       'Solo seguimiento de créditos, sin compra ni pago integrado.',
@@ -2195,6 +2252,10 @@ export const dictionaries = {
       'El contador no se ha modificado. Recarga la ficha e inténtalo de nuevo.',
     'booking.openRequestAction': 'Solicitar',
     'booking.requestAction': 'Enviar solicitud',
+    'booking.startTimeLabel': 'Hora de inicio',
+    'booking.startTimePlaceholder': 'HH:mm',
+    'booking.invalidStartTime':
+      'Introduce una hora en cuartos, por ejemplo 11:00 u 11:15.',
     'booking.durationLabel': 'Duración de la clase',
     'booking.proposedTime': 'Horario propuesto: {{start}}–{{end}}',
     'booking.noDurationFitTitle': 'Sin horario adecuado',
@@ -2284,9 +2345,11 @@ export const dictionaries = {
       'Este horario ya alcanzó el límite de solicitudes pendientes.',
     'booking.studentPendingLimit':
       'Ya tienes 10 solicitudes pendientes con el coach.',
+    'booking.studentScheduleConflict':
+      'Ya tienes una solicitud o clase que se solapa con este horario.',
     'booking.alreadyProcessed': 'Esta solicitud ya ha sido tratada.',
     'booking.pastBooking':
-      'Una clase pasada ya no puede ser cancelada por el alumno.',
+      'Este horario ya ha pasado y no se puede solicitar ni cancelar.',
     'booking.invalidParticipants':
       'La selección de participantes no está permitida.',
     'booking.invalidInput':

@@ -10,9 +10,10 @@ export type StudentListFilters = {
 
 export type StudentListItem = {
   fullName: string;
-  padelLevel: number;
-  age: number;
-  sex: StudentSex;
+  email: string;
+  padelLevel: number | null;
+  age: number | null;
+  sex: StudentSex | null;
 };
 
 export const padelLevels = Array.from({ length: 10 }, (_, index) => index + 1);
@@ -34,11 +35,14 @@ export function filterAssociatedStudents<T extends StudentListItem>(
   return students.filter((student) => {
     const matchesQuery =
       normalizedQuery.length === 0 ||
-      normalizeSearch(student.fullName).includes(normalizedQuery);
+      normalizeSearch(student.fullName).includes(normalizedQuery) ||
+      normalizeSearch(student.email).includes(normalizedQuery);
     const matchesLevel =
       filters.level === null || student.padelLevel === filters.level;
     const matchesAge =
-      student.age >= filters.minAge && student.age <= filters.maxAge;
+      student.age === null
+        ? filters.minAge === 5 && filters.maxAge === 100
+        : student.age >= filters.minAge && student.age <= filters.maxAge;
     const matchesSex = filters.sex === null || student.sex === filters.sex;
 
     return matchesQuery && matchesLevel && matchesAge && matchesSex;

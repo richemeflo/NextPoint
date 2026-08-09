@@ -3,8 +3,8 @@ import {
   bookingParticipantLimits,
   availabilitySlotDurations,
   canCancelBooking,
-  findNearestAvailableStart,
   getSchedulingDateLabelInstant,
+  getSchedulingTime,
   getSchedulingToday,
   isBookingParticipantCountValid,
   pricingLessonTypes,
@@ -31,6 +31,11 @@ import { Feedback } from '@/components/ui/feedback';
 import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/auth-context';
+import {
+  getEarliestBookingRequestStartsAt,
+  getBookingRequestProposal,
+  toBookingRequestStartsAt,
+} from '@/features/scheduling/booking-request-time';
 import {
   cancelBooking,
   getRequestableBookingParticipants,
@@ -128,6 +133,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [participants, setParticipants] = useState<BookingParticipant[]>([]);
   const [pricingRates, setPricingRates] = useState<PricingRate[]>([]);
+  const [agendaLoadedAt, setAgendaLoadedAt] = useState<number | null>(null);
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>(
     'loading'
   );
@@ -135,6 +141,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
   const planningRequestVersion = useRef(0);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [desiredStartsAt, setDesiredStartsAt] = useState<string | null>(null);
+  const [requestStartTime, setRequestStartTime] = useState('');
   const [requestDurationMinutes, setRequestDurationMinutes] =
     useState<AvailabilitySlotDuration>(60);
   const [lessonType, setLessonType] = useState<PricingLessonType>('individual');
@@ -149,9 +156,9 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
   const [bookingMutationKind, setBookingMutationKind] = useState<
     'request' | 'cancel' | null
   >(null);
-  const [selectedParticipantIds, setSelectedParticipantIds] = useState<string[]>(
-    []
-  );
+  const [selectedParticipantIds, setSelectedParticipantIds] = useState<
+    string[]
+  >([]);
   const [feedback, setFeedback] = useState<
     'none' | 'requested' | 'cancelled' | BookingMutationError
   >('none');
@@ -198,6 +205,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
 
       setSlots(slotsResult.data);
       setBookings(bookingsResult.data);
+      setAgendaLoadedAt(Date.now());
       if (participantsResult.ok) setParticipants(participantsResult.data);
       setPricingRates(pricingResult.data);
       setLoadState('ready');
@@ -214,7 +222,9 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
   }, [showRequestableSlots, window.endsAt, window.startsAt]);
 
   useEffect(() => {
-    void Promise.resolve().then(loadAgenda).catch(() => undefined);
+    void Promise.resolve()
+      .then(loadAgenda)
+      .catch(() => undefined);
 
     return () => {
       invalidatePlanningRequest(planningRequestVersion);
@@ -244,11 +254,17 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
 
   const getBookingStatusStyle = (status: Booking['status'] | undefined) => {
     if (status === 'pending') {
-      return { backgroundColor: theme.warningSurface, borderColor: theme.warning };
+      return {
+        backgroundColor: theme.warningSurface,
+        borderColor: theme.warning,
+      };
     }
 
     if (status === 'confirmed' || status === 'modified') {
-      return { backgroundColor: theme.successSurface, borderColor: theme.success };
+      return {
+        backgroundColor: theme.successSurface,
+        borderColor: theme.success,
+      };
     }
 
     if (status === 'refused') {
@@ -318,7 +334,8 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
         })),
       ].sort(
         (first, second) =>
-          new Date(first.startsAt).getTime() - new Date(second.startsAt).getTime()
+          new Date(first.startsAt).getTime() -
+          new Date(second.startsAt).getTime()
       ),
     [homeWindowBookings, requestableSlots]
   );
@@ -339,19 +356,55 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
     () => requestableSlots.find((slot) => slot.id === selectedSlotId) ?? null,
     [requestableSlots, selectedSlotId]
   );
-  const selectedRequestStartsAt = useMemo(() => {
+  const studentScheduleOccupations = useMemo(
+    () =>
+      bookings
+        .filter(
+          (booking) =>
+            booking.status === 'confirmed' ||
+            booking.status === 'modified' ||
+            (booking.status === 'pending' &&
+              (!booking.expiresAt ||
+                agendaLoadedAt === null ||
+                new Date(booking.expiresAt).getTime() > agendaLoadedAt))
+        )
+        .map((booking) => ({
+          startsAt: booking.startsAt,
+          endsAt: booking.endsAt,
+        })),
+    [agendaLoadedAt, bookings]
+  );
+  const getRequestProposalForSlot = useCallback(
+    (slot: AvailabilitySlot, startsAt: string) => {
+      const earliestStartsAt = getEarliestBookingRequestStartsAt();
+      const desiredStartsAt = Math.max(
+        new Date(startsAt).getTime(),
+        earliestStartsAt
+      );
+      const occurrenceStartsAt = Math.max(
+        new Date(slot.occurrenceStartsAt).getTime(),
+        earliestStartsAt
+      );
+
+      return getBookingRequestProposal(
+        {
+          startsAt: new Date(occurrenceStartsAt).toISOString(),
+          endsAt: slot.occurrenceEndsAt,
+          occupations: [...slot.occupations, ...studentScheduleOccupations],
+        },
+        new Date(desiredStartsAt).toISOString()
+      );
+    },
+    [studentScheduleOccupations]
+  );
+  const selectedRequestProposal = useMemo(() => {
     if (!selectedSlot || !desiredStartsAt) return null;
 
-    return findNearestAvailableStart(
-      {
-        startsAt: selectedSlot.occurrenceStartsAt,
-        endsAt: selectedSlot.occurrenceEndsAt,
-        occupations: selectedSlot.occupations,
-      },
-      desiredStartsAt,
-      requestDurationMinutes
-    );
-  }, [desiredStartsAt, requestDurationMinutes, selectedSlot]);
+    return getRequestProposalForSlot(selectedSlot, desiredStartsAt);
+  }, [desiredStartsAt, getRequestProposalForSlot, selectedSlot]);
+  const selectedRequestStartsAt = selectedRequestProposal?.startsAt ?? null;
+  const availableRequestDurations =
+    selectedRequestProposal?.availableDurations ?? [];
   const selectedRequestEndsAt = selectedRequestStartsAt
     ? new Date(
         new Date(selectedRequestStartsAt).getTime() +
@@ -412,6 +465,10 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
       'booking.errorTitle',
       'booking.studentPendingLimit',
     ],
+    student_schedule_conflict: [
+      'booking.errorTitle',
+      'booking.studentScheduleConflict',
+    ],
     already_processed: ['booking.errorTitle', 'booking.alreadyProcessed'],
     past_booking: ['booking.errorTitle', 'booking.pastBooking'],
     invalid_participants: ['booking.errorTitle', 'booking.invalidParticipants'],
@@ -424,6 +481,10 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
 
   const submitRequest = async (slot: AvailabilitySlot) => {
     if (!selectedRequestStartsAt) return;
+    if (new Date(selectedRequestStartsAt).getTime() <= Date.now()) {
+      setFeedback('past_booking');
+      return;
+    }
     if (!acquireBookingMutationLock(bookingMutationLock)) return;
 
     setBookingMutationKind('request');
@@ -453,6 +514,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
 
       setSelectedSlotId(null);
       setDesiredStartsAt(null);
+      setRequestStartTime('');
       setStudentComment('');
       setSelectedParticipantIds([]);
       setFeedback('requested');
@@ -466,10 +528,45 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
   };
 
   const openRequest = (slot: AvailabilitySlot, startsAt = slot.startsAt) => {
+    const proposal = getRequestProposalForSlot(slot, startsAt);
+    if (!proposal.startsAt) {
+      setFeedback(
+        new Date(slot.endsAt).getTime() <= Date.now()
+          ? 'past_booking'
+          : 'slot_unavailable'
+      );
+      return;
+    }
+    const proposedStartsAt = proposal.startsAt;
+
     setSelectedSlotId(slot.id);
-    setDesiredStartsAt(startsAt);
+    setDesiredStartsAt(proposedStartsAt);
+    setRequestStartTime(getSchedulingTime(proposedStartsAt));
     setRequestDurationMinutes(60);
     setFeedback('none');
+  };
+
+  const updateRequestStartTime = (
+    slot: AvailabilitySlot,
+    localTime: string
+  ) => {
+    const requestedStartsAt = toBookingRequestStartsAt(
+      getSlotDateKey(slot.startsAt),
+      localTime
+    );
+    if (!requestedStartsAt) {
+      setRequestStartTime(localTime);
+      setDesiredStartsAt(null);
+      return;
+    }
+
+    const proposal = getRequestProposalForSlot(slot, requestedStartsAt);
+    const proposedStartsAt = proposal.startsAt ?? requestedStartsAt;
+    setRequestStartTime(getSchedulingTime(proposedStartsAt));
+    setDesiredStartsAt(proposedStartsAt);
+    if (!proposal.availableDurations.includes(requestDurationMinutes)) {
+      setRequestDurationMinutes(60);
+    }
   };
 
   const toggleParticipant = (studentId: string) => {
@@ -583,16 +680,35 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
   const renderRequestPanel = (slot: AvailabilitySlot) =>
     selectedSlotId === slot.id ? (
       <View style={styles.requestPanel}>
+        <TextField
+          autoCapitalize="none"
+          error={
+            requestStartTime && !desiredStartsAt
+              ? t('booking.invalidStartTime')
+              : undefined
+          }
+          inputMode="numeric"
+          keyboardType="numbers-and-punctuation"
+          label={t('booking.startTimeLabel')}
+          maxLength={5}
+          onChangeText={(value) => updateRequestStartTime(slot, value)}
+          placeholder={t('booking.startTimePlaceholder')}
+          value={requestStartTime}
+        />
         <ProfileOptionSelector<'60' | '90'>
           label={t('booking.durationLabel')}
-          onChange={(value) =>
-            setRequestDurationMinutes(Number(value) as AvailabilitySlotDuration)
-          }
+          onChange={(value) => {
+            const duration = value === '60' ? 60 : 90;
+            if (availableRequestDurations.includes(duration)) {
+              setRequestDurationMinutes(duration);
+            }
+          }}
           options={availabilitySlotDurations.map((duration) => ({
-            value: String(duration) as '60' | '90',
+            value: duration === 60 ? '60' : '90',
             label: t(`availability.duration.${duration}` as TranslationKey),
+            disabled: !availableRequestDurations.includes(duration),
           }))}
-          value={String(requestDurationMinutes) as '60' | '90'}
+          value={requestDurationMinutes === 60 ? '60' : '90'}
         />
         {selectedRequestStartsAt && selectedRequestEndsAt ? (
           <ThemedText type="smallBold">
@@ -658,8 +774,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
                 }
               />
             ))}
-            {selectedLessonType === 'duo' &&
-            !hasValidParticipantSelection ? (
+            {selectedLessonType === 'duo' && !hasValidParticipantSelection ? (
               <ThemedText type="small" themeColor="error">
                 {t('booking.duoParticipantRequired')}
               </ThemedText>
@@ -679,6 +794,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
             disabled={
               selectedSlotLessonTypes.length === 0 ||
               !selectedRequestStartsAt ||
+              !availableRequestDurations.includes(requestDurationMinutes) ||
               !hasValidParticipantSelection ||
               bookingMutationKind !== null
             }
@@ -689,6 +805,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
             onPress={() => {
               setSelectedSlotId(null);
               setDesiredStartsAt(null);
+              setRequestStartTime('');
             }}
             variant="secondary"
           />
@@ -746,7 +863,9 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
             <ScrollView
               contentContainerStyle={styles.modalBody}
               showsVerticalScrollIndicator={false}>
-              {renderSlotContent(selectedSlot)}
+              <ThemedText type="small" themeColor="textMuted">
+                {selectedSlot.location}
+              </ThemedText>
               {renderRequestPanel(selectedSlot)}
             </ScrollView>
           </View>
@@ -966,7 +1085,13 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
       : renderBookingAgendaContent(item.booking);
 
   const getHomeAgendaItemStyle = (item: StudentHomeAgendaItem) =>
-    item.kind === 'booking' ? getBookingStatusStyle(item.booking.status) : undefined;
+    item.kind === 'booking'
+      ? getBookingStatusStyle(item.booking.status)
+      : {
+          backgroundColor: theme.backgroundSelected,
+          borderColor: theme.secondary,
+          borderLeftWidth: 5,
+        };
 
   const renderHomeListItem = (item: StudentHomeAgendaItem) =>
     item.kind === 'booking' ? (
@@ -1027,6 +1152,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
                 key={candidate}
                 label={t(`planning.display.${candidate}` as TranslationKey)}
                 onPress={() => setDisplayMode(candidate)}
+                style={styles.toolbarButton}
                 variant={displayMode === candidate ? 'primary' : 'secondary'}
               />
             ))}
@@ -1037,6 +1163,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
                 key={candidate}
                 label={t(`planning.mode.${candidate}` as TranslationKey)}
                 onPress={() => setMode(candidate)}
+                style={styles.toolbarButton}
                 variant={mode === candidate ? 'primary' : 'secondary'}
               />
             ))}
@@ -1045,16 +1172,19 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
             <Button
               label={t('planning.previousAction')}
               onPress={() => move(-1)}
+              style={[styles.toolbarButton, styles.periodButton]}
               variant="secondary"
             />
             <Button
               label={t('planning.todayAction')}
               onPress={() => setAnchorDate(today())}
+              style={[styles.toolbarButton, styles.periodButton]}
               variant="secondary"
             />
             <Button
               label={t('planning.nextAction')}
               onPress={() => move(1)}
+              style={[styles.toolbarButton, styles.periodButton]}
               variant="secondary"
             />
           </View>
@@ -1092,7 +1222,10 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
             getSlotStyle={getHomeAgendaItemStyle}
             renderSlot={renderHomeAgendaItem}
             slots={homeAgendaItems}
-            isSlotPressable={(item) => item.kind === 'slot'}
+            isSlotPressable={(item) =>
+              item.kind === 'slot' &&
+              new Date(item.endsAt).getTime() > Date.now()
+            }
             onSlotPress={(item, startsAt) => {
               if (item.kind === 'slot') openRequest(item.slot, startsAt);
             }}
@@ -1153,7 +1286,9 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
 
               return (
                 <View key={day.date} style={styles.daySection}>
-                  <ThemedText type="smallBold">{formatDay(day.date)}</ThemedText>
+                  <ThemedText type="smallBold">
+                    {formatDay(day.date)}
+                  </ThemedText>
                   {dayBookings.length === 0 ? (
                     <Feedback
                       title={t('booking.studentEmptyTitle')}
@@ -1172,7 +1307,9 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
         )
       ) : (
         <View style={styles.days}>
-          <ThemedText type="subtitle">{t('booking.studentListTitle')}</ThemedText>
+          <ThemedText type="subtitle">
+            {t('booking.studentListTitle')}
+          </ThemedText>
           {visibleBookings.length === 0 ? (
             <Feedback
               title={t('booking.studentEmptyTitle')}
@@ -1210,13 +1347,17 @@ const styles = StyleSheet.create({
   },
   segmented: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: Spacing.two,
   },
   periodActions: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: Spacing.two,
+  },
+  toolbarButton: {
+    flex: 1,
+  },
+  periodButton: {
+    paddingHorizontal: Spacing.one,
   },
   days: {
     gap: Spacing.four,

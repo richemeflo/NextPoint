@@ -23,12 +23,10 @@ export async function getCurrentUserAccess(
   if (error || !isAppRole(data?.role)) return null;
   if (data.role === 'coach') return resolveCurrentUserAccess(data.role, null);
 
-  const profile = await supabase
-    .from('student_profiles')
-    .select('account_status')
-    .eq('user_id', userId)
-    .maybeSingle();
+  const profileStatus = await supabase.rpc(
+    'get_current_student_account_status'
+  );
 
-  if (profile.error || !profile.data) return null;
-  return resolveCurrentUserAccess(data.role, profile.data.account_status);
+  if (profileStatus.error) return null;
+  return resolveCurrentUserAccess(data.role, profileStatus.data);
 }

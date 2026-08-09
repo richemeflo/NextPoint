@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { StudentSex } from '@nextpoint/shared';
 import { type Href, useRouter } from 'expo-router';
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   View,
+  type ViewStyle,
 } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -44,9 +46,73 @@ const emptyFilters: StudentListFilters = {
   sex: null,
 };
 
+const webScrollStyle =
+  Platform.OS === 'web'
+    ? ({
+        overflowY: 'auto',
+        overscrollBehavior: 'contain',
+      } as unknown as ViewStyle)
+    : undefined;
+
+function StudentListScroller({
+  children,
+  interactionActive,
+}: {
+  children: ReactNode;
+  interactionActive: boolean;
+}) {
+  if (Platform.OS === 'web') {
+    return (
+      <View style={[styles.webScroll, webScrollStyle]}>
+        <View style={styles.scrollContent}>{children}</View>
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView
+      contentContainerStyle={styles.scrollContent}
+      keyboardShouldPersistTaps="handled"
+      scrollEnabled={!interactionActive}>
+      {children}
+    </ScrollView>
+  );
+}
+
 function StudentRow({ student }: { student: AssociatedStudent }) {
   const { t } = useTranslation();
   const router = useRouter();
+
+  const content = (pressed = false) => (
+    <Card style={[styles.studentRow, pressed && styles.studentRowPressed]}>
+      <View style={styles.studentMain}>
+        <ThemedText type="smallBold">{student.fullName}</ThemedText>
+        {student.profileComplete ? (
+          <ThemedText type="small" themeColor="textMuted">
+            {t('students.levelValue', { level: student.padelLevel })} ·{' '}
+            {t('students.ageValue', { age: student.age })} ·{' '}
+            {t(
+              `profile.sex.${student.sex === 'not_specified' ? 'notSpecified' : student.sex}`
+            )}
+          </ThemedText>
+        ) : (
+          <ThemedText type="smallBold" themeColor="warning">
+            {t('students.incompleteProfile')}
+          </ThemedText>
+        )}
+      </View>
+      <View style={styles.contact}>
+        {student.phone ? (
+          <ThemedText type="small" themeColor="textMuted">
+            {student.phone}
+          </ThemedText>
+        ) : null}
+        <ThemedText type="small" themeColor="textMuted">
+          {student.email}
+        </ThemedText>
+      </View>
+    </Card>
+  );
 
   return (
     <Pressable
@@ -54,26 +120,7 @@ function StudentRow({ student }: { student: AssociatedStudent }) {
       onPress={() =>
         router.push(`/coach/students/${student.userId}` as Href)
       }>
-      {({ pressed }) => (
-        <Card style={[styles.studentRow, pressed && styles.studentRowPressed]}>
-          <View style={styles.studentMain}>
-            <ThemedText type="smallBold">{student.fullName}</ThemedText>
-            <ThemedText type="small" themeColor="textMuted">
-              {t('students.levelValue', { level: student.padelLevel })} ·{' '}
-              {t('students.ageValue', { age: student.age })} ·{' '}
-              {t(`profile.sex.${student.sex === 'not_specified' ? 'notSpecified' : student.sex}`)}
-            </ThemedText>
-          </View>
-          <View style={styles.contact}>
-            <ThemedText type="small" themeColor="textMuted">
-              {student.phone}
-            </ThemedText>
-            <ThemedText type="small" themeColor="textMuted">
-              {student.email}
-            </ThemedText>
-          </View>
-        </Card>
-      )}
+      {({ pressed }) => content(pressed)}
     </Pressable>
   );
 }
@@ -155,10 +202,7 @@ export default function CoachStudentsScreen() {
 
   return (
     <ThemedView style={styles.screen}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        scrollEnabled={!isAgeSliderActive}>
+      <StudentListScroller interactionActive={isAgeSliderActive}>
         <View style={styles.content}>
           <View style={styles.heading}>
             <ThemedText type="smallBold" themeColor="primary">
@@ -290,7 +334,7 @@ export default function CoachStudentsScreen() {
             </View>
           )}
         </View>
-      </ScrollView>
+      </StudentListScroller>
     </ThemedView>
   );
 }
@@ -304,6 +348,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.three,
+  },
+  webScroll: {
+    flex: 1,
   },
   scrollContent: {
     alignItems: 'center',

@@ -102,8 +102,13 @@ async function invoke(name, body, accessToken) {
     body: JSON.stringify(body),
   });
 
-  assert.equal(response.ok, true);
-  return response.json();
+  const responseBody = await response.json();
+  assert.equal(
+    response.ok,
+    true,
+    `${name} returned HTTP ${response.status}: ${JSON.stringify(responseBody)}`
+  );
+  return responseBody;
 }
 
 try {

@@ -22,6 +22,7 @@ export const bookingErrorCodes = [
   'slot_unavailable',
   'pending_limit_reached',
   'student_pending_limit_reached',
+  'student_schedule_conflict',
   'already_processed',
   'past_booking',
   'invalid_participants',

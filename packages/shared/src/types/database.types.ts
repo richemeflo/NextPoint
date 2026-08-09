@@ -1159,6 +1159,20 @@ export type Database = {
           period_start: string
         }[]
       }
+      get_associated_students: {
+        Args: { p_coach_id: string }
+        Returns: {
+          account_status: Database["public"]["Enums"]["student_account_status"] | null
+          age: number | null
+          email: string
+          full_name: string
+          padel_level: number | null
+          phone: string | null
+          profile_complete: boolean
+          sex: Database["public"]["Enums"]["student_sex"] | null
+          user_id: string
+        }[]
+      }
       get_requestable_booking_participants: {
         Args: never
         Returns: {
@@ -1195,6 +1209,10 @@ export type Database = {
           status: Database["public"]["Enums"]["availability_slot_status"]
           updated_at: string
         }[]
+      }
+      get_current_student_account_status: {
+        Args: never
+        Returns: Database["public"]["Enums"]["student_account_status"]
       }
       is_coach_registration_open: { Args: never; Returns: boolean }
       mark_all_notifications_read: { Args: never; Returns: number }
@@ -1744,4 +1762,3 @@ export const Constants = {
     },
   },
 } as const
-

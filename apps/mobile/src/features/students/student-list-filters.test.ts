@@ -9,8 +9,7 @@ import {
 
 type TestStudent = StudentListItem & {
   userId: string;
-  email: string;
-  phone: string;
+  phone: string | null;
 };
 
 const students: TestStudent[] = [
@@ -40,6 +39,15 @@ const students: TestStudent[] = [
     padelLevel: 7,
     age: 42,
     sex: 'other',
+  },
+  {
+    userId: '4',
+    fullName: 'incomplete@example.com',
+    email: 'incomplete@example.com',
+    phone: null,
+    padelLevel: null,
+    age: null,
+    sex: null,
   },
 ];
 
@@ -73,7 +81,7 @@ test('filterAssociatedStudents combines level, age range and sex filters', () =>
 });
 
 test('filterAssociatedStudents returns all students after reset', () => {
-  assert.equal(filterAssociatedStudents(students, emptyFilters).length, 3);
+  assert.equal(filterAssociatedStudents(students, emptyFilters).length, 4);
 });
 
 test('filterAssociatedStudents includes both selected age boundaries', () => {
@@ -86,5 +94,26 @@ test('filterAssociatedStudents includes both selected age boundaries', () => {
   assert.deepEqual(
     result.map(({ userId }) => userId),
     ['1', '2']
+  );
+});
+
+test('filterAssociatedStudents keeps incomplete profiles visible and searchable', () => {
+  assert.deepEqual(
+    filterAssociatedStudents(students, emptyFilters).map(({ userId }) => userId),
+    ['1', '2', '3', '4']
+  );
+  assert.deepEqual(
+    filterAssociatedStudents(students, {
+      ...emptyFilters,
+      query: 'incomplete@',
+    }).map(({ userId }) => userId),
+    ['4']
+  );
+  assert.equal(
+    filterAssociatedStudents(students, {
+      ...emptyFilters,
+      level: 1,
+    }).some(({ userId }) => userId === '4'),
+    false
   );
 });

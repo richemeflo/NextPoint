@@ -1,28 +1,28 @@
-import { useState, type ReactNode } from 'react';
-import {
-  getSchedulingDateKey,
-  schedulingLocalDateTimeToIso,
-} from '@nextpoint/shared';
+import { getSchedulingTime } from '@nextpoint/shared';
+
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   Pressable,
   StyleSheet,
   useWindowDimensions,
   View,
+  type GestureResponderEvent,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { BorderWidth, Radii, Spacing } from '@/constants/theme';
+import { getAgendaGridSelection } from '@/features/scheduling/agenda-grid-selection';
 import {
-  agendaEndHour,
   agendaHourMarks,
-  agendaStartHour,
   getAgendaSlotPosition,
+  getAgendaTimePosition,
   getSlotDateKey,
   type PlanningDay,
 } from '@/features/scheduling/planning-window';
 import { useTheme } from '@/hooks/use-theme';
+import { useTranslation } from '@/i18n';
 
 type AgendaGridItem = {
   id: string;
@@ -52,46 +52,47 @@ function AgendaSlotBlock<TItem extends AgendaGridItem>({
   style: StyleProp<ViewStyle>;
 }) {
   const [height, setHeight] = useState(0);
+  const blockRef = useRef<View>(null);
   const Component = onPress ? Pressable : View;
+
+  const selectAtPosition = (
+    locationY: number | undefined,
+    blockHeight: number
+  ) => {
+    if (!onPress) return;
+
+    const desiredStartsAt = getAgendaGridSelection({
+      startsAt: slot.startsAt,
+      endsAt: slot.endsAt,
+      height: blockHeight,
+      locationY,
+    });
+    if (desiredStartsAt) onPress(slot, desiredStartsAt);
+  };
+
+  const handlePress = (event: GestureResponderEvent) => {
+    const { locationY, pageY } = event.nativeEvent;
+    if (Number.isFinite(locationY)) {
+      selectAtPosition(locationY, height);
+      return;
+    }
+
+    if (!Number.isFinite(pageY) || !blockRef.current) {
+      selectAtPosition(undefined, height);
+      return;
+    }
+
+    blockRef.current.measureInWindow((_x, pageTop, _width, measuredHeight) => {
+      selectAtPosition(pageY - pageTop, measuredHeight);
+    });
+  };
 
   return (
     <Component
       accessibilityRole={onPress ? 'button' : undefined}
       onLayout={(event) => setHeight(event.nativeEvent.layout.height)}
-      onPress={
-        onPress
-          ? (event) => {
-              const start = new Date(slot.startsAt).getTime();
-              const end = new Date(slot.endsAt).getTime();
-              const date = getSchedulingDateKey(slot.startsAt);
-              const agendaStart = schedulingLocalDateTimeToIso(
-                date,
-                `${String(agendaStartHour).padStart(2, '0')}:00`
-              );
-              const agendaEnd = schedulingLocalDateTimeToIso(
-                date,
-                `${String(agendaEndHour).padStart(2, '0')}:00`
-              );
-              if (height <= 0 || !agendaStart || !agendaEnd) return;
-
-              const visibleStart = Math.max(start, new Date(agendaStart).getTime());
-              const visibleEnd = Math.min(end, new Date(agendaEnd).getTime());
-              if (visibleEnd <= visibleStart) return;
-
-              const ratio = event.nativeEvent.locationY / height;
-              const raw =
-                visibleStart +
-                Math.max(0, Math.min(1, ratio)) * (visibleEnd - visibleStart);
-              const roundedToMinute = Math.round(raw / 60_000) * 60_000;
-              onPress(
-                slot,
-                new Date(
-                  Math.max(visibleStart, Math.min(visibleEnd, roundedToMinute))
-                ).toISOString()
-              );
-            }
-          : undefined
-      }
+      onPress={onPress ? handlePress : undefined}
+      ref={blockRef}
       style={style}>
       {children}
     </Component>
@@ -108,8 +109,72 @@ export function AgendaGrid<TItem extends AgendaGridItem>({
   isSlotPressable,
 }: AgendaGridProps<TItem>) {
   const theme = useTheme();
+  const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const compact = width < 760;
+  const [nowMs, setNowMs] = useState(Date.now);
+  const currentDate = getSlotDateKey(new Date(nowMs).toISOString());
+  const currentTimePosition = getAgendaTimePosition(nowMs);
+  const currentTime = getSchedulingTime(nowMs);
+
+  useEffect(() => {
+    const timer = setInterval(() => setNowMs(Date.now()), 30_000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const renderTemporalContext = (date: string) => {
+    const pastHeight =
+      date < currentDate
+        ? '100%'
+        : date === currentDate
+          ? currentTimePosition
+          : null;
+
+    return (
+      <>
+        {pastHeight && pastHeight !== '0%' ? (
+          <View
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+            pointerEvents="none"
+            style={[
+              styles.pastOverlay,
+              { backgroundColor: theme.background, height: pastHeight },
+            ]}
+          />
+        ) : null}
+        {date === currentDate ? (
+          <View
+            accessibilityLabel={`${t('planning.nowLabel')} ${currentTime}`}
+            accessible
+            pointerEvents="none"
+            style={[styles.currentTimeMarker, { top: currentTimePosition }]}>
+            <View
+              style={[
+                styles.currentTimeDot,
+                { backgroundColor: theme.primary },
+              ]}
+            />
+            <View
+              style={[
+                styles.currentTimeLine,
+                { backgroundColor: theme.primary },
+              ]}
+            />
+            <View
+              style={[
+                styles.currentTimeLabel,
+                { backgroundColor: theme.primary },
+              ]}>
+              <ThemedText type="smallBold" themeColor="surface">
+                {currentTime}
+              </ThemedText>
+            </View>
+          </View>
+        ) : null}
+      </>
+    );
+  };
 
   const slotsByDay = new Map<string, TItem[]>();
   for (const slot of slots) {
@@ -174,6 +239,7 @@ export function AgendaGrid<TItem extends AgendaGridItem>({
                       {renderSlot(slot)}
                     </AgendaSlotBlock>
                   ))}
+                  {renderTemporalContext(day.date)}
                 </View>
               </View>
             </View>
@@ -249,6 +315,7 @@ export function AgendaGrid<TItem extends AgendaGridItem>({
                   {renderSlot(slot)}
                 </AgendaSlotBlock>
               ))}
+              {renderTemporalContext(day.date)}
             </View>
           );
         })}
@@ -334,5 +401,41 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minHeight: 52,
     overflow: 'hidden',
+  },
+  pastOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    opacity: 0.58,
+    zIndex: 2,
+  },
+  currentTimeMarker: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 3,
+  },
+  currentTimeDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  currentTimeLine: {
+    flex: 1,
+    height: 2,
+  },
+  currentTimeLabel: {
+    position: 'absolute',
+    right: Spacing.one,
+    top: -12,
+    minHeight: 24,
+    borderRadius: Radii.small,
+    paddingHorizontal: Spacing.two,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

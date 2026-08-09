@@ -1,6 +1,6 @@
 begin;
 
-select plan(16);
+select plan(19);
 
 select ok(
   to_regtype('public.student_account_status') is not null,
@@ -104,6 +104,32 @@ select has_function(
   'finalize_student_activation',
   array['uuid', 'uuid'],
   'trusted account activation transition exists'
+);
+select has_function(
+  'public',
+  'get_current_student_account_status',
+  array[]::text[],
+  'authenticated student account status lookup exists'
+);
+select function_returns(
+  'public',
+  'get_current_student_account_status',
+  array[]::text[],
+  'student_account_status',
+  'student account status lookup returns the lifecycle enum'
+);
+select ok(
+  has_function_privilege(
+    'authenticated',
+    'public.get_current_student_account_status()',
+    'execute'
+  )
+    and not has_function_privilege(
+      'anon',
+      'public.get_current_student_account_status()',
+      'execute'
+    ),
+  'only authenticated clients can read their student account status'
 );
 
 select * from finish();

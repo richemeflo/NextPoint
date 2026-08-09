@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import {
   agendaHourMarks,
+  getAgendaTimePosition,
   getPlanningWindow,
   getAgendaSlotPosition,
   getSlotDateKey,
@@ -64,11 +65,20 @@ test('getAgendaSlotPosition maps slots into the agenda hour rail', () => {
   const startsAt = '2026-07-01T08:00:00.000Z';
   const endsAt = '2026-07-01T09:30:00.000Z';
 
-  assert.deepEqual(
-    getAgendaSlotPosition(startsAt, endsAt, 8, 20),
-    {
-      top: '16.666666666666664%',
-      height: '12.5%',
-    }
+  assert.deepEqual(getAgendaSlotPosition(startsAt, endsAt, 8, 20), {
+    top: '16.666666666666664%',
+    height: '12.5%',
+  });
+});
+
+test('getAgendaTimePosition maps Paris time and clamps outside the agenda', () => {
+  assert.equal(
+    getAgendaTimePosition('2026-07-01T10:30:00.000Z', 8, 20),
+    '37.5%'
+  );
+  assert.equal(getAgendaTimePosition('2026-07-01T04:00:00.000Z', 8, 20), '0%');
+  assert.equal(
+    getAgendaTimePosition('2026-07-01T21:00:00.000Z', 8, 20),
+    '100%'
   );
 });
