@@ -11,7 +11,7 @@ import {
   type SignUpInput,
 } from '@nextpoint/shared';
 import * as Linking from 'expo-linking';
-import { useRouter, type Href } from 'expo-router';
+import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { useEffect, useState } from 'react';
 import {
@@ -47,6 +47,8 @@ import { Card } from '@/components/ui/card';
 import { Feedback } from '@/components/ui/feedback';
 import { TextField } from '@/components/ui/text-field';
 import { MaxContentWidth, Radii, Spacing } from '@/constants/theme';
+import { LegalAcceptance } from '@/features/legal/legal-acceptance';
+import { LegalFooter } from '@/features/legal/legal-footer';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
 
@@ -163,6 +165,7 @@ function RoleSelector({
 
 function SignInForm() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ redirect?: string | string[] }>();
   const { signIn, status } = useAuth();
   const { t } = useTranslation();
   const [authError, setAuthError] = useState<AuthFailureCode | null>(
@@ -181,7 +184,17 @@ function SignInForm() {
     setAuthError(null);
     const result = await signIn(email, password);
 
-    if (!result.ok) setAuthError(result.code);
+    if (!result.ok) {
+      setAuthError(result.code);
+      return;
+    }
+
+    const requestedRedirect = Array.isArray(params.redirect)
+      ? params.redirect[0]
+      : params.redirect;
+    if (requestedRedirect === '/delete-account') {
+      router.replace(requestedRedirect as Href);
+    }
   });
 
   return (
@@ -511,6 +524,8 @@ function SignUpForm() {
   );
   const [confirmationRequired, setConfirmationRequired] = useState(false);
   const [coachRegistrationOpen, setCoachRegistrationOpen] = useState(false);
+  const [acceptedLegal, setAcceptedLegal] = useState(false);
+  const [showLegalError, setShowLegalError] = useState(false);
   const {
     control,
     handleSubmit,
@@ -537,6 +552,11 @@ function SignUpForm() {
   }, []);
 
   const onSubmit = handleSubmit(async ({ email, password, role }) => {
+    if (!acceptedLegal) {
+      setShowLegalError(true);
+      return;
+    }
+
     setAuthError(null);
     setConfirmationRequired(false);
     const result = await signUp(email, password, role);
@@ -616,6 +636,14 @@ function SignUpForm() {
           />
         )}
       />
+      <LegalAcceptance
+        accepted={acceptedLegal}
+        onChange={(accepted) => {
+          setAcceptedLegal(accepted);
+          if (accepted) setShowLegalError(false);
+        }}
+        showError={showLegalError}
+      />
       <AuthFeedback code={authError} />
       {confirmationRequired ? (
         <Feedback
@@ -692,6 +720,7 @@ export function AuthScreen({ mode }: { mode: AuthMode }) {
               {mode === 'forgot-password' ? <ForgotPasswordForm /> : null}
               {mode === 'reset-password' ? <ResetPasswordForm /> : null}
             </Card>
+            <LegalFooter />
           </SafeAreaView>
         </ScrollView>
       </KeyboardAvoidingView>

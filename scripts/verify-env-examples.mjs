@@ -9,7 +9,8 @@ const forbiddenPatterns = [
   /eyJ[A-Za-z0-9_-]{20,}/,
   /sk-[A-Za-z0-9_-]{20,}/,
 ];
-const publicAppUrlFiles = ['.env.example', 'apps/mobile/.env.example'];
+const publicAppUrlFiles = ['.env.example', 'env.example', 'apps/mobile/.env.example'];
+const productionAppUrl = 'https://equationpadel.fr';
 
 for (const file of files) {
   const content = readFileSync(file, 'utf8');
@@ -25,9 +26,20 @@ for (const file of publicAppUrlFiles) {
   const content = readFileSync(file, 'utf8');
   const publicAppUrl = content.match(/^EXPO_PUBLIC_APP_URL=(.+)$/m)?.[1];
 
-  if (!publicAppUrl || !publicAppUrl.startsWith('https://')) {
-    throw new Error(`${file} must define EXPO_PUBLIC_APP_URL as an HTTPS origin`);
+  if (publicAppUrl !== productionAppUrl) {
+    throw new Error(
+      `${file} must define EXPO_PUBLIC_APP_URL as ${productionAppUrl}`
+    );
   }
+}
+
+const serverPublicAppUrl = readFileSync('.env.example', 'utf8')
+  .match(/^NEXTPOINT_PUBLIC_APP_URL=(.+)$/m)?.[1];
+
+if (serverPublicAppUrl !== productionAppUrl) {
+  throw new Error(
+    `.env.example must define NEXTPOINT_PUBLIC_APP_URL as ${productionAppUrl}`
+  );
 }
 
 console.log('Environment example files contain placeholders only.');

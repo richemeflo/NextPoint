@@ -50,13 +50,22 @@ function RootNavigator() {
   const { t } = useTranslation();
   const pathname = usePathname();
   const access = getAuthRouteAccess(status, role);
-  const isPasswordRecovery = pathname === '/reset-password';
+  const isAlwaysPublicRoute = [
+    '/activate-student',
+    '/data-rights',
+    '/delete-account',
+    '/legal',
+    '/privacy',
+    '/reset-password',
+    '/support',
+    '/terms',
+  ].includes(pathname);
 
-  if (access.isLoading && !isPasswordRecovery) {
+  if (access.isLoading && !isAlwaysPublicRoute) {
     return <SessionLoadingScreen />;
   }
 
-  if (access.hasAccessError && !isPasswordRecovery) {
+  if (access.hasAccessError && !isAlwaysPublicRoute) {
     return (
       <ThemedView style={styles.loadingScreen}>
         <View style={styles.accessError}>
@@ -74,7 +83,13 @@ function RootNavigator() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="activate-student" />
+      <Stack.Screen name="data-rights" />
+      <Stack.Screen name="delete-account" />
+      <Stack.Screen name="legal" />
+      <Stack.Screen name="privacy" />
       <Stack.Screen name="reset-password" />
+      <Stack.Screen name="support" />
+      <Stack.Screen name="terms" />
       <Stack.Protected guard={access.allowAuthRoutes}>
         <Stack.Screen name="(auth)" />
       </Stack.Protected>

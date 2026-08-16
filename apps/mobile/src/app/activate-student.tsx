@@ -17,6 +17,8 @@ import { Feedback } from '@/components/ui/feedback';
 import { TextField } from '@/components/ui/text-field';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/auth-context';
+import { LegalAcceptance } from '@/features/legal/legal-acceptance';
+import { LegalFooter } from '@/features/legal/legal-footer';
 import { activateStudentAccount } from '@/features/students/student-account-service';
 import {
   getSanitizedStudentActivationPath,
@@ -61,6 +63,8 @@ export default function ActivateStudentScreen() {
     'idle' | 'success' | 'invalid' | 'error'
   >('idle');
   const [isRedirectingToSignIn, setIsRedirectingToSignIn] = useState(false);
+  const [acceptedLegal, setAcceptedLegal] = useState(false);
+  const [showLegalError, setShowLegalError] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -112,6 +116,11 @@ export default function ActivateStudentScreen() {
     message ? t(validationKeys[message] ?? 'auth.validation.invalid') : undefined;
 
   const onSubmit = handleSubmit(async ({ token, password }) => {
+    if (!acceptedLegal) {
+      setShowLegalError(true);
+      return;
+    }
+
     setResult('idle');
     const activation = await activateStudentAccount({ token, password });
     if (!activation.ok) {
@@ -181,6 +190,14 @@ export default function ActivateStudentScreen() {
                     />
                   )}
                 />
+                <LegalAcceptance
+                  accepted={acceptedLegal}
+                  onChange={(accepted) => {
+                    setAcceptedLegal(accepted);
+                    if (accepted) setShowLegalError(false);
+                  }}
+                  showError={showLegalError}
+                />
                 <Controller
                   control={control}
                   name="confirmPassword"
@@ -229,6 +246,7 @@ export default function ActivateStudentScreen() {
               </>
             )}
           </Card>
+          <LegalFooter />
         </View>
       </ScrollView>
     </ThemedView>

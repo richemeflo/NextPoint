@@ -7,6 +7,10 @@ import {
   type PasswordRecoveryUrlPolicy,
 } from './password-recovery';
 
+import {
+  privacyPolicyVersion,
+  termsVersion,
+} from '@/features/legal/legal-config';
 import { supabase } from '@/lib/supabase/client';
 
 export type AuthResult =
@@ -60,7 +64,13 @@ export async function signUpWithPassword(
       email: normalizeEmail(email),
       password,
       options: {
-        data: { role },
+        data: {
+          role,
+          legal_acceptance_source: 'signup',
+          legal_accepted_at: new Date().toISOString(),
+          privacy_policy_version: privacyPolicyVersion,
+          terms_version: termsVersion,
+        },
       },
     });
 

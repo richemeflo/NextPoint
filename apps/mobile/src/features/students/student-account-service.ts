@@ -4,6 +4,10 @@ import {
   type ActivateStudentAccountInput,
 } from '@nextpoint/shared';
 
+import {
+  privacyPolicyVersion,
+  termsVersion,
+} from '@/features/legal/legal-config';
 import { supabase } from '@/lib/supabase/client';
 
 export type StudentActivationFailureCode =
@@ -38,7 +42,14 @@ export async function activateStudentAccount(
 
   const { data, error } = await supabase.functions.invoke(
     'activate-student-account',
-    { body: input }
+    {
+      body: {
+        ...input,
+        legalAcceptanceSource: 'student_activation',
+        privacyPolicyVersion,
+        termsVersion,
+      },
+    }
   );
   const parsed = activateStudentAccountResponseSchema.safeParse(data as unknown);
 

@@ -10,10 +10,10 @@ export const dictionaries = {
     'nav.mainLabel': 'Navigation principale',
     'nav.foundation': 'Fondations',
     'common.docs': 'Docs',
-    'common.nextpoint': 'NextPoint',
+    'common.nextpoint': 'Equation Padel',
     'errorBoundary.rootTitle': 'Une erreur inattendue est survenue',
     'errorBoundary.rootBody':
-      'NextPoint ne peut pas afficher cet écran pour le moment. Réessayez pour reprendre votre navigation.',
+      'Equation Padel ne peut pas afficher cet écran pour le moment. Réessayez pour reprendre votre navigation.',
     'errorBoundary.planningTitle': 'Le planning a rencontré un problème',
     'errorBoundary.planningBody':
       'Le reste de votre espace reste disponible. Réessayez pour recharger le planning.',
@@ -29,7 +29,7 @@ export const dictionaries = {
     'access.errorBody':
       'Votre session est valide mais aucun rôle sécurisé ne lui est associé. Déconnectez-vous puis recréez le compte si nécessaire.',
     'public.eyebrow': 'Padel, simplement',
-    'public.title': 'NextPoint',
+    'public.title': 'Equation Padel',
     'public.subtitle':
       'Réservez plus facilement un cours avec votre coach et suivez vos demandes dans un espace sécurisé.',
     'public.signUpAction': 'S’inscrire',
@@ -559,7 +559,7 @@ export const dictionaries = {
     'studentDetail.activationCopyAction': 'Copier le lien',
     'studentDetail.activationShareAction': 'Partager le lien',
     'studentDetail.activationShareMessage':
-      'Activez votre compte NextPoint avec ce lien valable 24 heures : {{link}}',
+      'Activez votre compte Equation Padel avec ce lien valable 24 heures : {{link}}',
     'studentDetail.activationCopiedTitle': 'Lien copié',
     'studentDetail.activationCopiedBody':
       'Vous pouvez maintenant le transmettre à l’élève.',
@@ -770,10 +770,10 @@ export const dictionaries = {
     'booking.unknownError': 'Vérifiez votre connexion puis réessayez.',
     'auth.signInTitle': 'Retrouvez votre espace.',
     'auth.signInSubtitle':
-      'Connectez-vous avec votre email et votre mot de passe pour accéder à NextPoint.',
+      'Connectez-vous avec votre email et votre mot de passe pour accéder à Equation Padel.',
     'auth.signUpTitle': 'Créez votre compte.',
     'auth.signUpSubtitle':
-      'Inscrivez-vous pour préparer votre profil et accéder aux parcours NextPoint.',
+      'Inscrivez-vous pour préparer votre profil et accéder aux parcours Equation Padel.',
     'auth.emailLabel': 'Email',
     'auth.emailPlaceholder': 'vous@exemple.fr',
     'auth.passwordLabel': 'Mot de passe',
@@ -876,7 +876,7 @@ export const dictionaries = {
     'home.formPlaceholder': 'Nom, date ou note coach',
     'home.feedbackTitle': 'Base prête pour les stories métier',
     'home.feedbackMessage':
-      'Les textes visibles passent par i18n et les couleurs viennent des tokens NextPoint.',
+      'Les textes visibles passent par i18n et les couleurs viennent des tokens Equation Padel.',
     'foundation.eyebrow': 'Design system P0',
     'foundation.title': 'Tokens, thèmes et primitives réutilisables.',
     'foundation.subtitle':
@@ -915,10 +915,10 @@ export const dictionaries = {
     'nav.mainLabel': 'Main navigation',
     'nav.foundation': 'Foundations',
     'common.docs': 'Docs',
-    'common.nextpoint': 'NextPoint',
+    'common.nextpoint': 'Equation Padel',
     'errorBoundary.rootTitle': 'Something unexpected happened',
     'errorBoundary.rootBody':
-      'NextPoint cannot display this screen right now. Try again to resume navigation.',
+      'Equation Padel cannot display this screen right now. Try again to resume navigation.',
     'errorBoundary.planningTitle': 'The schedule encountered a problem',
     'errorBoundary.planningBody':
       'The rest of your space is still available. Try again to reload the schedule.',
@@ -934,7 +934,7 @@ export const dictionaries = {
     'access.errorBody':
       'Your session is valid but no trusted role is associated with it. Sign out and recreate the account if needed.',
     'public.eyebrow': 'Padel, made simple',
-    'public.title': 'NextPoint',
+    'public.title': 'Equation Padel',
     'public.subtitle':
       'Book lessons with your coach more easily and track requests in a secure space.',
     'public.signUpAction': 'Sign up',
@@ -1448,7 +1448,7 @@ export const dictionaries = {
     'studentDetail.activationCopyAction': 'Copy link',
     'studentDetail.activationShareAction': 'Share link',
     'studentDetail.activationShareMessage':
-      'Activate your NextPoint account with this 24-hour link: {{link}}',
+      'Activate your Equation Padel account with this 24-hour link: {{link}}',
     'studentDetail.activationCopiedTitle': 'Link copied',
     'studentDetail.activationCopiedBody': 'You can now send it to the student.',
     'studentDetail.activationErrorTitle': 'Link unavailable',
@@ -1652,10 +1652,10 @@ export const dictionaries = {
     'booking.unknownError': 'Check your connection and try again.',
     'auth.signInTitle': 'Return to your space.',
     'auth.signInSubtitle':
-      'Sign in with your email and password to access NextPoint.',
+      'Sign in with your email and password to access Equation Padel.',
     'auth.signUpTitle': 'Create your account.',
     'auth.signUpSubtitle':
-      'Sign up to prepare your profile and access NextPoint journeys.',
+      'Sign up to prepare your profile and access Equation Padel journeys.',
     'auth.emailLabel': 'Email',
     'auth.emailPlaceholder': 'you@example.com',
     'auth.passwordLabel': 'Password',
@@ -1754,7 +1754,7 @@ export const dictionaries = {
     'home.formPlaceholder': 'Name, date, or coach note',
     'home.feedbackTitle': 'Ready for feature stories',
     'home.feedbackMessage':
-      'Visible text uses i18n and colors come from NextPoint tokens.',
+      'Visible text uses i18n and colors come from Equation Padel tokens.',
     'foundation.eyebrow': 'P0 design system',
     'foundation.title': 'Tokens, themes, and reusable primitives.',
     'foundation.subtitle':
@@ -1793,10 +1793,10 @@ export const dictionaries = {
     'nav.mainLabel': 'Navegación principal',
     'nav.foundation': 'Bases',
     'common.docs': 'Docs',
-    'common.nextpoint': 'NextPoint',
+    'common.nextpoint': 'Equation Padel',
     'errorBoundary.rootTitle': 'Se produjo un error inesperado',
     'errorBoundary.rootBody':
-      'NextPoint no puede mostrar esta pantalla en este momento. Inténtalo de nuevo para continuar navegando.',
+      'Equation Padel no puede mostrar esta pantalla en este momento. Inténtalo de nuevo para continuar navegando.',
     'errorBoundary.planningTitle': 'La planificación encontró un problema',
     'errorBoundary.planningBody':
       'El resto de tu espacio sigue disponible. Inténtalo de nuevo para recargar la planificación.',
@@ -1812,7 +1812,7 @@ export const dictionaries = {
     'access.errorBody':
       'Tu sesión es válida, pero no tiene un rol seguro asociado. Cierra la sesión y vuelve a crear la cuenta si es necesario.',
     'public.eyebrow': 'Pádel, sin complicaciones',
-    'public.title': 'NextPoint',
+    'public.title': 'Equation Padel',
     'public.subtitle':
       'Reserva clases con tu coach más fácilmente y sigue tus solicitudes en un espacio seguro.',
     'public.signUpAction': 'Registrarse',
@@ -2339,7 +2339,7 @@ export const dictionaries = {
     'studentDetail.activationCopyAction': 'Copiar enlace',
     'studentDetail.activationShareAction': 'Compartir enlace',
     'studentDetail.activationShareMessage':
-      'Activa tu cuenta NextPoint con este enlace válido durante 24 horas: {{link}}',
+      'Activa tu cuenta Equation Padel con este enlace válido durante 24 horas: {{link}}',
     'studentDetail.activationCopiedTitle': 'Enlace copiado',
     'studentDetail.activationCopiedBody': 'Ya puedes enviárselo al alumno.',
     'studentDetail.activationErrorTitle': 'Enlace no disponible',
@@ -2549,10 +2549,10 @@ export const dictionaries = {
     'booking.unknownError': 'Revisa tu conexión e inténtalo de nuevo.',
     'auth.signInTitle': 'Vuelve a tu espacio.',
     'auth.signInSubtitle':
-      'Inicia sesión con tu email y contraseña para acceder a NextPoint.',
+      'Inicia sesión con tu email y contraseña para acceder a Equation Padel.',
     'auth.signUpTitle': 'Crea tu cuenta.',
     'auth.signUpSubtitle':
-      'Regístrate para preparar tu perfil y acceder a los recorridos de NextPoint.',
+      'Regístrate para preparar tu perfil y acceder a los recorridos de Equation Padel.',
     'auth.emailLabel': 'Email',
     'auth.emailPlaceholder': 'tu@ejemplo.es',
     'auth.passwordLabel': 'Contraseña',
@@ -2654,7 +2654,7 @@ export const dictionaries = {
     'home.formPlaceholder': 'Nombre, fecha o nota del coach',
     'home.feedbackTitle': 'Base lista para historias de producto',
     'home.feedbackMessage':
-      'Los textos visibles usan i18n y los colores vienen de los tokens NextPoint.',
+      'Los textos visibles usan i18n y los colores vienen de los tokens Equation Padel.',
     'foundation.eyebrow': 'Sistema de diseño P0',
     'foundation.title': 'Tokens, temas y primitivas reutilizables.',
     'foundation.subtitle':

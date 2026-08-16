@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "NextPoint",
+    "name": "Equation Padel",
     "slug": "nextpoint",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -34,6 +34,7 @@
         }
       ],
       "expo-notifications",
+      "expo-sharing",
       "expo-web-browser",
       [
         "expo-splash-screen",

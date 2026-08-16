@@ -28,6 +28,7 @@ import {
   saveCoachProfile,
 } from '@/features/coaches/coach-profile-service';
 import { ProfileOptionSelector } from '@/features/profiles/profile-option-selector';
+import { AccountPrivacyCard } from '@/features/legal/account-privacy-card';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
 
@@ -318,6 +319,7 @@ export default function CoachProfileScreen() {
               />
             </Card>
           </View>
+          <AccountPrivacyCard />
         </View>
       </ScrollView>
     </ThemedView>

@@ -5,6 +5,7 @@
 !.github/**
 !**/.env.example
 !**/.gitkeep
+!**/public/.htaccess
 node_modules/
 
 _bmad/

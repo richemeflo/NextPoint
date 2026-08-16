@@ -164,6 +164,7 @@ additional_redirect_urls = [
   # Production must also allow the exact EXPO_PUBLIC_APP_URL/reset-password URL
   # in the hosted Supabase project's Auth redirect settings.
   "https://127.0.0.1:3000",
+  "https://equationpadel.fr/reset-password",
   "http://127.0.0.1:3000/reset-password",
   "https://127.0.0.1:3000/reset-password",
   "http://127.0.0.1:8081/reset-password",

@@ -44,6 +44,7 @@ export default function Root({ children }: PropsWithChildren) {
     <html lang="fr">
       <head>
         <meta charSet="utf-8" />
+        <title>Equation Padel</title>
         <meta
           content="width=device-width, initial-scale=1, shrink-to-fit=no"
           name="viewport"
