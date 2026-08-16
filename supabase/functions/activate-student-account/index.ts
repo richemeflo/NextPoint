@@ -11,7 +11,13 @@ Deno.serve(async (request) => {
   const password =
     body && typeof body.password === 'string' ? body.password : '';
 
-  if (!token || password.length < 8) {
+  const isStrongPassword =
+    password.length >= 12 &&
+    /[a-z]/.test(password) &&
+    /[A-Z]/.test(password) &&
+    /[0-9]/.test(password);
+
+  if (!token || !isStrongPassword) {
     return jsonResponse({
       ok: false,
       error: { code: 'invalid_activation', message: 'Invalid activation data' },

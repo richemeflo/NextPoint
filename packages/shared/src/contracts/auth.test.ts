@@ -35,7 +35,7 @@ test('signUpSchema requires a strong matching password', () => {
   assert.equal(
     signUpSchema.safeParse({
       email: 'coach@example.com',
-      password: 'password',
+      password: 'StrongPassword2026',
       confirmPassword: 'different',
       role: 'coach',
     }).success,
@@ -44,8 +44,8 @@ test('signUpSchema requires a strong matching password', () => {
   assert.equal(
     signUpSchema.safeParse({
       email: 'coach@example.com',
-      password: 'password',
-      confirmPassword: 'password',
+      password: 'StrongPassword2026',
+      confirmPassword: 'StrongPassword2026',
       role: 'coach',
     }).success,
     true
@@ -56,8 +56,8 @@ test('signUpSchema only accepts trusted application roles', () => {
   assert.equal(
     signUpSchema.safeParse({
       email: 'user@example.com',
-      password: 'password',
-      confirmPassword: 'password',
+      password: 'StrongPassword2026',
+      confirmPassword: 'StrongPassword2026',
       role: 'admin',
     }).success,
     false
@@ -79,8 +79,8 @@ test('passwordResetRequestSchema requires a valid email', () => {
 test('passwordUpdateSchema requires a strong matching password', () => {
   assert.equal(
     passwordUpdateSchema.safeParse({
-      password: 'password',
-      confirmPassword: 'password',
+      password: 'StrongPassword2026',
+      confirmPassword: 'StrongPassword2026',
     }).success,
     true
   );
@@ -93,7 +93,7 @@ test('passwordUpdateSchema requires a strong matching password', () => {
   );
   assert.equal(
     passwordUpdateSchema.safeParse({
-      password: 'password',
+      password: 'StrongPassword2026',
       confirmPassword: 'different',
     }).success,
     false

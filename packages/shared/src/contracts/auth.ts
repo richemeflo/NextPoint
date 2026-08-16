@@ -4,6 +4,12 @@ import { appRoles } from '../domain/roles';
 
 const requiredString = z.string().trim().min(1, 'required');
 const email = requiredString.pipe(z.email('invalid_email'));
+export const strongPasswordSchema = z
+  .string()
+  .min(12, 'password_too_short')
+  .regex(/[a-z]/, 'password_too_weak')
+  .regex(/[A-Z]/, 'password_too_weak')
+  .regex(/[0-9]/, 'password_too_weak');
 
 export const signInSchema = z.object({
   email,
@@ -14,7 +20,7 @@ export const passwordResetRequestSchema = z.object({ email });
 
 export const passwordUpdateSchema = z
   .object({
-    password: z.string().min(8, 'password_too_short'),
+    password: strongPasswordSchema,
     confirmPassword: z.string().min(1, 'required'),
   })
   .refine(({ password, confirmPassword }) => password === confirmPassword, {
@@ -25,7 +31,7 @@ export const passwordUpdateSchema = z
 export const signUpSchema = z
   .object({
     email,
-    password: z.string().min(8, 'password_too_short'),
+    password: strongPasswordSchema,
     confirmPassword: z.string().min(1, 'required'),
     role: z.enum(appRoles),
   })

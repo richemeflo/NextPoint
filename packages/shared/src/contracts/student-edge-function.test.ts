@@ -71,7 +71,8 @@ test('activation link response validates the returned URL', () => {
     generateStudentActivationLinkResponseSchema.safeParse({
       ok: true,
       data: {
-        activationLink: 'https://app.example.com/activate?token=secret',
+        activationLink:
+          'https://app.example.com/activate-student#token=secret&type=student_activation',
         expiresAt: '2026-08-07T10:00:00.000Z',
       },
     }).success,

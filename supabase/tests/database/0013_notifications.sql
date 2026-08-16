@@ -1,6 +1,6 @@
 begin;
 
-select plan(41);
+select plan(48);
 
 select ok(
   to_regtype('public.notification_type') is not null,
@@ -102,6 +102,42 @@ select has_table(
   'public',
   'notification_push_delivery_attempts',
   'push delivery attempts table exists'
+);
+select has_column(
+  'public',
+  'notification_push_delivery_attempts',
+  'processing_started_at',
+  'push delivery attempts have an atomic processing lease'
+);
+select has_function(
+  'public',
+  'claim_pending_push_delivery_attempts',
+  array['integer'],
+  'service-only atomic push claim RPC exists'
+);
+select ok(
+  has_function_privilege(
+    'service_role',
+    'public.claim_pending_push_delivery_attempts(integer)',
+    'execute'
+  ),
+  'service role can claim pending push attempts'
+);
+select ok(
+  not has_function_privilege(
+    'authenticated',
+    'public.claim_pending_push_delivery_attempts(integer)',
+    'execute'
+  ),
+  'authenticated clients cannot claim push attempts'
+);
+select ok(
+  not has_function_privilege(
+    'anon',
+    'public.claim_pending_push_delivery_attempts(integer)',
+    'execute'
+  ),
+  'anonymous clients cannot claim push attempts'
 );
 select is(
   (
@@ -259,6 +295,39 @@ values (
   'ios:legacy-build:legacy-device-name',
   'ExponentPushToken[test-installation]'
 );
+
+insert into public.notification_push_delivery_attempts (
+  id,
+  notification_id,
+  recipient_id,
+  push_token_id,
+  provider,
+  status
+)
+values (
+  '13000000-0000-4000-8000-000000000031',
+  '13000000-0000-4000-8000-000000000011',
+  '13000000-0000-4000-8000-000000000001',
+  '13000000-0000-4000-8000-000000000021',
+  'expo',
+  'pending'
+);
+
+select set_config('request.jwt.claim.role', 'service_role', true);
+set local role service_role;
+
+select is(
+  (select count(*) from public.claim_pending_push_delivery_attempts(100)),
+  1::bigint,
+  'service worker atomically claims a pending push attempt'
+);
+select is(
+  (select count(*) from public.claim_pending_push_delivery_attempts(100)),
+  0::bigint,
+  'a leased push attempt cannot be claimed twice'
+);
+
+reset role;
 
 select set_config(
   'request.jwt.claim.sub',

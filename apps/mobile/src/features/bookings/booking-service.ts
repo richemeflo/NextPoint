@@ -15,7 +15,6 @@ import {
   type Tables,
 } from '@nextpoint/shared';
 
-import { processPendingPushNotifications } from '@/features/notifications/notification-service';
 import { supabase } from '@/lib/supabase/client';
 
 import { mapBookingError, type BookingMutationError } from './booking-error';
@@ -246,7 +245,6 @@ export async function requestBooking(
   const bookings = await hydrateBookings([data]);
   const booking = bookings?.[0];
   if (!booking) return { ok: false, error: 'unknown' };
-  void processPendingPushNotifications();
   return { ok: true, data: booking };
 }
 
@@ -264,7 +262,6 @@ export async function approveBooking(bookingId: string): Promise<BookingResult> 
   const bookings = await hydrateBookings([data]);
   const booking = bookings?.[0];
   if (!booking) return { ok: false, error: 'unknown' };
-  void processPendingPushNotifications();
   return { ok: true, data: booking };
 }
 
@@ -286,7 +283,6 @@ export async function refuseBooking(
   const bookings = await hydrateBookings([data]);
   const booking = bookings?.[0];
   if (!booking) return { ok: false, error: 'unknown' };
-  void processPendingPushNotifications();
   return { ok: true, data: booking };
 }
 
@@ -323,7 +319,6 @@ export async function createCoachBooking(
 
   const bookings = await hydrateBookings(data);
   if (!bookings) return { ok: false, error: 'unknown' };
-  void processPendingPushNotifications();
   return { ok: true, data: bookings };
 }
 
@@ -345,7 +340,6 @@ export async function cancelBooking(
   const bookings = await hydrateBookings([data]);
   const booking = bookings?.[0];
   if (!booking) return { ok: false, error: 'unknown' };
-  void processPendingPushNotifications();
   return { ok: true, data: booking };
 }
 
@@ -370,6 +364,5 @@ export async function modifyBooking(
   const bookings = await hydrateBookings([data]);
   const booking = bookings?.[0];
   if (!booking) return { ok: false, error: 'unknown' };
-  void processPendingPushNotifications();
   return { ok: true, data: booking };
 }

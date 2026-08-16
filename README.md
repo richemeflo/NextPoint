@@ -82,8 +82,25 @@ La commande regenere les types depuis la base locale avec `supabase gen types ty
 
 - `.env.example`: variables communes documentees pour le depot.
 - `apps/mobile/.env.example`: variables publiques Expo uniquement.
-- `EXPO_PUBLIC_SUPABASE_URL` et `EXPO_PUBLIC_SUPABASE_ANON_KEY`: variables publiques client, utilisables par l'app Expo.
+- `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_URL_WEB` et `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: variables publiques client, utilisables par l'app Expo.
+- `EXPO_PUBLIC_APP_URL`: origine HTTPS publique de l'application, sans chemin. Elle est utilisee pour les callbacks PKCE et configure les Universal Links iOS et App Links Android.
 - `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF`, `SUPABASE_DB_PASSWORD`: variables serveur/CI uniquement. Les vraies valeurs restent dans l'environnement local ou les secrets GitHub Actions, jamais dans l'app cliente ni dans le depot.
+
+Pour activer les liens verifies en production, ajouter `${EXPO_PUBLIC_APP_URL}/reset-password` aux Redirect URLs du projet Supabase et publier les associations de plateforme sur le meme domaine. Les deux chemins `/reset-password` et `/activate-student` doivent etre declares dans:
+
+- `/.well-known/apple-app-site-association` pour `com.nextpoint.app` et l'identifiant d'equipe Apple;
+- `/.well-known/assetlinks.json` pour `com.nextpoint.app` et chaque empreinte SHA-256 de signature Android.
+
+Le fallback natif utilise le schema unique `com.nextpoint.app`. Le client Supabase utilise PKCE; les callbacks implicites contenant des access/refresh tokens sont refuses. Les liens d'activation placent leur jeton dans un fragment type, valide sur une origine autorisee puis retire immediatement de l'historique Web.
+
+### Deploiement securise
+
+- Dans Supabase Auth, reproduire les valeurs de `supabase/config.toml`: confirmation email activee, changement de mot de passe securise, minimum 12 caracteres avec majuscule, minuscule et chiffre.
+- Definir le secret Edge Function `NEXTPOINT_PUBLIC_APP_URL` avec la meme origine HTTPS que `EXPO_PUBLIC_APP_URL`.
+- Deployer `send-pending-push-notifications`, puis l'appeler depuis un cron serveur de confiance avec une requete `POST` et `Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY>`. Ne jamais placer cette cle dans Expo ni declencher ce worker depuis le client. Le worker utilise une reclamation atomique avec bail de 15 minutes, ce qui empeche deux executions concurrentes d'envoyer la meme notification.
+- Les sessions natives sont conservees dans iOS Keychain/Android Keystore via SecureStore; l'ancienne session AsyncStorage est migree puis supprimee au premier acces.
+- La webapp statique embarque une CSP dans son HTML. Les en-tetes additionnels declares dans `app.config.js` (`HSTS`, anti-framing, `nosniff`, politique de permissions et de referrer) doivent aussi etre servis par l'hebergeur statique; ils sont appliques automatiquement lorsque la sortie est servie par Expo Server.
+- Garder le pipeline de build sur des assets controles et surveiller la publication d'une version corrigee de la dependance transitive `image-size` utilisee par Metro.
 
 ### CI
 

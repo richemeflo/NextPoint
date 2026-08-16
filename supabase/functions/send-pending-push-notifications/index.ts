@@ -1,11 +1,12 @@
 import { handleOptions, jsonResponse } from '../_shared/http.ts';
-import { adminClient, getRequestUser } from '../_shared/supabase.ts';
+import { adminClient, isServiceRoleRequest } from '../_shared/supabase.ts';
 
 type PushAttempt = {
   id: string;
   notification_id: string;
   push_token_id: string | null;
   provider: 'expo' | 'web' | 'none' | null;
+  processing_started_at: string;
 };
 
 type AppNotification = {
@@ -49,6 +50,7 @@ async function sendExpoPush(
         bookingId: notification.booking_id,
       },
     }),
+    signal: AbortSignal.timeout(15_000),
   });
 
   const payload = await response.json().catch(() => null);
@@ -63,7 +65,9 @@ async function sendExpoPush(
         ? null
         : ticket?.details?.error ?? ticket?.message ?? payload?.errors?.[0]?.message ?? 'expo_send_failed',
     })
-    .eq('id', attempt.id);
+    .eq('id', attempt.id)
+    .eq('status', 'pending')
+    .eq('processing_started_at', attempt.processing_started_at);
 
   return sent;
 }
@@ -72,18 +76,24 @@ Deno.serve(async (request) => {
   const optionsResponse = handleOptions(request);
   if (optionsResponse) return optionsResponse;
 
-  const user = await getRequestUser(request);
-  if (!user) {
-    return jsonResponse({ ok: false, error: { code: 'unauthorized' } }, 401);
+  if (request.method !== 'POST') {
+    return jsonResponse({ ok: false, error: { code: 'method_not_allowed' } }, 405);
   }
 
-  const attemptsResult = await adminClient
-    .from('notification_push_delivery_attempts')
-    .select('id, notification_id, push_token_id, provider')
-    .eq('status', 'pending')
-    .limit(100);
+  if (!(await isServiceRoleRequest(request))) {
+    return jsonResponse({ ok: false, error: { code: 'forbidden' } }, 403);
+  }
 
-  if (attemptsResult.error || !attemptsResult.data?.length) {
+  const attemptsResult = await adminClient.rpc(
+    'claim_pending_push_delivery_attempts',
+    { p_limit: 100 }
+  );
+
+  if (attemptsResult.error) {
+    return jsonResponse({ ok: false, error: { code: 'claim_failed' } }, 500);
+  }
+
+  if (!attemptsResult.data?.length) {
     return jsonResponse({ ok: true, data: { processed: 0, sent: 0, failed: 0 } });
   }
 
@@ -146,14 +156,26 @@ Deno.serve(async (request) => {
               ? 'push_token_not_found'
               : 'unsupported_provider',
         })
-        .eq('id', attempt.id);
+        .eq('id', attempt.id)
+        .eq('status', 'pending')
+        .eq('processing_started_at', attempt.processing_started_at);
       continue;
     }
 
-    if (await sendExpoPush(attempt, notification, token)) {
-      sent += 1;
-    } else {
+    try {
+      if (await sendExpoPush(attempt, notification, token)) {
+        sent += 1;
+      } else {
+        failed += 1;
+      }
+    } catch {
       failed += 1;
+      await adminClient
+        .from('notification_push_delivery_attempts')
+        .update({ status: 'failed', error_code: 'expo_request_failed' })
+        .eq('id', attempt.id)
+        .eq('status', 'pending')
+        .eq('processing_started_at', attempt.processing_started_at);
     }
   }
 

@@ -26,7 +26,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { AuthFailureCode } from './auth-error';
 import { useAuth } from './auth-context';
-import { getSanitizedPasswordRecoveryPath } from './password-recovery';
+import {
+  getPasswordRecoveryAllowedHttpsOrigins,
+  getPasswordRecoveryRedirectUrl,
+  getSanitizedPasswordRecoveryPath,
+  passwordRecoveryPath,
+} from './password-recovery';
 import {
   establishPasswordRecoverySession,
   isCoachRegistrationOpen,
@@ -66,6 +71,7 @@ const validationKeys: Record<string, TranslationKey> = {
   required: 'auth.validation.required',
   invalid_email: 'auth.validation.invalidEmail',
   password_too_short: 'auth.validation.passwordTooShort',
+  password_too_weak: 'auth.validation.passwordTooWeak',
   password_mismatch: 'auth.validation.passwordMismatch',
 };
 
@@ -264,7 +270,10 @@ function ForgotPasswordForm() {
 
     const result = await requestPasswordReset(
       email,
-      Linking.createURL('/reset-password')
+      getPasswordRecoveryRedirectUrl({
+        fallbackUrl: Linking.createURL(passwordRecoveryPath),
+        publicAppUrl: process.env.EXPO_PUBLIC_APP_URL,
+      })
     );
 
     if (!result.ok) {
@@ -350,7 +359,15 @@ function ResetPasswordForm() {
       }
 
       sanitizeWebPasswordRecoveryUrl(url);
-      const result = await establishPasswordRecoverySession(url);
+      const result = await establishPasswordRecoverySession(url, {
+        allowedHttpsOrigins: getPasswordRecoveryAllowedHttpsOrigins(
+          process.env.EXPO_PUBLIC_APP_URL,
+          Platform.OS === 'web' && typeof globalThis.location !== 'undefined'
+            ? globalThis.location.origin
+            : undefined
+        ),
+        allowDevelopmentUrls: __DEV__,
+      });
       if (!active) return;
 
       if (!result.ok && result.code === 'configuration_error') {

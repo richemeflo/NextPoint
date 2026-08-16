@@ -201,11 +201,3 @@ export async function deleteNotification(
   if (error || data !== notificationId) return { ok: false };
   return { ok: true, id: data };
 }
-
-export async function processPendingPushNotifications(): Promise<void> {
-  if (!supabase) return;
-
-  await supabase.functions
-    .invoke('send-pending-push-notifications')
-    .catch(() => null);
-}

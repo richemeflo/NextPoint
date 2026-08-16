@@ -778,7 +778,7 @@ export const dictionaries = {
     'auth.emailPlaceholder': 'vous@exemple.fr',
     'auth.passwordLabel': 'Mot de passe',
     'auth.passwordPlaceholder': 'Votre mot de passe',
-    'auth.passwordCreatePlaceholder': '8 caractères minimum',
+    'auth.passwordCreatePlaceholder': '12 caractères, majuscule, minuscule et chiffre',
     'auth.confirmPasswordLabel': 'Confirmer le mot de passe',
     'auth.confirmPasswordPlaceholder': 'Répétez votre mot de passe',
     'auth.signInAction': 'Se connecter',
@@ -836,7 +836,9 @@ export const dictionaries = {
     'auth.validation.required': 'Ce champ est requis.',
     'auth.validation.invalidEmail': 'Saisissez une adresse email valide.',
     'auth.validation.passwordTooShort':
-      'Le mot de passe doit contenir au moins 8 caractères.',
+      'Le mot de passe doit contenir au moins 12 caractères.',
+    'auth.validation.passwordTooWeak':
+      'Ajoutez au moins une majuscule, une minuscule et un chiffre.',
     'auth.validation.passwordMismatch':
       'Les mots de passe ne correspondent pas.',
     'auth.validation.invalid': 'Vérifiez la valeur saisie.',
@@ -1658,7 +1660,7 @@ export const dictionaries = {
     'auth.emailPlaceholder': 'you@example.com',
     'auth.passwordLabel': 'Password',
     'auth.passwordPlaceholder': 'Your password',
-    'auth.passwordCreatePlaceholder': 'At least 8 characters',
+    'auth.passwordCreatePlaceholder': '12 characters, upper/lowercase and a number',
     'auth.confirmPasswordLabel': 'Confirm password',
     'auth.confirmPasswordPlaceholder': 'Enter your password again',
     'auth.signInAction': 'Sign in',
@@ -1715,7 +1717,9 @@ export const dictionaries = {
     'auth.validation.required': 'This field is required.',
     'auth.validation.invalidEmail': 'Enter a valid email address.',
     'auth.validation.passwordTooShort':
-      'The password must contain at least 8 characters.',
+      'The password must contain at least 12 characters.',
+    'auth.validation.passwordTooWeak':
+      'Add at least one uppercase letter, one lowercase letter, and one number.',
     'auth.validation.passwordMismatch': 'The passwords do not match.',
     'auth.validation.invalid': 'Check the entered value.',
     'auth.error.title': 'Unable to continue',
@@ -2553,7 +2557,7 @@ export const dictionaries = {
     'auth.emailPlaceholder': 'tu@ejemplo.es',
     'auth.passwordLabel': 'Contraseña',
     'auth.passwordPlaceholder': 'Tu contraseña',
-    'auth.passwordCreatePlaceholder': '8 caracteres como mínimo',
+    'auth.passwordCreatePlaceholder': '12 caracteres, mayúscula, minúscula y número',
     'auth.confirmPasswordLabel': 'Confirmar contraseña',
     'auth.confirmPasswordPlaceholder': 'Repite tu contraseña',
     'auth.signInAction': 'Iniciar sesión',
@@ -2611,7 +2615,9 @@ export const dictionaries = {
     'auth.validation.required': 'Este campo es obligatorio.',
     'auth.validation.invalidEmail': 'Introduce una dirección de email válida.',
     'auth.validation.passwordTooShort':
-      'La contraseña debe tener al menos 8 caracteres.',
+      'La contraseña debe tener al menos 12 caracteres.',
+    'auth.validation.passwordTooWeak':
+      'Añade al menos una mayúscula, una minúscula y un número.',
     'auth.validation.passwordMismatch': 'Las contraseñas no coinciden.',
     'auth.validation.invalid': 'Revisa el valor introducido.',
     'auth.error.title': 'No se puede continuar',

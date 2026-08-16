@@ -3,10 +3,11 @@ import {
   activateStudentAccountSchema,
   type ActivateStudentAccountInput,
 } from '@nextpoint/shared';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import * as Linking from 'expo-linking';
+import { useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
-import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Platform, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -17,21 +18,41 @@ import { TextField } from '@/components/ui/text-field';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/auth-context';
 import { activateStudentAccount } from '@/features/students/student-account-service';
+import {
+  getSanitizedStudentActivationPath,
+  getStudentActivationAllowedHttpsOrigins,
+  parseStudentActivationUrl,
+} from '@/features/students/student-activation-link';
 import { useTranslation, type TranslationKey } from '@/i18n';
+
+function sanitizeWebActivationUrl(url: string) {
+  if (Platform.OS !== 'web' || typeof globalThis.history === 'undefined') {
+    return;
+  }
+
+  const sanitizedPath = getSanitizedStudentActivationPath(url);
+  if (!sanitizedPath) return;
+
+  try {
+    globalThis.history.replaceState(globalThis.history.state, '', sanitizedPath);
+  } catch {
+    // URL cleanup must never prevent account activation.
+  }
+}
 
 export default function ActivateStudentScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ token?: string }>();
   const { t } = useTranslation();
   const { signOut, status } = useAuth();
   const {
     control,
     handleSubmit,
     formState: { isSubmitting },
+    setValue,
   } = useForm<ActivateStudentAccountInput>({
     resolver: zodResolver(activateStudentAccountSchema),
     defaultValues: {
-      token: typeof params.token === 'string' ? params.token : '',
+      token: '',
       password: '',
       confirmPassword: '',
     },
@@ -41,9 +62,50 @@ export default function ActivateStudentScreen() {
   >('idle');
   const [isRedirectingToSignIn, setIsRedirectingToSignIn] = useState(false);
 
+  useEffect(() => {
+    let active = true;
+
+    const openActivationLink = (url: string | null) => {
+      if (!url || !active) {
+        if (active) setResult('invalid');
+        return;
+      }
+
+      const token = parseStudentActivationUrl(url, {
+        allowedHttpsOrigins: getStudentActivationAllowedHttpsOrigins(
+          process.env.EXPO_PUBLIC_APP_URL,
+          Platform.OS === 'web' && typeof globalThis.location !== 'undefined'
+            ? globalThis.location.origin
+            : undefined
+        ),
+        allowDevelopmentUrls: __DEV__,
+      });
+      sanitizeWebActivationUrl(url);
+
+      if (!token) {
+        setResult('invalid');
+        return;
+      }
+
+      setValue('token', token, { shouldValidate: true });
+      setResult('idle');
+    };
+
+    void Linking.getInitialURL().then(openActivationLink);
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      openActivationLink(url);
+    });
+
+    return () => {
+      active = false;
+      subscription.remove();
+    };
+  }, [setValue]);
+
   const validationKeys: Record<string, TranslationKey> = {
     required: 'auth.validation.required',
     password_too_short: 'auth.validation.passwordTooShort',
+    password_too_weak: 'auth.validation.passwordTooWeak',
     password_mismatch: 'auth.validation.passwordMismatch',
   };
   const translateError = (message: string | undefined) =>

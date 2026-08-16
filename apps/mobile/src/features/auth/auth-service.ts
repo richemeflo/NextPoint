@@ -2,7 +2,10 @@ import type { AppRole } from '@nextpoint/shared';
 import type { Session } from '@supabase/supabase-js';
 
 import { mapSupabaseAuthError, type AuthFailureCode } from './auth-error';
-import { parsePasswordRecoveryUrl } from './password-recovery';
+import {
+  parsePasswordRecoveryUrl,
+  type PasswordRecoveryUrlPolicy,
+} from './password-recovery';
 
 import { supabase } from '@/lib/supabase/client';
 
@@ -88,30 +91,39 @@ export async function requestPasswordReset(
 }
 
 export async function establishPasswordRecoverySession(
-  url: string
+  url: string,
+  policy: PasswordRecoveryUrlPolicy
 ): Promise<AuthOperationResult> {
   if (!supabase) return { ok: false, code: 'configuration_error' };
 
-  const credentials = parsePasswordRecoveryUrl(url);
-  if (!credentials) return { ok: false, code: 'unknown' };
+  const code = parsePasswordRecoveryUrl(url, policy);
+  if (!code) return { ok: false, code: 'unknown' };
+
+  let isPasswordRecovery = false;
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((event) => {
+    if (event === 'PASSWORD_RECOVERY') isPasswordRecovery = true;
+  });
 
   try {
-    const { error } =
-      credentials.kind === 'code'
-        ? await supabase.auth.exchangeCodeForSession(credentials.code)
-        : await supabase.auth.setSession({
-            access_token: credentials.accessToken,
-            refresh_token: credentials.refreshToken,
-          });
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
 
-    if (!error) return { ok: true };
+    if (!error && isPasswordRecovery) return { ok: true };
+
+    if (!error) {
+      await supabase.auth.signOut({ scope: 'local' });
+      return { ok: false, code: 'unknown' };
+    }
 
     const { data } = await supabase.auth.getSession();
-    if (data.session) return { ok: true };
+    if (data.session && isPasswordRecovery) return { ok: true };
 
     return { ok: false, code: mapSupabaseAuthError(error) };
   } catch {
     return { ok: false, code: 'network_error' };
+  } finally {
+    subscription.unsubscribe();
   }
 }
 

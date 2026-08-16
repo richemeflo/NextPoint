@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient, processLock, type SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@nextpoint/shared/types/database';
 import { AppState, Platform } from 'react-native';
@@ -8,6 +7,7 @@ import {
   isValidSupabaseUrl,
   resolveSupabaseUrl,
 } from './supabase-url';
+import { secureStorage } from './secure-storage';
 
 const supabaseUrl = resolveSupabaseUrl({
   defaultUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
@@ -24,10 +24,11 @@ export const isSupabaseConfigured =
 export const supabase: SupabaseClient<Database> | null = isSupabaseConfigured
   ? createClient<Database>(supabaseUrl!, supabasePublishableKey!, {
       auth: {
-        ...(Platform.OS !== 'web' ? { storage: AsyncStorage } : {}),
+        ...(Platform.OS !== 'web' ? { storage: secureStorage } : {}),
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: false,
+        flowType: 'pkce',
         lock: processLock,
       },
     })

@@ -384,6 +384,7 @@ export type Database = {
           error_code: string | null
           id: string
           notification_id: string
+          processing_started_at: string | null
           provider: Database["public"]["Enums"]["push_provider"] | null
           push_token_id: string | null
           recipient_id: string
@@ -394,6 +395,7 @@ export type Database = {
           error_code?: string | null
           id?: string
           notification_id: string
+          processing_started_at?: string | null
           provider?: Database["public"]["Enums"]["push_provider"] | null
           push_token_id?: string | null
           recipient_id: string
@@ -404,6 +406,7 @@ export type Database = {
           error_code?: string | null
           id?: string
           notification_id?: string
+          processing_started_at?: string | null
           provider?: Database["public"]["Enums"]["push_provider"] | null
           push_token_id?: string | null
           recipient_id?: string
@@ -938,6 +941,26 @@ export type Database = {
           to: "bookings"
           isOneToOne: true
           isSetofReturn: false
+        }
+      }
+      claim_pending_push_delivery_attempts: {
+        Args: { p_limit?: number }
+        Returns: {
+          created_at: string
+          error_code: string | null
+          id: string
+          notification_id: string
+          processing_started_at: string | null
+          provider: Database["public"]["Enums"]["push_provider"] | null
+          push_token_id: string | null
+          recipient_id: string
+          status: Database["public"]["Enums"]["push_delivery_status"]
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "notification_push_delivery_attempts"
+          isOneToOne: false
+          isSetofReturn: true
         }
       }
       claim_student_activation_token: {

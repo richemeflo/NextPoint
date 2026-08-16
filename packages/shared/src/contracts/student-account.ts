@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { strongPasswordSchema } from './auth';
+
 export const studentAccountStatuses = [
   'pending_activation',
   'active',
@@ -21,7 +23,7 @@ export function isStudentAccountStatus(
 export const activateStudentAccountSchema = z
   .object({
     token: z.string().trim().min(1, 'required'),
-    password: z.string().min(8, 'password_too_short'),
+    password: strongPasswordSchema,
     confirmPassword: z.string().min(1, 'required'),
   })
   .refine(({ password, confirmPassword }) => password === confirmPassword, {

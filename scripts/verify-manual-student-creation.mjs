@@ -252,9 +252,10 @@ try {
     coach.session.access_token
   );
   assert.equal(firstLink.ok, true);
-  const firstToken = new URL(firstLink.data.activationLink).searchParams.get(
-    'token'
-  );
+  const firstActivationUrl = new URL(firstLink.data.activationLink);
+  const firstToken = new URLSearchParams(
+    firstActivationUrl.hash.replace(/^#/, '')
+  ).get('token');
   assert.ok(firstToken);
 
   const secondLink = await invoke(
@@ -263,9 +264,10 @@ try {
     coach.session.access_token
   );
   assert.equal(secondLink.ok, true);
-  const secondToken = new URL(secondLink.data.activationLink).searchParams.get(
-    'token'
-  );
+  const secondActivationUrl = new URL(secondLink.data.activationLink);
+  const secondToken = new URLSearchParams(
+    secondActivationUrl.hash.replace(/^#/, '')
+  ).get('token');
   assert.ok(secondToken);
   assert.notEqual(secondToken, firstToken);
   const lifetime =

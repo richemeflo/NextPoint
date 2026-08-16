@@ -50,7 +50,11 @@ Deno.serve(async (request) => {
 
   const publicAppUrl =
     Deno.env.get('NEXTPOINT_PUBLIC_APP_URL') ?? 'http://127.0.0.1:8081';
-  const activationLink = `${publicAppUrl.replace(/\/$/, '')}/activate-student?token=${encodeURIComponent(token)}`;
+  const activationFragment = new URLSearchParams({
+    token,
+    type: 'student_activation',
+  });
+  const activationLink = `${publicAppUrl.replace(/\/$/, '')}/activate-student#${activationFragment}`;
 
   return jsonResponse({
     ok: true,
