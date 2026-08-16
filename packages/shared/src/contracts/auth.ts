@@ -10,6 +10,18 @@ export const signInSchema = z.object({
   password: z.string().min(1, 'required'),
 });
 
+export const passwordResetRequestSchema = z.object({ email });
+
+export const passwordUpdateSchema = z
+  .object({
+    password: z.string().min(8, 'password_too_short'),
+    confirmPassword: z.string().min(1, 'required'),
+  })
+  .refine(({ password, confirmPassword }) => password === confirmPassword, {
+    message: 'password_mismatch',
+    path: ['confirmPassword'],
+  });
+
 export const signUpSchema = z
   .object({
     email,
@@ -24,3 +36,7 @@ export const signUpSchema = z
 
 export type SignInInput = z.infer<typeof signInSchema>;
 export type SignUpInput = z.infer<typeof signUpSchema>;
+export type PasswordResetRequestInput = z.infer<
+  typeof passwordResetRequestSchema
+>;
+export type PasswordUpdateInput = z.infer<typeof passwordUpdateSchema>;

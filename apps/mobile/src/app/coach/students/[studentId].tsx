@@ -8,10 +8,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  FlatList,
   Linking,
   Platform,
   Pressable,
-  ScrollView,
   Share,
   StyleSheet,
   View,
@@ -36,6 +36,7 @@ import {
   type StudentHistoryEvent,
 } from '@/features/students/student-coach-service';
 import { StudentPrivateNoteCard } from '@/features/students/student-private-note-card';
+import { useStudentHistory } from '@/features/students/use-student-history';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
 
@@ -117,11 +118,21 @@ function HistoryRow({ event }: { event: StudentHistoryEvent }) {
 
 export default function CoachStudentDetailScreen() {
   const params = useLocalSearchParams<{ studentId?: string }>();
+  const studentId =
+    typeof params.studentId === 'string' ? params.studentId : '';
+
+  return (
+    <CoachStudentDetailContent
+      key={studentId || 'missing-student'}
+      studentId={studentId}
+    />
+  );
+}
+
+function CoachStudentDetailContent({ studentId }: { studentId: string }) {
   const router = useRouter();
   const theme = useTheme();
   const { locale, t } = useTranslation();
-  const studentId =
-    typeof params.studentId === 'string' ? params.studentId : '';
   const [detail, setDetail] = useState<AssociatedStudentDetail | null>(null);
   const [loadState, setLoadState] = useState<
     'loading' | 'ready' | 'not_found' | 'error'
@@ -133,9 +144,17 @@ export default function CoachStudentDetailScreen() {
   >('idle');
   const [historyStatusFilter, setHistoryStatusFilter] =
     useState<HistoryStatusFilter>('all');
+  const historyStatus =
+    historyStatusFilter === 'all' ? undefined : historyStatusFilter;
+  const {
+    events: history,
+    loadMore: loadMoreHistory,
+    loadMoreState: historyLoadMoreState,
+    loadState: historyLoadState,
+  } = useStudentHistory(loadState === 'ready' ? studentId : '', historyStatus);
 
   useEffect(() => {
-    if (!studentId) return;
+    if (!studentId) return undefined;
 
     let active = true;
     void getAssociatedStudentDetail(studentId)
@@ -234,11 +253,7 @@ export default function CoachStudentDetailScreen() {
     );
   }
 
-  const { student, history } = detail;
-  const filteredHistory =
-    historyStatusFilter === 'all'
-      ? history
-      : history.filter((event) => event.status === historyStatusFilter);
+  const { student } = detail;
   const historyStatusOptions: {
     value: HistoryStatusFilter;
     label: string;
@@ -264,195 +279,248 @@ export default function CoachStudentDetailScreen() {
 
   return (
     <ThemedView style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.content}>
-          <Button
-            label={t('studentDetail.backAction')}
-            onPress={() => router.back()}
-            style={styles.backButton}
-            variant="secondary"
-          />
+      <FlatList
+        contentContainerStyle={styles.scrollContent}
+        data={history}
+        ItemSeparatorComponent={() => <View style={styles.historySeparator} />}
+        keyExtractor={(event) => event.id}
+        ListHeaderComponent={
+          <View style={styles.content}>
+            <Button
+              label={t('studentDetail.backAction')}
+              onPress={() => router.back()}
+              style={styles.backButton}
+              variant="secondary"
+            />
 
-          <View style={styles.heading}>
-            <View style={styles.headingCopy}>
-              <ThemedText type="smallBold" themeColor="primary">
-                {t('studentDetail.eyebrow')}
-              </ThemedText>
-              <ThemedText type="title">{student.fullName}</ThemedText>
-              {student.profileComplete ? (
-                <StatusBadge
-                  status={accountBadgeStatuses[student.accountStatus]}
-                />
-              ) : (
-                <ThemedText type="smallBold" themeColor="warning">
-                  {t('students.incompleteProfile')}
+            <View style={styles.heading}>
+              <View style={styles.headingCopy}>
+                <ThemedText type="smallBold" themeColor="primary">
+                  {t('studentDetail.eyebrow')}
                 </ThemedText>
-              )}
+                <ThemedText type="title">{student.fullName}</ThemedText>
+                {student.profileComplete ? (
+                  <StatusBadge
+                    status={accountBadgeStatuses[student.accountStatus]}
+                  />
+                ) : (
+                  <ThemedText type="smallBold" themeColor="warning">
+                    {t('students.incompleteProfile')}
+                  </ThemedText>
+                )}
+              </View>
+              {student.profileComplete &&
+              student.accountStatus === 'pending_activation' &&
+              student.email ? (
+                <Button
+                  disabled={activationState === 'generating'}
+                  label={
+                    activationState === 'generating'
+                      ? t('studentDetail.activationGenerating')
+                      : activationLink
+                        ? t('studentDetail.activationRegenerateAction')
+                        : t('studentDetail.activationGenerateAction')
+                  }
+                  onPress={() => void generateLink()}
+                  style={styles.activationButton}
+                />
+              ) : null}
             </View>
-            {student.profileComplete &&
-            student.accountStatus === 'pending_activation' ? (
-              <Button
-                disabled={activationState === 'generating'}
-                label={
-                  activationState === 'generating'
-                    ? t('studentDetail.activationGenerating')
-                    : activationLink
-                      ? t('studentDetail.activationRegenerateAction')
-                      : t('studentDetail.activationGenerateAction')
-                }
-                onPress={() => void generateLink()}
-                style={styles.activationButton}
-              />
-            ) : null}
-          </View>
 
-          {activationLink ? (
-            <Card elevated style={styles.activationCard}>
-              <ThemedText type="smallBold">
-                {t('studentDetail.activationReadyTitle')}
-              </ThemedText>
-              <ThemedText selectable type="code">
-                {activationLink.activationLink}
-              </ThemedText>
-              <ThemedText type="small" themeColor="textMuted">
-                {t('studentDetail.activationExpiresAt', {
-                  date: expiresAt ?? '',
-                })}
-              </ThemedText>
-              <View style={styles.activationActions}>
-                {Platform.OS === 'web' ? (
+            {activationLink ? (
+              <Card elevated style={styles.activationCard}>
+                <ThemedText type="smallBold">
+                  {t('studentDetail.activationReadyTitle')}
+                </ThemedText>
+                <ThemedText selectable type="code">
+                  {activationLink.activationLink}
+                </ThemedText>
+                <ThemedText type="small" themeColor="textMuted">
+                  {t('studentDetail.activationExpiresAt', {
+                    date: expiresAt ?? '',
+                  })}
+                </ThemedText>
+                <View style={styles.activationActions}>
+                  {Platform.OS === 'web' ? (
+                    <Button
+                      label={t('studentDetail.activationCopyAction')}
+                      onPress={() => void copyLink()}
+                      variant="secondary"
+                    />
+                  ) : null}
                   <Button
-                    label={t('studentDetail.activationCopyAction')}
-                    onPress={() => void copyLink()}
+                    label={t('studentDetail.activationShareAction')}
+                    onPress={() => void shareLink()}
                     variant="secondary"
                   />
+                </View>
+                {activationState === 'copied' ? (
+                  <Feedback
+                    message={t('studentDetail.activationCopiedBody')}
+                    title={t('studentDetail.activationCopiedTitle')}
+                    tone="success"
+                  />
                 ) : null}
+              </Card>
+            ) : null}
+
+            {activationState === 'error' ? (
+              <Feedback
+                message={t('studentDetail.activationErrorBody')}
+                title={t('studentDetail.activationErrorTitle')}
+                tone="error"
+              />
+            ) : null}
+
+            <Card elevated style={styles.profileCard}>
+              <ThemedText type="subtitle">
+                {t('studentDetail.profileTitle')}
+              </ThemedText>
+              {student.profileComplete ? (
+                <View style={styles.profileGrid}>
+                  <View style={styles.profileItem}>
+                    <ThemedText type="small" themeColor="textMuted">
+                      {t('profile.levelLabel')}
+                    </ThemedText>
+                    <ThemedText type="default">
+                      {t('students.levelValue', { level: student.padelLevel })}
+                    </ThemedText>
+                  </View>
+                  {student.age === null ? null : (
+                    <View style={styles.profileItem}>
+                      <ThemedText type="small" themeColor="textMuted">
+                        {t('profile.ageLabel')}
+                      </ThemedText>
+                      <ThemedText type="default">
+                        {t('students.ageValue', { age: student.age })}
+                      </ThemedText>
+                    </View>
+                  )}
+                  <View style={styles.profileItem}>
+                    <ThemedText type="small" themeColor="textMuted">
+                      {t('profile.sexLabel')}
+                    </ThemedText>
+                    <ThemedText type="default">
+                      {t(
+                        `profile.sex.${
+                          student.sex === 'not_specified'
+                            ? 'notSpecified'
+                            : student.sex
+                        }`,
+                      )}
+                    </ThemedText>
+                  </View>
+                </View>
+              ) : (
+                <Feedback
+                  message={t('studentDetail.incompleteProfileBody')}
+                  title={t('students.incompleteProfile')}
+                  tone="info"
+                />
+              )}
+              <View style={styles.contactList}>
+                {student.phone ? (
+                  <Pressable
+                    accessibilityRole="link"
+                    onPress={() => void Linking.openURL(`tel:${student.phone}`)}
+                  >
+                    <ThemedText type="linkPrimary">{student.phone}</ThemedText>
+                  </Pressable>
+                ) : null}
+                {student.email ? (
+                  <Pressable
+                    accessibilityRole="link"
+                    onPress={() =>
+                      void Linking.openURL(`mailto:${student.email}`)
+                    }
+                  >
+                    <ThemedText type="linkPrimary">{student.email}</ThemedText>
+                  </Pressable>
+                ) : null}
+              </View>
+            </Card>
+
+            <StudentPrivateNoteCard studentId={student.userId} />
+            <StudentLessonPackCard studentId={student.userId} />
+
+            <View style={styles.historySection}>
+              <View style={styles.sectionHeading}>
+                <ThemedText type="subtitle">
+                  {t('studentDetail.historyTitle')}
+                </ThemedText>
+                <ThemedText type="small" themeColor="textMuted">
+                  {t('studentDetail.historyCount', {
+                    count: history.length,
+                  })}
+                </ThemedText>
+              </View>
+              <ProfileOptionSelector
+                label={t('studentDetail.historyFilter.label')}
+                onChange={setHistoryStatusFilter}
+                options={historyStatusOptions}
+                value={historyStatusFilter}
+              />
+              {historyLoadState === 'loading' ? (
+                <View style={styles.historyLoading}>
+                  <ActivityIndicator color={theme.primary} />
+                  <ThemedText type="small" themeColor="textMuted">
+                    {t('studentDetail.historyLoading')}
+                  </ThemedText>
+                </View>
+              ) : historyLoadState === 'error' ? (
+                <Feedback
+                  message={t('studentDetail.historyLoadErrorBody')}
+                  title={t('studentDetail.historyLoadErrorTitle')}
+                  tone="error"
+                />
+              ) : history.length === 0 ? (
+                <Feedback
+                  message={
+                    historyStatusFilter === 'all'
+                      ? t('studentDetail.historyEmptyBody')
+                      : t('studentDetail.historyFilterEmptyBody')
+                  }
+                  title={
+                    historyStatusFilter === 'all'
+                      ? t('studentDetail.historyEmptyTitle')
+                      : t('studentDetail.historyFilterEmptyTitle')
+                  }
+                  tone="info"
+                />
+              ) : null}
+            </View>
+          </View>
+        }
+        ListFooterComponent={
+          historyLoadMoreState === 'idle' ? null : (
+            <View style={styles.historyFooter}>
+              {historyLoadMoreState === 'loading' ? (
+                <>
+                  <ActivityIndicator color={theme.primary} />
+                  <ThemedText type="small" themeColor="textMuted">
+                    {t('studentDetail.historyLoadingMore')}
+                  </ThemedText>
+                </>
+              ) : (
                 <Button
-                  label={t('studentDetail.activationShareAction')}
-                  onPress={() => void shareLink()}
+                  label={t('studentDetail.historyLoadMoreAction')}
+                  onPress={() => void loadMoreHistory()}
                   variant="secondary"
                 />
-              </View>
-              {activationState === 'copied' ? (
-                <Feedback
-                  message={t('studentDetail.activationCopiedBody')}
-                  title={t('studentDetail.activationCopiedTitle')}
-                  tone="success"
-                />
-              ) : null}
-            </Card>
-          ) : null}
-
-          {activationState === 'error' ? (
-            <Feedback
-              message={t('studentDetail.activationErrorBody')}
-              title={t('studentDetail.activationErrorTitle')}
-              tone="error"
-            />
-          ) : null}
-
-          <Card elevated style={styles.profileCard}>
-            <ThemedText type="subtitle">
-              {t('studentDetail.profileTitle')}
-            </ThemedText>
-            {student.profileComplete ? (
-              <View style={styles.profileGrid}>
-                <View style={styles.profileItem}>
-                  <ThemedText type="small" themeColor="textMuted">
-                    {t('profile.levelLabel')}
-                  </ThemedText>
-                  <ThemedText type="default">
-                    {t('students.levelValue', { level: student.padelLevel })}
-                  </ThemedText>
-                </View>
-                <View style={styles.profileItem}>
-                  <ThemedText type="small" themeColor="textMuted">
-                    {t('profile.ageLabel')}
-                  </ThemedText>
-                  <ThemedText type="default">
-                    {t('students.ageValue', { age: student.age })}
-                  </ThemedText>
-                </View>
-                <View style={styles.profileItem}>
-                  <ThemedText type="small" themeColor="textMuted">
-                    {t('profile.sexLabel')}
-                  </ThemedText>
-                  <ThemedText type="default">
-                    {t(
-                      `profile.sex.${
-                        student.sex === 'not_specified'
-                          ? 'notSpecified'
-                          : student.sex
-                      }`
-                    )}
-                  </ThemedText>
-                </View>
-              </View>
-            ) : (
-              <Feedback
-                message={t('studentDetail.incompleteProfileBody')}
-                title={t('students.incompleteProfile')}
-                tone="info"
-              />
-            )}
-            <View style={styles.contactList}>
-              {student.phone ? (
-                <Pressable
-                  accessibilityRole="link"
-                  onPress={() => void Linking.openURL(`tel:${student.phone}`)}>
-                  <ThemedText type="linkPrimary">{student.phone}</ThemedText>
-                </Pressable>
-              ) : null}
-              <Pressable
-                accessibilityRole="link"
-                onPress={() => void Linking.openURL(`mailto:${student.email}`)}>
-                <ThemedText type="linkPrimary">{student.email}</ThemedText>
-              </Pressable>
+              )}
             </View>
-          </Card>
-
-          <StudentPrivateNoteCard studentId={student.userId} />
-          <StudentLessonPackCard studentId={student.userId} />
-
-          <View style={styles.historySection}>
-            <View style={styles.sectionHeading}>
-              <ThemedText type="subtitle">
-                {t('studentDetail.historyTitle')}
-              </ThemedText>
-              <ThemedText type="small" themeColor="textMuted">
-                {t('studentDetail.historyCount', {
-                  count: filteredHistory.length,
-                })}
-              </ThemedText>
-            </View>
-            <ProfileOptionSelector
-              label={t('studentDetail.historyFilter.label')}
-              onChange={setHistoryStatusFilter}
-              options={historyStatusOptions}
-              value={historyStatusFilter}
-            />
-            {history.length === 0 ? (
-              <Feedback
-                message={t('studentDetail.historyEmptyBody')}
-                title={t('studentDetail.historyEmptyTitle')}
-                tone="info"
-              />
-            ) : filteredHistory.length === 0 ? (
-              <Feedback
-                message={t('studentDetail.historyFilterEmptyBody')}
-                title={t('studentDetail.historyFilterEmptyTitle')}
-                tone="info"
-              />
-            ) : (
-              <View style={styles.historyList}>
-                {filteredHistory.map((event) => (
-                  <HistoryRow event={event} key={event.id} />
-                ))}
-              </View>
-            )}
+          )
+        }
+        maxToRenderPerBatch={10}
+        onEndReached={() => void loadMoreHistory()}
+        onEndReachedThreshold={0.4}
+        renderItem={({ item }) => (
+          <View style={styles.historyItem}>
+            <HistoryRow event={item} />
           </View>
-        </View>
-      </ScrollView>
+        )}
+        windowSize={7}
+      />
     </ThemedView>
   );
 }
@@ -477,6 +545,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: MaxContentWidth,
     gap: Spacing.four,
+    marginBottom: Spacing.two,
   },
   backButton: {
     alignSelf: 'flex-start',
@@ -526,8 +595,27 @@ const styles = StyleSheet.create({
   sectionHeading: {
     gap: Spacing.one,
   },
-  historyList: {
+  historyLoading: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: Spacing.two,
+  },
+  historyItem: {
+    width: '100%',
+    maxWidth: MaxContentWidth,
+  },
+  historySeparator: {
+    height: Spacing.two,
+  },
+  historyFooter: {
+    width: '100%',
+    maxWidth: MaxContentWidth,
+    minHeight: 64,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.two,
+    paddingTop: Spacing.three,
   },
   historyRow: {
     gap: Spacing.two,

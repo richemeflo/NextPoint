@@ -1,26 +1,24 @@
 import {
   isCoachMessageThreadUnread,
-  messageBodyMaxLength,
   schedulingTimeZone,
   type BookingStatus,
 } from '@nextpoint/shared';
-import { useRouter } from 'expo-router';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter, type ErrorBoundaryProps } from 'expo-router';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Pressable,
-  ScrollView,
+  FlatList,
   StyleSheet,
   useWindowDimensions,
   View,
 } from 'react-native';
 
+import { AppErrorFallback } from '@/components/app-error-fallback';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Feedback } from '@/components/ui/feedback';
-import { TextField } from '@/components/ui/text-field';
-import { MaxContentWidth, Radii, Spacing } from '@/constants/theme';
+import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/auth-context';
 import {
   getCoachMessageThreads,
@@ -29,31 +27,33 @@ import {
   sendCoachMessage,
   type CoachMessageThread,
 } from '@/features/messaging/coach-messaging-service';
+import { CoachMessageComposer } from '@/features/messaging/coach-message-composer';
+import { CoachMessageRow } from '@/features/messaging/coach-message-row';
+import { CoachMessageThreadRow } from '@/features/messaging/coach-message-thread-row';
 import {
   acquireMutationLock,
   releaseMutationLock,
 } from '@/features/mutations/mutation-lock';
-import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
+
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  return <AppErrorFallback error={error} retry={retry} scope="messaging" />;
+}
 
 export default function CoachMessagingScreen() {
   const { role } = useAuth();
   const { locale, t } = useTranslation();
-  const theme = useTheme();
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isMobile = width < 768;
   const [threads, setThreads] = useState<CoachMessageThread[]>([]);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
-  const [draft, setDraft] = useState('');
   const [loading, setLoading] = useState(true);
   const [hasMoreThreads, setHasMoreThreads] = useState(false);
   const [loadingMoreThreads, setLoadingMoreThreads] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [loadingOlderMessages, setLoadingOlderMessages] = useState(false);
   const [hasOlderMessages, setHasOlderMessages] = useState(false);
-  const [sending, setSending] = useState(false);
-  const sendLock = useRef(false);
   const threadPageLock = useRef(false);
   const messagePageLock = useRef(false);
   const messageRequestVersion = useRef(0);
@@ -133,10 +133,9 @@ export default function CoachMessagingScreen() {
     }
   };
 
-  const openThread = async (thread: CoachMessageThread) => {
+  const openThread = useCallback(async (thread: CoachMessageThread) => {
     const requestVersion = ++messageRequestVersion.current;
     setSelectedThreadId(thread.id);
-    setDraft('');
     setNotice(null);
     setLoadingMessages(true);
     setHasOlderMessages(false);
@@ -186,7 +185,7 @@ export default function CoachMessagingScreen() {
         setLoadingMessages(false);
       }
     }
-  };
+  }, []);
 
   const loadOlderMessages = async () => {
     const oldestMessage = selectedThread?.messages[0];
@@ -241,18 +240,17 @@ export default function CoachMessagingScreen() {
     setHasOlderMessages(false);
   };
 
-  const submitReply = async () => {
-    if (!selectedThread || !acquireMutationLock(sendLock)) return;
+  const submitReply = async (body: string) => {
+    if (!selectedThread) return false;
 
-    setSending(true);
     setNotice(null);
     try {
-      const result = await sendCoachMessage(selectedThread.id, draft);
+      const result = await sendCoachMessage(selectedThread.id, body);
       if (!result.ok) {
         setNotice(
           result.error === 'invalid_message' ? 'invalidMessage' : 'saveError'
         );
-        return;
+        return false;
       }
 
       setThreads((current) =>
@@ -267,12 +265,10 @@ export default function CoachMessagingScreen() {
             : thread
         )
       );
-      setDraft('');
+      return true;
     } catch {
       setNotice('saveError');
-    } finally {
-      setSending(false);
-      releaseMutationLock(sendLock);
+      return false;
     }
   };
 
@@ -342,64 +338,36 @@ export default function CoachMessagingScreen() {
                   title={t('messaging.emptyTitle')}
                 />
               ) : (
-                <ScrollView
+                <FlatList
                   contentContainerStyle={styles.threadList}
-                  style={styles.scrollArea}>
-                  {threads.map((thread) => {
-                    const unread = isCoachMessageThreadUnread(thread);
-                    const active = thread.id === selectedThreadId;
-                    const lastMessage = thread.messages.at(-1);
-
-                    return (
-                      <Pressable
-                        accessibilityRole="button"
-                        key={thread.id}
-                        onPress={() => void openThread(thread)}
-                        style={({ pressed }) => [
-                          styles.threadRow,
-                          {
-                            backgroundColor: active
-                              ? theme.backgroundSelected
-                              : unread
-                                ? theme.surfaceElevated
-                                : theme.surface,
-                            borderColor: active || unread ? theme.primary : theme.border,
-                            opacity: pressed ? 0.82 : 1,
-                          },
-                        ]}>
-                        <View style={styles.threadRowHeader}>
-                          <ThemedText numberOfLines={1} type="smallBold">
-                            {thread.context.studentName ??
-                              t('messaging.unknownStudent')}
-                          </ThemedText>
-                          <ThemedText
-                            type="smallBold"
-                            themeColor={unread ? 'primary' : 'textMuted'}>
-                            {t(unread ? 'messaging.unread' : 'messaging.read')}
-                          </ThemedText>
-                        </View>
-                        <ThemedText numberOfLines={1} type="small" themeColor="textMuted">
-                          {formatDate(thread.context.startsAt)} · {thread.context.location}
-                        </ThemedText>
-                        <ThemedText numberOfLines={2} themeColor="textMuted">
-                          {lastMessage?.body ?? t('messaging.noMessages')}
-                        </ThemedText>
-                      </Pressable>
-                    );
-                  })}
-                  {hasMoreThreads ? (
-                    <Button
-                      disabled={loadingMoreThreads}
-                      label={t(
-                        loadingMoreThreads
-                          ? 'messaging.loadingMore'
-                          : 'messaging.loadMoreThreads'
-                      )}
-                      onPress={() => void loadMoreThreads()}
-                      variant="secondary"
+                  data={threads}
+                  initialNumToRender={12}
+                  keyExtractor={(thread) => thread.id}
+                  ListFooterComponent={
+                    hasMoreThreads ? (
+                      <Button
+                        disabled={loadingMoreThreads}
+                        label={t(
+                          loadingMoreThreads
+                            ? 'messaging.loadingMore'
+                            : 'messaging.loadMoreThreads'
+                        )}
+                        onPress={() => void loadMoreThreads()}
+                        variant="secondary"
+                      />
+                    ) : null
+                  }
+                  maxToRenderPerBatch={12}
+                  renderItem={({ item: thread }) => (
+                    <CoachMessageThreadRow
+                      active={thread.id === selectedThreadId}
+                      onOpen={openThread}
+                      thread={thread}
                     />
-                  ) : null}
-                </ScrollView>
+                  )}
+                  style={styles.scrollArea}
+                  windowSize={7}
+                />
               )}
             </Card>
           ) : null}
@@ -436,91 +404,59 @@ export default function CoachMessagingScreen() {
                     />
                   </View>
 
-                  <ScrollView
-                    contentContainerStyle={styles.messages}
-                    style={styles.scrollArea}>
-                    {loadingMessages ? (
-                      <ThemedText themeColor="textMuted">
-                        {t('messaging.loadingMessages')}
-                      </ThemedText>
-                    ) : null}
-                    {hasOlderMessages ? (
-                      <Button
-                        disabled={loadingMessages || loadingOlderMessages}
-                        label={t(
-                          loadingOlderMessages
-                            ? 'messaging.loadingMore'
-                            : 'messaging.loadOlderMessages'
-                        )}
-                        onPress={() => void loadOlderMessages()}
-                        variant="secondary"
-                      />
-                    ) : null}
-                    {!loadingMessages && selectedThread.messages.length === 0 ? (
+                  <FlatList
+                  contentContainerStyle={styles.messages}
+                    data={selectedThread.messages}
+                    initialNumToRender={15}
+                    keyExtractor={(message) => message.id}
+                    ListEmptyComponent={
+                      !loadingMessages ? (
                       <ThemedText themeColor="textMuted">
                         {t('messaging.noMessages')}
                       </ThemedText>
-                    ) : null}
-                    {selectedThread.messages.length > 0
-                      ? (
-                      selectedThread.messages.map((message) => {
-                        const fromCoach = message.senderId === selectedThread.coachId;
-
-                        return (
-                          <View
-                            key={message.id}
-                            style={[
-                              styles.messageBubble,
-                              fromCoach ? styles.coachMessage : styles.studentMessage,
-                              {
-                                backgroundColor: fromCoach
-                                  ? theme.backgroundSelected
-                                  : theme.surface,
-                                borderColor: fromCoach ? theme.primary : theme.border,
-                              },
-                            ]}>
-                            <ThemedText type="smallBold" themeColor="primary">
-                              {t(
-                                fromCoach
-                                  ? 'messaging.coachAuthor'
-                                  : 'messaging.studentAuthor'
+                      ) : null
+                    }
+                    ListHeaderComponent={
+                      loadingMessages || hasOlderMessages ? (
+                        <View style={styles.messageListHeader}>
+                          {loadingMessages ? (
+                            <ThemedText themeColor="textMuted">
+                              {t('messaging.loadingMessages')}
+                            </ThemedText>
+                          ) : null}
+                          {hasOlderMessages ? (
+                            <Button
+                              disabled={loadingMessages || loadingOlderMessages}
+                              label={t(
+                                loadingOlderMessages
+                                  ? 'messaging.loadingMore'
+                                  : 'messaging.loadOlderMessages'
                               )}
-                            </ThemedText>
-                            <ThemedText>{message.body}</ThemedText>
-                            <ThemedText type="small" themeColor="textMuted">
-                              {formatDate(message.createdAt)}
-                            </ThemedText>
-                          </View>
-                        );
-                      })
-                        )
-                      : null}
-                  </ScrollView>
+                              onPress={() => void loadOlderMessages()}
+                              variant="secondary"
+                            />
+                          ) : null}
+                        </View>
+                      ) : null
+                    }
+                    maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
+                    maxToRenderPerBatch={15}
+                    renderItem={({ item: message }) => (
+                      <CoachMessageRow
+                        coachId={selectedThread.coachId}
+                        message={message}
+                      />
+                    )}
+                    style={styles.scrollArea}
+                    windowSize={7}
+                  />
 
-                  <View style={styles.composer}>
-                    <TextField
-                      editable={!sending && !loadingMessages}
-                      error={
-                        notice === 'invalidMessage'
-                          ? t('messaging.invalidMessageBody')
-                          : undefined
-                      }
-                      label={t('messaging.responseLabel')}
-                      maxLength={messageBodyMaxLength + 1}
-                      multiline
-                      onChangeText={setDraft}
-                      placeholder={t('messaging.responsePlaceholder')}
-                      style={styles.messageInput}
-                      value={draft}
-                    />
-                    <Button
-                      disabled={sending || loadingMessages}
-                      label={t(
-                        sending ? 'messaging.sending' : 'messaging.sendAction'
-                      )}
-                      onPress={() => void submitReply()}
-                    />
-                  </View>
+                  <CoachMessageComposer
+                    disabled={loadingMessages}
+                    invalid={notice === 'invalidMessage'}
+                    key={selectedThread.id}
+                    onSend={submitReply}
+                  />
                 </>
               ) : (
                 <Feedback
@@ -588,17 +524,6 @@ const styles = StyleSheet.create({
   scrollArea: {
     flex: 1,
   },
-  threadRow: {
-    borderWidth: 1,
-    borderRadius: Radii.medium,
-    padding: Spacing.three,
-    gap: Spacing.two,
-  },
-  threadRowHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: Spacing.two,
-  },
   contextHeader: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -614,25 +539,7 @@ const styles = StyleSheet.create({
   messages: {
     gap: Spacing.two,
   },
-  messageBubble: {
-    maxWidth: '86%',
-    borderWidth: 1,
-    borderRadius: Radii.medium,
-    padding: Spacing.three,
-    gap: Spacing.one,
-  },
-  coachMessage: {
-    alignSelf: 'flex-end',
-  },
-  studentMessage: {
-    alignSelf: 'flex-start',
-  },
-  composer: {
-    gap: Spacing.three,
-  },
-  messageInput: {
-    minHeight: 96,
-    paddingVertical: Spacing.three,
-    textAlignVertical: 'top',
+  messageListHeader: {
+    gap: Spacing.two,
   },
 });

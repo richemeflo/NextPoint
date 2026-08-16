@@ -20,7 +20,7 @@ const studentProfileRowSchema = z.object({
   email: z.string(),
   phone: z.string(),
   padel_level: z.number().int(),
-  age: z.number().int(),
+  age: z.number().int().nullable(),
   sex: z.enum(studentSexes),
   preferred_language: z.enum(appLanguages),
   account_status: z.enum(studentAccountStatuses),

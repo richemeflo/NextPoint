@@ -1,5 +1,10 @@
 export { Constants } from './types/database.types';
-export { signInSchema, signUpSchema } from './contracts/auth';
+export {
+  passwordResetRequestSchema,
+  passwordUpdateSchema,
+  signInSchema,
+  signUpSchema,
+} from './contracts/auth';
 export {
   calculateSchedulingEndTime,
   getSchedulingDateKey,
@@ -126,7 +131,12 @@ export {
 } from './contracts/student-edge-function';
 export { appLanguages } from './domain/languages';
 export { appRoles, isAppRole } from './domain/roles';
-export type { SignInInput, SignUpInput } from './contracts/auth';
+export type {
+  PasswordResetRequestInput,
+  PasswordUpdateInput,
+  SignInInput,
+  SignUpInput,
+} from './contracts/auth';
 export type {
   AvailabilityLocation,
   AvailabilityFreeFragment,

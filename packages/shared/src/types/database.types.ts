@@ -748,7 +748,7 @@ export type Database = {
       student_profiles: {
         Row: {
           account_status: Database["public"]["Enums"]["student_account_status"]
-          age: number
+          age: number | null
           created_at: string
           email: string
           full_name: string
@@ -761,7 +761,7 @@ export type Database = {
         }
         Insert: {
           account_status?: Database["public"]["Enums"]["student_account_status"]
-          age: number
+          age: number | null
           created_at?: string
           email: string
           full_name: string
@@ -774,7 +774,7 @@ export type Database = {
         }
         Update: {
           account_status?: Database["public"]["Enums"]["student_account_status"]
-          age?: number
+          age?: number | null
           created_at?: string
           email?: string
           full_name?: string
@@ -961,7 +961,7 @@ export type Database = {
       }
       complete_manual_student_provisioning: {
         Args: {
-          p_age: number
+          p_age: number | null
           p_coach_id: string
           p_email: string
           p_full_name: string
@@ -972,7 +972,7 @@ export type Database = {
         }
         Returns: {
           account_status: Database["public"]["Enums"]["student_account_status"]
-          age: number
+          age: number | null
           created_at: string
           email: string
           full_name: string
@@ -1177,7 +1177,7 @@ export type Database = {
         Args: never
         Returns: {
           account_status: Database["public"]["Enums"]["student_account_status"]
-          age: number
+          age: number | null
           created_at: string
           email: string
           full_name: string

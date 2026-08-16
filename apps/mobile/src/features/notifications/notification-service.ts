@@ -7,6 +7,12 @@ import type {
 } from '@nextpoint/shared';
 
 import { supabase } from '@/lib/supabase/client';
+import {
+  buildNotificationCursorFilter,
+  getNotificationCursor,
+  notificationPageSize,
+  type NotificationCursor,
+} from '@/features/notifications/notification-pagination';
 
 type NotificationRow = Tables<'notifications'>;
 type PushPreferenceRow = Tables<'notification_push_preferences'>;
@@ -36,8 +42,16 @@ export type PushPreferenceInput = {
   token?: string | null;
 };
 
-export type NotificationsResult =
-  | { ok: true; data: AppNotification[] }
+export type NotificationsPage = {
+  data: AppNotification[];
+  hasMore: boolean;
+  nextCursor: NotificationCursor | null;
+};
+export type NotificationsPageResult =
+  | { ok: true; data: NotificationsPage }
+  | { ok: false };
+export type UnreadNotificationCountResult =
+  | { ok: true; count: number }
   | { ok: false };
 export type PushPreferenceResult =
   | { ok: true; data: PushPreference | null }
@@ -71,17 +85,53 @@ function mapPushPreference(row: PushPreferenceRow): PushPreference {
   };
 }
 
-export async function getNotifications(limit = 50): Promise<NotificationsResult> {
+export async function getNotificationsPage({
+  cursor = null,
+  limit = notificationPageSize,
+}: {
+  cursor?: NotificationCursor | null;
+  limit?: number;
+} = {}): Promise<NotificationsPageResult> {
   if (!supabase) return { ok: false };
 
-  const { data, error } = await supabase
+  const pageLimit = Math.min(Math.max(Math.trunc(limit), 1), 100);
+  let query = supabase
     .from('notifications')
     .select('*')
     .order('created_at', { ascending: false })
-    .limit(limit);
+    .order('id', { ascending: false })
+    .limit(pageLimit + 1);
+
+  if (cursor) {
+    query = query.or(buildNotificationCursorFilter(cursor));
+  }
+
+  const { data, error } = await query;
 
   if (error) return { ok: false };
-  return { ok: true, data: data.map(mapNotification) };
+  const notifications = data.slice(0, pageLimit).map(mapNotification);
+  return {
+    ok: true,
+    data: {
+      data: notifications,
+      hasMore: data.length > pageLimit,
+      nextCursor: getNotificationCursor(notifications),
+    },
+  };
+}
+
+export async function getUnreadNotificationCount(): Promise<
+  UnreadNotificationCountResult
+> {
+  if (!supabase) return { ok: false };
+
+  const { count, error } = await supabase
+    .from('notifications')
+    .select('id', { count: 'exact', head: true })
+    .is('read_at', null);
+
+  if (error || typeof count !== 'number') return { ok: false };
+  return { ok: true, count };
 }
 
 export async function getPushPreference(): Promise<PushPreferenceResult> {

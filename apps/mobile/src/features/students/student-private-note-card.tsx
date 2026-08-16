@@ -27,6 +27,16 @@ export function StudentPrivateNoteCard({
 }: {
   studentId: string;
 }) {
+  return (
+    <StudentPrivateNoteCardContent key={studentId} studentId={studentId} />
+  );
+}
+
+function StudentPrivateNoteCardContent({
+  studentId,
+}: {
+  studentId: string;
+}) {
   const theme = useTheme();
   const { t } = useTranslation();
   const [editor, setEditor] = useState(() =>

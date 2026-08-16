@@ -4,22 +4,20 @@ import type { Database } from '@nextpoint/shared/types/database';
 import { AppState, Platform } from 'react-native';
 import 'react-native-url-polyfill/auto';
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+import {
+  isValidSupabaseUrl,
+  resolveSupabaseUrl,
+} from './supabase-url';
+
+const supabaseUrl = resolveSupabaseUrl({
+  defaultUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
+  platform: Platform.OS,
+  webUrl: process.env.EXPO_PUBLIC_SUPABASE_URL_WEB,
+});
 const supabasePublishableKey = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-function isValidHttpUrl(value: string | undefined) {
-  if (!value) return false;
-
-  try {
-    const url = new URL(value);
-    return url.protocol === 'http:' || url.protocol === 'https:';
-  } catch {
-    return false;
-  }
-}
-
 export const isSupabaseConfigured =
-  isValidHttpUrl(supabaseUrl) &&
+  isValidSupabaseUrl(supabaseUrl) &&
   Boolean(supabasePublishableKey) &&
   supabasePublishableKey !== 'replace_me';
 

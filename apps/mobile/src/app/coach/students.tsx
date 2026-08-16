@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { StudentSex } from '@nextpoint/shared';
 import { type Href, useRouter } from 'expo-router';
 import {
   ActivityIndicator,
+  FlatList,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   View,
   type ViewStyle,
@@ -54,31 +54,6 @@ const webScrollStyle =
       } as unknown as ViewStyle)
     : undefined;
 
-function StudentListScroller({
-  children,
-  interactionActive,
-}: {
-  children: ReactNode;
-  interactionActive: boolean;
-}) {
-  if (Platform.OS === 'web') {
-    return (
-      <View style={[styles.webScroll, webScrollStyle]}>
-        <View style={styles.scrollContent}>{children}</View>
-      </View>
-    );
-  }
-
-  return (
-    <ScrollView
-      contentContainerStyle={styles.scrollContent}
-      keyboardShouldPersistTaps="handled"
-      scrollEnabled={!interactionActive}>
-      {children}
-    </ScrollView>
-  );
-}
-
 function StudentRow({ student }: { student: AssociatedStudent }) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -89,11 +64,17 @@ function StudentRow({ student }: { student: AssociatedStudent }) {
         <ThemedText type="smallBold">{student.fullName}</ThemedText>
         {student.profileComplete ? (
           <ThemedText type="small" themeColor="textMuted">
-            {t('students.levelValue', { level: student.padelLevel })} ·{' '}
-            {t('students.ageValue', { age: student.age })} ·{' '}
-            {t(
-              `profile.sex.${student.sex === 'not_specified' ? 'notSpecified' : student.sex}`
-            )}
+            {[
+              t('students.levelValue', { level: student.padelLevel }),
+              student.age === null
+                ? null
+                : t('students.ageValue', { age: student.age }),
+              t(
+                `profile.sex.${student.sex === 'not_specified' ? 'notSpecified' : student.sex}`
+              ),
+            ]
+              .filter(Boolean)
+              .join(' · ')}
           </ThemedText>
         ) : (
           <ThemedText type="smallBold" themeColor="warning">
@@ -107,9 +88,11 @@ function StudentRow({ student }: { student: AssociatedStudent }) {
             {student.phone}
           </ThemedText>
         ) : null}
-        <ThemedText type="small" themeColor="textMuted">
-          {student.email}
-        </ThemedText>
+        {student.email ? (
+          <ThemedText type="small" themeColor="textMuted">
+            {student.email}
+          </ThemedText>
+        ) : null}
       </View>
     </Card>
   );
@@ -119,7 +102,8 @@ function StudentRow({ student }: { student: AssociatedStudent }) {
       accessibilityRole="button"
       onPress={() =>
         router.push(`/coach/students/${student.userId}` as Href)
-      }>
+      }
+      style={styles.studentListItem}>
       {({ pressed }) => content(pressed)}
     </Pressable>
   );
@@ -202,8 +186,32 @@ export default function CoachStudentsScreen() {
 
   return (
     <ThemedView style={styles.screen}>
-      <StudentListScroller interactionActive={isAgeSliderActive}>
-        <View style={styles.content}>
+      <FlatList
+        contentContainerStyle={styles.scrollContent}
+        data={filteredStudents}
+        initialNumToRender={12}
+        ItemSeparatorComponent={() => <View style={styles.listSeparator} />}
+        keyboardShouldPersistTaps="handled"
+        keyExtractor={(student) => student.userId}
+        ListEmptyComponent={
+          <View style={styles.emptyResult}>
+            {students.length === 0 ? (
+              <Feedback
+                message={t('students.emptyListBody')}
+                title={t('students.emptyListTitle')}
+                tone="info"
+              />
+            ) : (
+              <Feedback
+                message={t('students.emptyFilterBody')}
+                title={t('students.emptyFilterTitle')}
+                tone="info"
+              />
+            )}
+          </View>
+        }
+        ListHeaderComponent={
+          <View style={styles.content}>
           <View style={styles.heading}>
             <ThemedText type="smallBold" themeColor="primary">
               {t('role.coachLabel')}
@@ -313,28 +321,14 @@ export default function CoachStudentsScreen() {
               {t('students.resultCount', { count: filteredStudents.length })}
             </ThemedText>
           </View>
-
-          {students.length === 0 ? (
-            <Feedback
-              message={t('students.emptyListBody')}
-              title={t('students.emptyListTitle')}
-              tone="info"
-            />
-          ) : filteredStudents.length === 0 ? (
-            <Feedback
-              message={t('students.emptyFilterBody')}
-              title={t('students.emptyFilterTitle')}
-              tone="info"
-            />
-          ) : (
-            <View style={styles.list}>
-              {filteredStudents.map((student) => (
-                <StudentRow key={student.userId} student={student} />
-              ))}
-            </View>
-          )}
-        </View>
-      </StudentListScroller>
+          </View>
+        }
+        maxToRenderPerBatch={12}
+        renderItem={({ item }) => <StudentRow student={item} />}
+        scrollEnabled={!isAgeSliderActive}
+        style={[styles.listScroller, webScrollStyle]}
+        windowSize={7}
+      />
     </ThemedView>
   );
 }
@@ -349,7 +343,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: Spacing.three,
   },
-  webScroll: {
+  listScroller: {
     flex: 1,
   },
   scrollContent: {
@@ -361,6 +355,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: MaxContentWidth,
     gap: Spacing.four,
+    marginBottom: Spacing.four,
   },
   heading: {
     maxWidth: 720,
@@ -376,8 +371,16 @@ const styles = StyleSheet.create({
   resultsHeader: {
     gap: Spacing.one,
   },
-  list: {
-    gap: Spacing.two,
+  emptyResult: {
+    width: '100%',
+    maxWidth: MaxContentWidth,
+  },
+  listSeparator: {
+    height: Spacing.two,
+  },
+  studentListItem: {
+    width: '100%',
+    maxWidth: MaxContentWidth,
   },
   studentRow: {
     flexDirection: 'row',

@@ -5,10 +5,12 @@ import {
 } from '@nextpoint/shared';
 import { router, type Href } from 'expo-router';
 import { SymbolView, type SymbolViewProps } from 'expo-symbols';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
+  FlatList,
+  Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Switch,
   View,
@@ -27,14 +29,19 @@ import {
 } from '@/constants/theme';
 import {
   deleteNotification,
-  getNotifications,
+  getNotificationsPage,
   getPushPreference,
+  getUnreadNotificationCount,
   markAllNotificationsRead,
   markNotificationRead,
   updatePushPreference,
   type AppNotification,
   type PushPreference,
 } from '@/features/notifications/notification-service';
+import {
+  mergeNotificationPages,
+  type NotificationCursor,
+} from '@/features/notifications/notification-pagination';
 import {
   buildPushRefusalPreference,
   requestClientPushPermission,
@@ -97,13 +104,180 @@ const notificationVisuals = {
   }
 >;
 
-export function NotificationCenterScreen({ role }: { role: AppRole }) {
+type NotificationListItemProps = {
+  notification: AppNotification;
+  deletePending: boolean;
+  deleting: boolean;
+  onCancelDelete: () => void;
+  onConfirmDelete: () => void;
+  onOpen: () => void;
+  onRequestDelete: () => void;
+};
+
+function NotificationListItem({
+  notification,
+  deletePending,
+  deleting,
+  onCancelDelete,
+  onConfirmDelete,
+  onOpen,
+  onRequestDelete,
+}: NotificationListItemProps) {
   const { locale, t } = useTranslation();
+  const theme = useTheme();
+  const unread = !notification.readAt;
+  const visual = notificationVisuals[notification.type];
+  const formattedDate = new Intl.DateTimeFormat(locale, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: schedulingTimeZone,
+  }).format(new Date(notification.createdAt));
+
+  return (
+    <View
+      style={[
+        styles.notificationItem,
+        {
+          backgroundColor: unread ? theme.surfaceElevated : theme.surface,
+          borderColor: theme.border,
+          borderLeftColor: unread ? theme.primary : theme.border,
+          borderLeftWidth: unread ? 4 : 1,
+          opacity: deleting ? 0.55 : 1,
+        },
+      ]}>
+      <View style={styles.notificationRow}>
+        <Pressable
+          accessibilityLabel={notification.title}
+          accessibilityRole="button"
+          disabled={deleting}
+          onPress={onOpen}
+          style={({ pressed }) => [
+            styles.notificationOpenAction,
+            { opacity: pressed ? 0.72 : 1 },
+          ]}>
+          <View
+            style={[
+              styles.notificationIcon,
+              { backgroundColor: theme[visual.surface] },
+            ]}>
+            <SymbolView
+              name={visual.icon}
+              size={21}
+              weight="semibold"
+              tintColor={theme[visual.color]}
+            />
+          </View>
+          <View style={styles.notificationContent}>
+            <View style={styles.notificationTitleRow}>
+              <ThemedText numberOfLines={2} type="smallBold">
+                {notification.title}
+              </ThemedText>
+              {unread ? (
+                <View
+                  accessibilityLabel={t('notifications.unread')}
+                  accessible
+                  style={[
+                    styles.unreadDot,
+                    { backgroundColor: theme.primary },
+                  ]}
+                />
+              ) : null}
+            </View>
+            <ThemedText numberOfLines={2} type="small" themeColor="textMuted">
+              {notification.body}
+            </ThemedText>
+            <ThemedText
+              type="small"
+              themeColor="textMuted"
+              style={styles.notificationDate}>
+              {formattedDate}
+            </ThemedText>
+          </View>
+        </Pressable>
+        <Pressable
+          accessibilityLabel={t('notifications.deleteAction')}
+          accessibilityRole="button"
+          disabled={deleting}
+          onPress={onRequestDelete}
+          style={({ pressed }) => [
+            styles.deleteAction,
+            {
+              borderColor: theme.border,
+              backgroundColor: pressed ? theme.errorSurface : 'transparent',
+            },
+          ]}>
+          <SymbolView
+            name={{ ios: 'trash', android: 'delete', web: 'delete' }}
+            size={19}
+            weight="semibold"
+            tintColor={theme.textMuted}
+          />
+        </Pressable>
+      </View>
+      {deletePending ? (
+        <View
+          style={[styles.deleteConfirmation, { borderColor: theme.border }]}>
+          <ThemedText type="smallBold" style={styles.deletePrompt}>
+            {t('notifications.deleteConfirm')}
+          </ThemedText>
+          <View style={styles.deleteConfirmationActions}>
+            <Pressable
+              accessibilityLabel={t('notifications.cancelDeleteAction')}
+              accessibilityRole="button"
+              disabled={deleting}
+              onPress={onCancelDelete}
+              style={({ pressed }) => [
+                styles.confirmationAction,
+                {
+                  borderColor: theme.border,
+                  opacity: pressed ? 0.7 : 1,
+                },
+              ]}>
+              <SymbolView
+                name={{ ios: 'xmark', android: 'close', web: 'close' }}
+                size={18}
+                weight="semibold"
+                tintColor={theme.textMuted}
+              />
+            </Pressable>
+            <Pressable
+              accessibilityLabel={t('notifications.confirmDeleteAction')}
+              accessibilityRole="button"
+              disabled={deleting}
+              onPress={onConfirmDelete}
+              style={({ pressed }) => [
+                styles.confirmationAction,
+                {
+                  backgroundColor: theme.errorSurface,
+                  borderColor: theme.error,
+                  opacity: pressed ? 0.7 : 1,
+                },
+              ]}>
+              <SymbolView
+                name={{ ios: 'trash', android: 'delete', web: 'delete' }}
+                size={18}
+                weight="semibold"
+                tintColor={theme.error}
+              />
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+export function NotificationCenterScreen({ role }: { role: AppRole }) {
+  const { t } = useTranslation();
   const theme = useTheme();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [pushPreference, setPushPreference] = useState<PushPreference | null>(null);
   const [pushPreferenceSaving, setPushPreferenceSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<NotificationCursor | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [notice, setNotice] = useState<
     'loadError' | 'saveError' | 'deleteError' | 'linkMissing' | null
   >(null);
@@ -112,38 +286,88 @@ export function NotificationCenterScreen({ role }: { role: AppRole }) {
   const [deletingNotificationId, setDeletingNotificationId] = useState<
     string | null
   >(null);
-
-  const unreadCount = useMemo(
-    () => notifications.filter((notification) => !notification.readAt).length,
-    [notifications]
-  );
+  const loadMoreLock = useRef(false);
+  const markingNotificationIds = useRef(new Set<string>());
+  const mounted = useRef(true);
+  const markedAllReadAt = useRef<string | null>(null);
 
   useEffect(() => {
-    let mounted = true;
+    mounted.current = true;
 
-    void Promise.all([getNotifications(), getPushPreference()])
-      .then(([notificationsResult, preferenceResult]) => {
-        if (!mounted) return;
+    void Promise.all([
+      getNotificationsPage(),
+      getUnreadNotificationCount(),
+      getPushPreference(),
+    ])
+      .then(([notificationsResult, unreadResult, preferenceResult]) => {
+        if (!mounted.current) return;
 
-        if (!notificationsResult.ok || !preferenceResult.ok) {
+        if (
+          !notificationsResult.ok ||
+          !unreadResult.ok ||
+          !preferenceResult.ok
+        ) {
           setNotice('loadError');
         } else {
-          setNotifications(notificationsResult.data);
+          setNotifications(notificationsResult.data.data);
+          setHasMore(notificationsResult.data.hasMore);
+          setNextCursor(notificationsResult.data.nextCursor);
+          setUnreadCount(unreadResult.count);
           setPushPreference(preferenceResult.data);
         }
       })
       .catch(() => {
-        if (!mounted) return;
+        if (!mounted.current) return;
         setNotice('loadError');
       })
       .finally(() => {
-        if (mounted) setLoading(false);
+        if (mounted.current) setLoading(false);
       });
 
     return () => {
-      mounted = false;
+      mounted.current = false;
     };
   }, []);
+
+  const loadMoreNotifications = async () => {
+    if (
+      loadMoreLock.current ||
+      loading ||
+      !hasMore ||
+      !nextCursor
+    ) {
+      return;
+    }
+
+    loadMoreLock.current = true;
+    setLoadingMore(true);
+    try {
+      const result = await getNotificationsPage({ cursor: nextCursor });
+      if (!mounted.current) return;
+
+      if (!result.ok) {
+        setNotice('loadError');
+        return;
+      }
+
+      const nextNotifications = markedAllReadAt.current
+        ? result.data.data.map((notification) => ({
+            ...notification,
+            readAt: notification.readAt ?? markedAllReadAt.current,
+          }))
+        : result.data.data;
+      setNotifications((current) =>
+        mergeNotificationPages(current, nextNotifications)
+      );
+      setHasMore(result.data.hasMore);
+      setNextCursor(result.data.nextCursor);
+    } catch {
+      if (mounted.current) setNotice('loadError');
+    } finally {
+      loadMoreLock.current = false;
+      if (mounted.current) setLoadingMore(false);
+    }
+  };
 
   const registerPushPreference = async (accept: boolean) => {
     if (pushPreferenceSaving) return;
@@ -153,7 +377,7 @@ export function NotificationCenterScreen({ role }: { role: AppRole }) {
     try {
       const input = accept
         ? await requestClientPushPermission()
-        : buildPushRefusalPreference();
+        : await buildPushRefusalPreference();
       const result = await updatePushPreference(input);
 
       if (!result.ok) {
@@ -177,10 +401,13 @@ export function NotificationCenterScreen({ role }: { role: AppRole }) {
         return;
       }
 
+      const readAt = new Date().toISOString();
+      markedAllReadAt.current = readAt;
+      setUnreadCount(0);
       setNotifications((current) =>
         current.map((notification) => ({
           ...notification,
-          readAt: notification.readAt ?? new Date().toISOString(),
+          readAt: notification.readAt ?? readAt,
         }))
       );
     } catch {
@@ -191,6 +418,9 @@ export function NotificationCenterScreen({ role }: { role: AppRole }) {
   const removeNotification = async (notificationId: string) => {
     if (deletingNotificationId) return;
 
+    const deletedNotification = notifications.find(
+      (notification) => notification.id === notificationId
+    );
     setDeletingNotificationId(notificationId);
     setNotice(null);
     try {
@@ -203,6 +433,9 @@ export function NotificationCenterScreen({ role }: { role: AppRole }) {
       setNotifications((current) =>
         current.filter((notification) => notification.id !== result.id)
       );
+      if (deletedNotification && !deletedNotification.readAt) {
+        setUnreadCount((current) => Math.max(0, current - 1));
+      }
       setPendingDeleteNotificationId(null);
     } catch {
       setNotice('deleteError');
@@ -212,10 +445,15 @@ export function NotificationCenterScreen({ role }: { role: AppRole }) {
   };
 
   const openNotification = async (notification: AppNotification) => {
+    const shouldMarkRead =
+      !notification.readAt &&
+      !markingNotificationIds.current.has(notification.id);
+    if (shouldMarkRead) markingNotificationIds.current.add(notification.id);
+
     try {
-      const markResult = notification.readAt
-        ? null
-        : await markNotificationRead(notification.id);
+      const markResult = shouldMarkRead
+        ? await markNotificationRead(notification.id)
+        : null;
 
       if (markResult?.ok) {
         setNotifications((current) =>
@@ -225,6 +463,7 @@ export function NotificationCenterScreen({ role }: { role: AppRole }) {
               : currentNotification
           )
         );
+        setUnreadCount((current) => Math.max(0, current - 1));
       } else if (markResult && !markResult.ok) {
         setNotice('saveError');
       }
@@ -242,304 +481,189 @@ export function NotificationCenterScreen({ role }: { role: AppRole }) {
       router.push(href as Href);
     } catch {
       setNotice('saveError');
+    } finally {
+      if (shouldMarkRead) {
+        markingNotificationIds.current.delete(notification.id);
+      }
     }
   };
 
-  const formatDate = (value: string) =>
-    new Intl.DateTimeFormat(locale, {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-      timeZone: schedulingTimeZone,
-    }).format(new Date(value));
-
-  const permissionLabel = pushPreference
-    ? t(`notifications.pushStatus.${pushPreference.permissionStatus}`)
-    : t('notifications.pushStatus.undetermined');
-  const pushEnabled = pushPreference?.permissionStatus === 'granted';
-  const pushUnavailable = pushPreference?.permissionStatus === 'unavailable';
+  const pushUnavailableOnWeb = Platform.OS === 'web';
+  const permissionLabel = pushUnavailableOnWeb
+    ? t('notifications.pushStatus.unavailableWeb')
+    : pushPreference
+      ? t(`notifications.pushStatus.${pushPreference.permissionStatus}`)
+      : t('notifications.pushStatus.undetermined');
+  const pushEnabled =
+    !pushUnavailableOnWeb && pushPreference?.permissionStatus === 'granted';
+  const pushUnavailable =
+    pushUnavailableOnWeb ||
+    pushPreference?.permissionStatus === 'unavailable';
 
   return (
     <ThemedView style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.content}>
-          <View style={styles.heading}>
-            <ThemedText type="smallBold" themeColor="primary">
-              {t(role === 'coach' ? 'role.coachLabel' : 'role.eleveLabel')}
-            </ThemedText>
-            <ThemedText type="title">{t('notifications.title')}</ThemedText>
-            <ThemedText themeColor="textMuted">
-              {t('notifications.subtitle')}
-            </ThemedText>
+      <FlatList
+        contentContainerStyle={styles.scrollContent}
+        data={notifications}
+        initialNumToRender={12}
+        ItemSeparatorComponent={() => <View style={styles.listSeparator} />}
+        keyExtractor={(notification) => notification.id}
+        ListEmptyComponent={
+          <View style={styles.emptyResult}>
+            {loading ? (
+              <ThemedText themeColor="textMuted">
+                {t('notifications.loading')}
+              </ThemedText>
+            ) : (
+              <Card style={styles.emptyCard}>
+                <Feedback
+                  message={t('notifications.emptyBody')}
+                  title={t('notifications.emptyTitle')}
+                />
+              </Card>
+            )}
           </View>
+        }
+        ListHeaderComponent={
+          <View style={styles.content}>
+            <View style={styles.heading}>
+              <ThemedText type="smallBold" themeColor="primary">
+                {t(role === 'coach' ? 'role.coachLabel' : 'role.eleveLabel')}
+              </ThemedText>
+              <ThemedText type="title">{t('notifications.title')}</ThemedText>
+              <ThemedText themeColor="textMuted">
+                {t('notifications.subtitle')}
+              </ThemedText>
+            </View>
 
-          {notice ? (
-            <Feedback
-              message={t(`notifications.${notice}Body`)}
-              title={t(`notifications.${notice}Title`)}
-              tone={notice === 'linkMissing' ? 'warning' : 'error'}
-            />
-          ) : null}
+            {notice ? (
+              <Feedback
+                message={t(`notifications.${notice}Body`)}
+                title={t(`notifications.${notice}Title`)}
+                tone={notice === 'linkMissing' ? 'warning' : 'error'}
+              />
+            ) : null}
 
-          <View
-            style={[
-              styles.preferences,
-              {
-                backgroundColor: theme.surface,
-                borderColor: theme.border,
-                opacity: pushPreferenceSaving ? 0.65 : 1,
-              },
-            ]}>
             <View
               style={[
-                styles.preferenceIcon,
+                styles.preferences,
                 {
-                  backgroundColor: pushEnabled
-                    ? theme.successSurface
-                    : theme.backgroundSelected,
+                  backgroundColor: theme.surface,
+                  borderColor: theme.border,
+                  opacity: pushPreferenceSaving ? 0.65 : 1,
                 },
               ]}>
-              <SymbolView
-                name={
-                  pushEnabled
-                    ? {
-                        ios: 'bell.badge.fill',
-                        android: 'notifications_active',
-                        web: 'notifications_active',
-                      }
-                    : {
-                        ios: 'bell.slash',
-                        android: 'notifications_off',
-                        web: 'notifications_off',
-                      }
-                }
-                size={20}
-                weight="semibold"
-                tintColor={pushEnabled ? theme.success : theme.textMuted}
-              />
-            </View>
-            <View style={styles.preferenceText}>
-              <ThemedText type="smallBold">
-                {t('notifications.pushTitle')}
-              </ThemedText>
-              <ThemedText
-                type="small"
-                themeColor={pushEnabled ? 'success' : 'textMuted'}>
-                {permissionLabel}
-              </ThemedText>
-            </View>
-            <View style={styles.preferenceControl}>
-              <Switch
-                accessibilityLabel={t('notifications.pushTitle')}
-                accessibilityState={{ checked: pushEnabled }}
-                disabled={loading || pushPreferenceSaving || pushUnavailable}
-                onValueChange={(enabled) =>
-                  void registerPushPreference(enabled)
-                }
-                trackColor={{ false: theme.border, true: theme.success }}
-                value={pushEnabled}
-              />
-            </View>
-          </View>
-
-          <View style={styles.listHeader}>
-            <View>
-              <ThemedText type="subtitle">{t('notifications.listTitle')}</ThemedText>
-              <ThemedText type="small" themeColor="textMuted">
-                {t('notifications.unreadCount', { count: unreadCount })}
-              </ThemedText>
-            </View>
-            <Button
-              disabled={unreadCount === 0}
-              label={t('notifications.markAllReadAction')}
-              onPress={() => void markAllRead()}
-              variant="secondary"
-            />
-          </View>
-
-          {loading ? (
-            <ThemedText themeColor="textMuted">{t('notifications.loading')}</ThemedText>
-          ) : notifications.length === 0 ? (
-            <Card style={styles.emptyCard}>
-              <Feedback
-                message={t('notifications.emptyBody')}
-                title={t('notifications.emptyTitle')}
-              />
-            </Card>
-          ) : (
-            <View style={styles.list}>
-              {notifications.map((notification) => {
-                const unread = !notification.readAt;
-                const visual = notificationVisuals[notification.type];
-                const deletePending =
-                  pendingDeleteNotificationId === notification.id;
-                const deleting = deletingNotificationId === notification.id;
-
-                return (
-                  <View
-                    key={notification.id}
-                    style={[
-                      styles.notificationItem,
-                      {
-                        backgroundColor: unread
-                          ? theme.surfaceElevated
-                          : theme.surface,
-                        borderColor: theme.border,
-                        borderLeftColor: unread ? theme.primary : theme.border,
-                        borderLeftWidth: unread ? 4 : 1,
-                        opacity: deleting ? 0.55 : 1,
-                      },
-                    ]}>
-                    <View style={styles.notificationRow}>
-                      <Pressable
-                        accessibilityLabel={notification.title}
-                        accessibilityRole="button"
-                        disabled={deleting}
-                        onPress={() => void openNotification(notification)}
-                        style={({ pressed }) => [
-                          styles.notificationOpenAction,
-                          { opacity: pressed ? 0.72 : 1 },
-                        ]}>
-                        <View
-                          style={[
-                            styles.notificationIcon,
-                            { backgroundColor: theme[visual.surface] },
-                          ]}>
-                          <SymbolView
-                            name={visual.icon}
-                            size={21}
-                            weight="semibold"
-                            tintColor={theme[visual.color]}
-                          />
-                        </View>
-                        <View style={styles.notificationContent}>
-                          <View style={styles.notificationTitleRow}>
-                            <ThemedText numberOfLines={2} type="smallBold">
-                              {notification.title}
-                            </ThemedText>
-                            {unread ? (
-                              <View
-                                accessibilityLabel={t('notifications.unread')}
-                                accessible
-                                style={[
-                                  styles.unreadDot,
-                                  { backgroundColor: theme.primary },
-                                ]}
-                              />
-                            ) : null}
-                          </View>
-                          <ThemedText
-                            numberOfLines={2}
-                            type="small"
-                            themeColor="textMuted">
-                            {notification.body}
-                          </ThemedText>
-                          <ThemedText
-                            type="small"
-                            themeColor="textMuted"
-                            style={styles.notificationDate}>
-                            {formatDate(notification.createdAt)}
-                          </ThemedText>
-                        </View>
-                      </Pressable>
-                      <Pressable
-                        accessibilityLabel={t('notifications.deleteAction')}
-                        accessibilityRole="button"
-                        disabled={deleting}
-                        onPress={() =>
-                          setPendingDeleteNotificationId(notification.id)
+              <View
+                style={[
+                  styles.preferenceIcon,
+                  {
+                    backgroundColor: pushEnabled
+                      ? theme.successSurface
+                      : theme.backgroundSelected,
+                  },
+                ]}>
+                <SymbolView
+                  name={
+                    pushEnabled
+                      ? {
+                          ios: 'bell.badge.fill',
+                          android: 'notifications_active',
+                          web: 'notifications_active',
                         }
-                        style={({ pressed }) => [
-                          styles.deleteAction,
-                          {
-                            borderColor: theme.border,
-                            backgroundColor: pressed
-                              ? theme.errorSurface
-                              : 'transparent',
-                          },
-                        ]}>
-                        <SymbolView
-                          name={{ ios: 'trash', android: 'delete', web: 'delete' }}
-                          size={19}
-                          weight="semibold"
-                          tintColor={theme.textMuted}
-                        />
-                      </Pressable>
-                    </View>
-                    {deletePending ? (
-                      <View
-                        style={[
-                          styles.deleteConfirmation,
-                          { borderColor: theme.border },
-                        ]}>
-                        <ThemedText type="smallBold" style={styles.deletePrompt}>
-                          {t('notifications.deleteConfirm')}
-                        </ThemedText>
-                        <View style={styles.deleteConfirmationActions}>
-                          <Pressable
-                            accessibilityLabel={t(
-                              'notifications.cancelDeleteAction'
-                            )}
-                            accessibilityRole="button"
-                            disabled={deleting}
-                            onPress={() => setPendingDeleteNotificationId(null)}
-                            style={({ pressed }) => [
-                              styles.confirmationAction,
-                              {
-                                borderColor: theme.border,
-                                opacity: pressed ? 0.7 : 1,
-                              },
-                            ]}>
-                            <SymbolView
-                              name={{ ios: 'xmark', android: 'close', web: 'close' }}
-                              size={18}
-                              weight="semibold"
-                              tintColor={theme.textMuted}
-                            />
-                          </Pressable>
-                          <Pressable
-                            accessibilityLabel={t(
-                              'notifications.confirmDeleteAction'
-                            )}
-                            accessibilityRole="button"
-                            disabled={deleting}
-                            onPress={() =>
-                              void removeNotification(notification.id)
-                            }
-                            style={({ pressed }) => [
-                              styles.confirmationAction,
-                              {
-                                backgroundColor: theme.errorSurface,
-                                borderColor: theme.error,
-                                opacity: pressed ? 0.7 : 1,
-                              },
-                            ]}>
-                            <SymbolView
-                              name={{
-                                ios: 'trash',
-                                android: 'delete',
-                                web: 'delete',
-                              }}
-                              size={18}
-                              weight="semibold"
-                              tintColor={theme.error}
-                            />
-                          </Pressable>
-                        </View>
-                      </View>
-                    ) : null}
-                  </View>
-                );
-              })}
+                      : {
+                          ios: 'bell.slash',
+                          android: 'notifications_off',
+                          web: 'notifications_off',
+                        }
+                  }
+                  size={20}
+                  weight="semibold"
+                  tintColor={pushEnabled ? theme.success : theme.textMuted}
+                />
+              </View>
+              <View style={styles.preferenceText}>
+                <ThemedText type="smallBold">
+                  {t('notifications.pushTitle')}
+                </ThemedText>
+                <ThemedText
+                  type="small"
+                  themeColor={pushEnabled ? 'success' : 'textMuted'}>
+                  {permissionLabel}
+                </ThemedText>
+              </View>
+              <View style={styles.preferenceControl}>
+                <Switch
+                  accessibilityLabel={t('notifications.pushTitle')}
+                  accessibilityState={{
+                    checked: pushEnabled,
+                    disabled: pushUnavailable,
+                  }}
+                  disabled={loading || pushPreferenceSaving || pushUnavailable}
+                  onValueChange={(enabled) =>
+                    void registerPushPreference(enabled)
+                  }
+                  trackColor={{ false: theme.border, true: theme.success }}
+                  value={pushEnabled}
+                />
+              </View>
             </View>
-          )}
-        </View>
-      </ScrollView>
+
+            <View style={styles.listHeader}>
+              <View>
+                <ThemedText type="subtitle">
+                  {t('notifications.listTitle')}
+                </ThemedText>
+                <ThemedText type="small" themeColor="textMuted">
+                  {t('notifications.unreadCount', { count: unreadCount })}
+                </ThemedText>
+              </View>
+              <Button
+                disabled={unreadCount === 0}
+                label={t('notifications.markAllReadAction')}
+                onPress={() => void markAllRead()}
+                variant="secondary"
+              />
+            </View>
+          </View>
+        }
+        ListFooterComponent={
+          loadingMore ? (
+            <View style={styles.loadingMore}>
+              <ActivityIndicator color={theme.primary} />
+              <ThemedText type="small" themeColor="textMuted">
+                {t('notifications.loadingMore')}
+              </ThemedText>
+            </View>
+          ) : null
+        }
+        maxToRenderPerBatch={12}
+        onEndReached={() => void loadMoreNotifications()}
+        onEndReachedThreshold={0.4}
+        renderItem={({ item: notification }) => (
+          <NotificationListItem
+            deletePending={pendingDeleteNotificationId === notification.id}
+            deleting={deletingNotificationId === notification.id}
+            notification={notification}
+            onCancelDelete={() => setPendingDeleteNotificationId(null)}
+            onConfirmDelete={() => void removeNotification(notification.id)}
+            onOpen={() => void openNotification(notification)}
+            onRequestDelete={() =>
+              setPendingDeleteNotificationId(notification.id)
+            }
+          />
+        )}
+        style={styles.listScroller}
+        windowSize={7}
+      />
     </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   screen: {
+    flex: 1,
+  },
+  listScroller: {
     flex: 1,
   },
   scrollContent: {
@@ -551,6 +675,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: MaxContentWidth,
     gap: Spacing.four,
+    marginBottom: Spacing.four,
   },
   heading: {
     gap: Spacing.two,
@@ -594,10 +719,24 @@ const styles = StyleSheet.create({
     padding: 0,
     borderWidth: 0,
   },
-  list: {
+  emptyResult: {
+    width: '100%',
+    maxWidth: MaxContentWidth,
+  },
+  listSeparator: {
+    height: Spacing.two,
+  },
+  loadingMore: {
+    alignItems: 'center',
+    flexDirection: 'row',
     gap: Spacing.two,
+    justifyContent: 'center',
+    paddingVertical: Spacing.four,
+    width: '100%',
   },
   notificationItem: {
+    width: '100%',
+    maxWidth: MaxContentWidth,
     borderWidth: 1,
     borderRadius: Radii.medium,
     overflow: 'hidden',

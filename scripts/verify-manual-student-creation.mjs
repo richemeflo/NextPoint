@@ -188,6 +188,49 @@ try {
   assert.equal(duplicatePhone.ok, false);
   assert.equal(duplicatePhone.error.code, 'duplicate_student');
 
+  const withoutPhoneOrAge = await invoke(
+    'create-manual-student',
+    {
+      fullName: 'Élève Sans Contact',
+      phone: '',
+      email: `without-age-${Date.now()}@nextpoint.local`,
+      padelLevel: 2,
+      age: null,
+      sex: 'not_specified',
+    },
+    coach.session.access_token
+  );
+  assert.equal(withoutPhoneOrAge.ok, true);
+  assert.equal(withoutPhoneOrAge.data.phone, '');
+  assert.equal(withoutPhoneOrAge.data.age, null);
+  assert.ok(withoutPhoneOrAge.data.email);
+  createdUserIds.push(withoutPhoneOrAge.data.user_id);
+
+  const listedWithoutAge = await coach.client.rpc('get_associated_students', {
+    p_coach_id: coach.userId,
+  });
+  assert.equal(listedWithoutAge.error, null);
+  const withoutAgeReadModel = listedWithoutAge.data.find(
+    (student) => student.user_id === withoutPhoneOrAge.data.user_id
+  );
+  assert.equal(withoutAgeReadModel?.profile_complete, true);
+  assert.equal(withoutAgeReadModel?.age, null);
+
+  const withoutEmail = await invoke(
+    'create-manual-student',
+    {
+      fullName: 'Élève Sans Email',
+      phone: '',
+      email: '',
+      padelLevel: 2,
+      age: null,
+      sex: 'not_specified',
+    },
+    coach.session.access_token
+  );
+  assert.equal(withoutEmail.ok, false);
+  assert.equal(withoutEmail.error.code, 'invalid_student');
+
   const forbidden = await invoke(
     'create-manual-student',
     {

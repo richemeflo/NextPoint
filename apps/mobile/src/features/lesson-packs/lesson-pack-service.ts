@@ -6,6 +6,12 @@ import type {
 } from '@nextpoint/shared';
 
 import { supabase } from '@/lib/supabase/client';
+import {
+  buildLessonPackCursorFilter,
+  getLessonPackCursor,
+  lessonPackPageSize,
+  type LessonPackCursor,
+} from '@/features/lesson-packs/lesson-pack-pagination';
 import { runLessonPackRequest } from '@/features/lesson-packs/lesson-pack-request';
 
 type LessonPackRow = Tables<'lesson_packs'>;
@@ -20,21 +26,23 @@ export type LessonPack = {
   createdAt: string;
 };
 
-type LessonPacksResult =
-  | { ok: true; data: LessonPack[] }
-  | { ok: false };
+export type LessonPacksPage = {
+  data: LessonPack[];
+  hasMore: boolean;
+  nextCursor: LessonPackCursor | null;
+};
+
+type LessonPacksPageResult =
+  { ok: true; data: LessonPacksPage } | { ok: false };
 
 type LessonPackResult =
-  | { ok: true; data: LessonPack }
-  | { ok: false; code?: 'active_pack_exists' };
+  { ok: true; data: LessonPack } | { ok: false; code?: 'active_pack_exists' };
 
 type AdjustLessonPackResult =
-  | { ok: true; data: LessonPack }
-  | { ok: false; code: 'adjust_refused' };
+  { ok: true; data: LessonPack } | { ok: false; code: 'adjust_refused' };
 
 type ConsumeLessonPackResult =
-  | { ok: true; data: LessonPack }
-  | { ok: false; code: 'consume_refused' };
+  { ok: true; data: LessonPack } | { ok: false; code: 'consume_refused' };
 
 function mapLessonPack(row: LessonPackRow): LessonPack {
   return {
@@ -49,24 +57,45 @@ function mapLessonPack(row: LessonPackRow): LessonPack {
   };
 }
 
-export async function getStudentLessonPacks(
-  studentId: string
-): Promise<LessonPacksResult> {
+export async function getStudentLessonPacksPage(
+  studentId: string,
+  {
+    cursor = null,
+    limit = lessonPackPageSize,
+  }: {
+    cursor?: LessonPackCursor | null;
+    limit?: number;
+  } = {},
+): Promise<LessonPacksPageResult> {
   if (!supabase) return { ok: false };
 
-  const { data, error } = await supabase
+  const pageLimit = Math.min(Math.max(Math.trunc(limit), 1), 100);
+  let query = supabase
     .from('lesson_packs')
     .select('*')
     .eq('student_id', studentId)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .order('id', { ascending: false })
+    .limit(pageLimit + 1);
 
+  if (cursor) query = query.or(buildLessonPackCursorFilter(cursor));
+
+  const { data, error } = await query;
   if (error) return { ok: false };
-  return { ok: true, data: data.map(mapLessonPack) };
+  const packs = data.slice(0, pageLimit).map(mapLessonPack);
+  return {
+    ok: true,
+    data: {
+      data: packs,
+      hasMore: data.length > pageLimit,
+      nextCursor: getLessonPackCursor(packs),
+    },
+  };
 }
 
 export async function assignLessonPack(
   studentId: string,
-  input: LessonPackInput
+  input: LessonPackInput,
 ): Promise<LessonPackResult> {
   if (!supabase) return { ok: false };
   const client = supabase;
@@ -77,7 +106,7 @@ export async function assignLessonPack(
         p_student_id: studentId,
         p_included_sessions: input.includedSessions,
       })
-      .abortSignal(signal)
+      .abortSignal(signal),
   );
 
   if (error || !data) {
@@ -92,7 +121,7 @@ export async function assignLessonPack(
 
 export async function adjustLessonPackSessions(
   packId: string,
-  adjustment: LessonPackAdjustment
+  adjustment: LessonPackAdjustment,
 ): Promise<AdjustLessonPackResult> {
   if (!supabase) return { ok: false, code: 'adjust_refused' };
   const client = supabase;
@@ -103,7 +132,7 @@ export async function adjustLessonPackSessions(
         p_pack_id: packId,
         p_delta: adjustment,
       })
-      .abortSignal(signal)
+      .abortSignal(signal),
   );
 
   if (error || !data) {
@@ -114,7 +143,7 @@ export async function adjustLessonPackSessions(
 }
 
 export async function consumeLessonPackSession(
-  packId: string
+  packId: string,
 ): Promise<ConsumeLessonPackResult> {
   if (!supabase) return { ok: false, code: 'consume_refused' };
   const client = supabase;
@@ -124,7 +153,7 @@ export async function consumeLessonPackSession(
       .rpc('consume_lesson_pack_session', {
         p_pack_id: packId,
       })
-      .abortSignal(signal)
+      .abortSignal(signal),
   );
 
   if (error || !data) {

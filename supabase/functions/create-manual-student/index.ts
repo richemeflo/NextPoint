@@ -23,20 +23,24 @@ function parseInput(input: unknown) {
   const email =
     typeof value.email === 'string' ? value.email.trim().toLowerCase() : '';
   const padelLevel = Number(value.padelLevel);
-  const age = Number(value.age);
+  const age =
+    value.age === null ||
+    value.age === undefined ||
+    (typeof value.age === 'string' && value.age.trim() === '')
+      ? null
+      : Number(value.age);
   const sex = typeof value.sex === 'string' ? value.sex : '';
 
   if (
     fullName.length < 2 ||
     fullName.length > 100 ||
-    !/^\+?[0-9][0-9 .()-]{5,29}$/.test(phone) ||
+    (phone !== '' && !/^\+?[0-9][0-9 .()-]{5,29}$/.test(phone)) ||
     !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) ||
     !Number.isInteger(padelLevel) ||
     padelLevel < 1 ||
     padelLevel > 10 ||
-    !Number.isInteger(age) ||
-    age < 5 ||
-    age > 100 ||
+    (age !== null &&
+      (!Number.isInteger(age) || age < 5 || age > 100)) ||
     !studentSexes.has(sex)
   ) {
     return null;
@@ -71,11 +75,13 @@ Deno.serve(async (request) => {
       .select('user_id')
       .eq('email', input.email)
       .limit(1),
-    adminClient
-      .from('student_profiles')
-      .select('user_id')
-      .eq('phone', input.phone)
-      .limit(1),
+    input.phone
+      ? adminClient
+          .from('student_profiles')
+          .select('user_id')
+          .eq('phone', input.phone)
+          .limit(1)
+      : Promise.resolve({ data: [], error: null }),
   ]);
 
   if (duplicateEmail.error || duplicatePhone.error) {

@@ -10,15 +10,15 @@ type AgendaGridSelectionInput = {
   endsAt: string;
   height: number;
   locationY: number | undefined;
+  roundingMinutes?: 15 | 30;
 };
-
-const quarterHourMs = 15 * 60_000;
 
 export function getAgendaGridSelection({
   startsAt,
   endsAt,
   height,
   locationY,
+  roundingMinutes = 15,
 }: AgendaGridSelectionInput): string | null {
   const start = new Date(startsAt).getTime();
   const end = new Date(endsAt).getTime();
@@ -55,14 +55,15 @@ export function getAgendaGridSelection({
       ? Math.max(0, Math.min(1, locationY / height))
       : 0;
   const raw = visibleStart + ratio * (visibleEnd - visibleStart);
-  const firstQuarter = Math.ceil(visibleStart / quarterHourMs) * quarterHourMs;
-  const lastQuarter = Math.floor(visibleEnd / quarterHourMs) * quarterHourMs;
-  if (firstQuarter > lastQuarter) return null;
+  const roundingMs = roundingMinutes * 60_000;
+  const firstRoundedStart = Math.ceil(visibleStart / roundingMs) * roundingMs;
+  const lastRoundedStart = Math.floor(visibleEnd / roundingMs) * roundingMs;
+  if (firstRoundedStart > lastRoundedStart) return null;
 
-  const roundedToQuarter = Math.floor(raw / quarterHourMs) * quarterHourMs;
+  const roundedDown = Math.floor(raw / roundingMs) * roundingMs;
   const selection = Math.max(
-    firstQuarter,
-    Math.min(lastQuarter, roundedToQuarter)
+    firstRoundedStart,
+    Math.min(lastRoundedStart, roundedDown)
   );
 
   return Number.isFinite(selection) ? new Date(selection).toISOString() : null;

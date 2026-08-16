@@ -7,9 +7,20 @@ export const defaultLocale: SupportedLocale = 'fr';
 export const dictionaries = {
   fr: {
     'nav.home': 'Accueil',
+    'nav.mainLabel': 'Navigation principale',
     'nav.foundation': 'Fondations',
     'common.docs': 'Docs',
     'common.nextpoint': 'NextPoint',
+    'errorBoundary.rootTitle': 'Une erreur inattendue est survenue',
+    'errorBoundary.rootBody':
+      'NextPoint ne peut pas afficher cet écran pour le moment. Réessayez pour reprendre votre navigation.',
+    'errorBoundary.planningTitle': 'Le planning a rencontré un problème',
+    'errorBoundary.planningBody':
+      'Le reste de votre espace reste disponible. Réessayez pour recharger le planning.',
+    'errorBoundary.messagingTitle': 'La messagerie a rencontré un problème',
+    'errorBoundary.messagingBody':
+      'Le reste de votre espace reste disponible. Réessayez pour recharger vos discussions.',
+    'errorBoundary.retryAction': 'Réessayer',
     'auth.sessionLoading': 'Restauration de votre session...',
     'auth.roleLabel': 'Je crée un compte comme',
     'auth.roleCoach': 'Coach',
@@ -53,7 +64,8 @@ export const dictionaries = {
     'nav.coach.stats': 'Stats',
     'stats.loading': 'Chargement des statistiques...',
     'stats.title': 'Statistiques',
-    'stats.subtitle': 'Suivez vos cours terminés et votre activité sur la période.',
+    'stats.subtitle':
+      'Suivez vos cours terminés et votre activité sur la période.',
     'stats.period.month': 'Mois',
     'stats.period.quarter': 'Trimestre',
     'stats.period.year': 'Année',
@@ -90,6 +102,7 @@ export const dictionaries = {
     'nav.eleve.notifications': 'Notifications',
     'nav.eleve.account': 'Compte',
     'notifications.loading': 'Chargement des notifications...',
+    'notifications.loadingMore': 'Chargement des notifications précédentes...',
     'notifications.title': 'Notifications',
     'notifications.subtitle':
       'Retrouvez les demandes, validations, refus et changements de réservation.',
@@ -102,6 +115,7 @@ export const dictionaries = {
     'notifications.pushStatus.denied': 'refusées',
     'notifications.pushStatus.undetermined': 'non défini',
     'notifications.pushStatus.unavailable': 'indisponible',
+    'notifications.pushStatus.unavailableWeb': 'indisponible sur le web',
     'notifications.listTitle': 'Récentes',
     'notifications.unreadCount': '{{count}} non lue(s)',
     'notifications.markAllReadAction': 'Tout marquer comme lu',
@@ -181,6 +195,9 @@ export const dictionaries = {
     'planning.display.list': 'Liste',
     'planning.mode.week': 'Semaine',
     'planning.mode.day': 'Jour',
+    'planning.filtersLabel': 'Filtrer le planning',
+    'planning.availabilityFilter': 'Disponibilités',
+    'planning.confirmedLessonsFilter': 'Cours confirmés',
     'planning.previousAction': 'Précédent',
     'planning.todayAction': 'Aujourd’hui',
     'planning.nextAction': 'Suivant',
@@ -280,7 +297,8 @@ export const dictionaries = {
       'Les créneaux affichés sont disponibles et demandables auprès de votre coach.',
     'studentAgenda.loadErrorTitle': 'Agenda indisponible',
     'studentAgenda.loadErrorBody':
-      'Impossible de charger les créneaux demandables pour le moment.',
+      'Impossible de charger les créneaux ou les participants disponibles pour le moment.',
+    'studentAgenda.retryAction': 'Réessayer',
     'studentAgenda.emptyDayTitle': 'Aucun créneau demandable',
     'studentAgenda.emptyDayBody':
       'Aucun créneau disponible n’est proposé sur cette journée.',
@@ -452,6 +470,8 @@ export const dictionaries = {
     'students.createTitle': 'Nouvelle fiche élève',
     'students.createBody':
       'Ajoutez un élève et préparez son compte non activé. Son accès sera finalisé avec un lien valable 24 heures.',
+    'students.optionalPhoneLabel': 'Téléphone (facultatif)',
+    'students.optionalAgeLabel': 'Âge (facultatif)',
     'students.createSubmitAction': 'Créer la fiche',
     'students.createCancelAction': 'Annuler',
     'students.creating': 'Création...',
@@ -517,6 +537,13 @@ export const dictionaries = {
     'studentDetail.historyEmptyTitle': 'Aucun historique',
     'studentDetail.historyEmptyBody':
       'Les demandes, cours, annulations, modifications et packs apparaîtront ici.',
+    'studentDetail.historyLoading': 'Chargement de l’historique...',
+    'studentDetail.historyLoadingMore':
+      'Chargement des événements précédents...',
+    'studentDetail.historyLoadMoreAction': 'Réessayer le chargement',
+    'studentDetail.historyLoadErrorTitle': 'Historique indisponible',
+    'studentDetail.historyLoadErrorBody':
+      'Impossible de charger l’historique de cet élève pour le moment.',
     'studentDetail.historyType.bookingRequested': 'Demande de cours',
     'studentDetail.historyType.lessonConfirmed': 'Cours confirmé',
     'studentDetail.historyType.bookingCancelled': 'Annulation',
@@ -568,6 +595,7 @@ export const dictionaries = {
     'studentPrivateNote.saveErrorBody':
       'La note existante n’a pas été modifiée. Réessayez.',
     'lessonPack.loading': 'Chargement des packs...',
+    'lessonPack.loadMoreAction': 'Réessayer le chargement',
     'lessonPack.studentTitle': 'Mes packs de tickets',
     'lessonPack.readonlyHint':
       'Consultez vos crédits de cours. Seul votre coach peut les modifier.',
@@ -759,6 +787,32 @@ export const dictionaries = {
     'auth.signingUp': 'Création du compte...',
     'auth.goToSignUp': 'Créer un compte',
     'auth.goToSignIn': 'J’ai déjà un compte',
+    'auth.forgotPasswordAction': 'J’ai oublié mon mot de passe',
+    'auth.forgotPasswordTitle': 'Réinitialisez votre mot de passe.',
+    'auth.forgotPasswordSubtitle':
+      'Saisissez votre email pour recevoir un lien de réinitialisation sécurisé.',
+    'auth.resetPasswordTitle': 'Choisissez un nouveau mot de passe.',
+    'auth.resetPasswordSubtitle':
+      'Utilisez le lien reçu par email pour sécuriser à nouveau votre compte.',
+    'auth.passwordResetEmailSentTitle': 'Vérifiez votre email',
+    'auth.passwordResetEmailSentBody':
+      'Si un compte correspond à cette adresse, un lien de réinitialisation vient d’être envoyé.',
+    'auth.passwordResetSending': 'Envoi...',
+    'auth.passwordResetSendAction': 'Envoyer le lien',
+    'auth.passwordResetLinkLoadingTitle': 'Vérification du lien',
+    'auth.passwordResetLinkLoadingBody':
+      'Nous vérifions votre lien de réinitialisation.',
+    'auth.passwordResetInvalidTitle': 'Lien invalide ou expiré',
+    'auth.passwordResetInvalidBody':
+      'Demandez un nouveau lien de réinitialisation pour continuer.',
+    'auth.passwordResetRequestAnotherAction': 'Demander un nouveau lien',
+    'auth.passwordResetCompleteTitle': 'Mot de passe modifié',
+    'auth.passwordResetCompleteBody':
+      'Votre nouveau mot de passe est enregistré. Vous pouvez maintenant vous connecter.',
+    'auth.newPasswordLabel': 'Nouveau mot de passe',
+    'auth.confirmNewPasswordLabel': 'Confirmer le nouveau mot de passe',
+    'auth.passwordResetUpdating': 'Modification...',
+    'auth.passwordResetUpdateAction': 'Modifier mon mot de passe',
     'auth.confirmationTitle': 'Vérifiez votre email',
     'auth.confirmationMessage':
       'Votre compte est créé. Ouvrez le message reçu pour confirmer votre adresse avant de vous connecter.',
@@ -856,9 +910,20 @@ export const dictionaries = {
   },
   en: {
     'nav.home': 'Home',
+    'nav.mainLabel': 'Main navigation',
     'nav.foundation': 'Foundations',
     'common.docs': 'Docs',
     'common.nextpoint': 'NextPoint',
+    'errorBoundary.rootTitle': 'Something unexpected happened',
+    'errorBoundary.rootBody':
+      'NextPoint cannot display this screen right now. Try again to resume navigation.',
+    'errorBoundary.planningTitle': 'The schedule encountered a problem',
+    'errorBoundary.planningBody':
+      'The rest of your space is still available. Try again to reload the schedule.',
+    'errorBoundary.messagingTitle': 'Messages encountered a problem',
+    'errorBoundary.messagingBody':
+      'The rest of your space is still available. Try again to reload your discussions.',
+    'errorBoundary.retryAction': 'Try again',
     'auth.sessionLoading': 'Restoring your session...',
     'auth.roleLabel': 'I am creating an account as',
     'auth.roleCoach': 'Coach',
@@ -938,18 +1003,19 @@ export const dictionaries = {
     'nav.eleve.notifications': 'Notifications',
     'nav.eleve.account': 'Account',
     'notifications.loading': 'Loading notifications...',
+    'notifications.loadingMore': 'Loading earlier notifications...',
     'notifications.title': 'Notifications',
     'notifications.subtitle':
       'Find requests, approvals, refusals and booking changes.',
     'notifications.pushTitle': 'Push notifications',
-    'notifications.pushBody':
-      'Receive alerts even when the app is closed.',
+    'notifications.pushBody': 'Receive alerts even when the app is closed.',
     'notifications.pushAcceptAction': 'Allow',
     'notifications.pushRefuseAction': 'Refuse',
     'notifications.pushStatus.granted': 'allowed',
     'notifications.pushStatus.denied': 'refused',
     'notifications.pushStatus.undetermined': 'not set',
     'notifications.pushStatus.unavailable': 'unavailable',
+    'notifications.pushStatus.unavailableWeb': 'unavailable on the web',
     'notifications.listTitle': 'Recent',
     'notifications.unreadCount': '{{count}} unread',
     'notifications.markAllReadAction': 'Mark all read',
@@ -1026,6 +1092,9 @@ export const dictionaries = {
     'planning.display.list': 'List',
     'planning.mode.week': 'Week',
     'planning.mode.day': 'Day',
+    'planning.filtersLabel': 'Filter the schedule',
+    'planning.availabilityFilter': 'Availability',
+    'planning.confirmedLessonsFilter': 'Confirmed lessons',
     'planning.previousAction': 'Previous',
     'planning.todayAction': 'Today',
     'planning.nextAction': 'Next',
@@ -1120,7 +1189,8 @@ export const dictionaries = {
       'Visible slots are available and requestable with your coach.',
     'studentAgenda.loadErrorTitle': 'Agenda unavailable',
     'studentAgenda.loadErrorBody':
-      'Unable to load requestable slots right now.',
+      'Unable to load requestable slots or available participants right now.',
+    'studentAgenda.retryAction': 'Try again',
     'studentAgenda.emptyDayTitle': 'No requestable slots',
     'studentAgenda.emptyDayBody': 'No available slot is offered on this day.',
     'studentAgenda.slotDetail': '{{date}} · {{duration}} · {{location}}',
@@ -1289,6 +1359,8 @@ export const dictionaries = {
     'students.createTitle': 'New student record',
     'students.createBody':
       'Add a student and prepare an inactive account. Access will be completed through a 24-hour link.',
+    'students.optionalPhoneLabel': 'Phone (optional)',
+    'students.optionalAgeLabel': 'Age (optional)',
     'students.createSubmitAction': 'Create record',
     'students.createCancelAction': 'Cancel',
     'students.creating': 'Creating...',
@@ -1353,6 +1425,12 @@ export const dictionaries = {
     'studentDetail.historyEmptyTitle': 'No history',
     'studentDetail.historyEmptyBody':
       'Requests, lessons, cancellations, changes, and packs will appear here.',
+    'studentDetail.historyLoading': 'Loading history...',
+    'studentDetail.historyLoadingMore': 'Loading earlier events...',
+    'studentDetail.historyLoadMoreAction': 'Retry loading',
+    'studentDetail.historyLoadErrorTitle': 'History unavailable',
+    'studentDetail.historyLoadErrorBody':
+      'This student’s history cannot be loaded right now.',
     'studentDetail.historyType.bookingRequested': 'Lesson request',
     'studentDetail.historyType.lessonConfirmed': 'Confirmed lesson',
     'studentDetail.historyType.bookingCancelled': 'Cancellation',
@@ -1400,6 +1478,7 @@ export const dictionaries = {
     'studentPrivateNote.saveErrorBody':
       'The existing note was not changed. Try again.',
     'lessonPack.loading': 'Loading lesson packs...',
+    'lessonPack.loadMoreAction': 'Retry loading',
     'lessonPack.studentTitle': 'My ticket packs',
     'lessonPack.readonlyHint':
       'View your lesson credits. Only your coach can change them.',
@@ -1588,6 +1667,32 @@ export const dictionaries = {
     'auth.signingUp': 'Creating account...',
     'auth.goToSignUp': 'Create an account',
     'auth.goToSignIn': 'I already have an account',
+    'auth.forgotPasswordAction': 'I forgot my password',
+    'auth.forgotPasswordTitle': 'Reset your password.',
+    'auth.forgotPasswordSubtitle':
+      'Enter your email to receive a secure password reset link.',
+    'auth.resetPasswordTitle': 'Choose a new password.',
+    'auth.resetPasswordSubtitle':
+      'Use the link received by email to secure your account again.',
+    'auth.passwordResetEmailSentTitle': 'Check your email',
+    'auth.passwordResetEmailSentBody':
+      'If an account matches this address, a password reset link has just been sent.',
+    'auth.passwordResetSending': 'Sending...',
+    'auth.passwordResetSendAction': 'Send the link',
+    'auth.passwordResetLinkLoadingTitle': 'Checking the link',
+    'auth.passwordResetLinkLoadingBody':
+      'We are checking your password reset link.',
+    'auth.passwordResetInvalidTitle': 'Invalid or expired link',
+    'auth.passwordResetInvalidBody':
+      'Request a new password reset link to continue.',
+    'auth.passwordResetRequestAnotherAction': 'Request a new link',
+    'auth.passwordResetCompleteTitle': 'Password changed',
+    'auth.passwordResetCompleteBody':
+      'Your new password is saved. You can now sign in.',
+    'auth.newPasswordLabel': 'New password',
+    'auth.confirmNewPasswordLabel': 'Confirm new password',
+    'auth.passwordResetUpdating': 'Updating...',
+    'auth.passwordResetUpdateAction': 'Change my password',
     'auth.confirmationTitle': 'Check your email',
     'auth.confirmationMessage':
       'Your account was created. Open the message you received to confirm your address before signing in.',
@@ -1681,9 +1786,20 @@ export const dictionaries = {
   },
   es: {
     'nav.home': 'Inicio',
+    'nav.mainLabel': 'Navegación principal',
     'nav.foundation': 'Bases',
     'common.docs': 'Docs',
     'common.nextpoint': 'NextPoint',
+    'errorBoundary.rootTitle': 'Se produjo un error inesperado',
+    'errorBoundary.rootBody':
+      'NextPoint no puede mostrar esta pantalla en este momento. Inténtalo de nuevo para continuar navegando.',
+    'errorBoundary.planningTitle': 'La planificación encontró un problema',
+    'errorBoundary.planningBody':
+      'El resto de tu espacio sigue disponible. Inténtalo de nuevo para recargar la planificación.',
+    'errorBoundary.messagingTitle': 'La mensajería encontró un problema',
+    'errorBoundary.messagingBody':
+      'El resto de tu espacio sigue disponible. Inténtalo de nuevo para recargar tus conversaciones.',
+    'errorBoundary.retryAction': 'Intentar de nuevo',
     'auth.sessionLoading': 'Restaurando tu sesión...',
     'auth.roleLabel': 'Creo una cuenta como',
     'auth.roleCoach': 'Coach',
@@ -1727,7 +1843,8 @@ export const dictionaries = {
     'nav.coach.stats': 'Estadísticas',
     'stats.loading': 'Cargando estadísticas...',
     'stats.title': 'Estadísticas',
-    'stats.subtitle': 'Consulta las clases terminadas y tu actividad del período.',
+    'stats.subtitle':
+      'Consulta las clases terminadas y tu actividad del período.',
     'stats.period.month': 'Mes',
     'stats.period.quarter': 'Trimestre',
     'stats.period.year': 'Año',
@@ -1764,6 +1881,7 @@ export const dictionaries = {
     'nav.eleve.notifications': 'Notificaciones',
     'nav.eleve.account': 'Cuenta',
     'notifications.loading': 'Cargando notificaciones...',
+    'notifications.loadingMore': 'Cargando notificaciones anteriores...',
     'notifications.title': 'Notificaciones',
     'notifications.subtitle':
       'Encuentra solicitudes, validaciones, rechazos y cambios de reserva.',
@@ -1776,6 +1894,7 @@ export const dictionaries = {
     'notifications.pushStatus.denied': 'rechazadas',
     'notifications.pushStatus.undetermined': 'sin definir',
     'notifications.pushStatus.unavailable': 'no disponible',
+    'notifications.pushStatus.unavailableWeb': 'no disponible en la web',
     'notifications.listTitle': 'Recientes',
     'notifications.unreadCount': '{{count}} sin leer',
     'notifications.markAllReadAction': 'Marcar todo como leído',
@@ -1855,6 +1974,9 @@ export const dictionaries = {
     'planning.display.list': 'Lista',
     'planning.mode.week': 'Semana',
     'planning.mode.day': 'Día',
+    'planning.filtersLabel': 'Filtrar el horario',
+    'planning.availabilityFilter': 'Disponibilidad',
+    'planning.confirmedLessonsFilter': 'Clases confirmadas',
     'planning.previousAction': 'Anterior',
     'planning.todayAction': 'Hoy',
     'planning.nextAction': 'Siguiente',
@@ -1952,7 +2074,8 @@ export const dictionaries = {
       'Los horarios visibles están disponibles y se pueden solicitar a tu coach.',
     'studentAgenda.loadErrorTitle': 'Agenda no disponible',
     'studentAgenda.loadErrorBody':
-      'No se pueden cargar los horarios solicitables en este momento.',
+      'No se pueden cargar los horarios ni los participantes disponibles en este momento.',
+    'studentAgenda.retryAction': 'Reintentar',
     'studentAgenda.emptyDayTitle': 'Sin horarios solicitables',
     'studentAgenda.emptyDayBody': 'No hay horarios disponibles en este día.',
     'studentAgenda.slotDetail': '{{date}} · {{duration}} · {{location}}',
@@ -2124,6 +2247,8 @@ export const dictionaries = {
     'students.createTitle': 'Nueva ficha de alumno',
     'students.createBody':
       'Añade un alumno y prepara su cuenta sin activar. El acceso se completará con un enlace válido durante 24 horas.',
+    'students.optionalPhoneLabel': 'Teléfono (opcional)',
+    'students.optionalAgeLabel': 'Edad (opcional)',
     'students.createSubmitAction': 'Crear ficha',
     'students.createCancelAction': 'Cancelar',
     'students.creating': 'Creando...',
@@ -2189,6 +2314,12 @@ export const dictionaries = {
     'studentDetail.historyEmptyTitle': 'Sin historial',
     'studentDetail.historyEmptyBody':
       'Las solicitudes, clases, cancelaciones, cambios y packs aparecerán aquí.',
+    'studentDetail.historyLoading': 'Cargando el historial...',
+    'studentDetail.historyLoadingMore': 'Cargando eventos anteriores...',
+    'studentDetail.historyLoadMoreAction': 'Reintentar la carga',
+    'studentDetail.historyLoadErrorTitle': 'Historial no disponible',
+    'studentDetail.historyLoadErrorBody':
+      'No se puede cargar el historial de este alumno en este momento.',
     'studentDetail.historyType.bookingRequested': 'Solicitud de clase',
     'studentDetail.historyType.lessonConfirmed': 'Clase confirmada',
     'studentDetail.historyType.bookingCancelled': 'Cancelación',
@@ -2239,6 +2370,7 @@ export const dictionaries = {
     'studentPrivateNote.saveErrorBody':
       'La nota existente no se ha modificado. Inténtalo de nuevo.',
     'lessonPack.loading': 'Cargando los packs...',
+    'lessonPack.loadMoreAction': 'Reintentar la carga',
     'lessonPack.studentTitle': 'Mis packs de tickets',
     'lessonPack.readonlyHint':
       'Consulta tus créditos de clase. Solo tu coach puede modificarlos.',
@@ -2430,6 +2562,32 @@ export const dictionaries = {
     'auth.signingUp': 'Creando la cuenta...',
     'auth.goToSignUp': 'Crear una cuenta',
     'auth.goToSignIn': 'Ya tengo una cuenta',
+    'auth.forgotPasswordAction': 'He olvidado mi contraseña',
+    'auth.forgotPasswordTitle': 'Restablece tu contraseña.',
+    'auth.forgotPasswordSubtitle':
+      'Introduce tu email para recibir un enlace seguro de restablecimiento.',
+    'auth.resetPasswordTitle': 'Elige una nueva contraseña.',
+    'auth.resetPasswordSubtitle':
+      'Utiliza el enlace recibido por email para proteger de nuevo tu cuenta.',
+    'auth.passwordResetEmailSentTitle': 'Revisa tu email',
+    'auth.passwordResetEmailSentBody':
+      'Si existe una cuenta con esta dirección, acabamos de enviar un enlace de restablecimiento.',
+    'auth.passwordResetSending': 'Enviando...',
+    'auth.passwordResetSendAction': 'Enviar el enlace',
+    'auth.passwordResetLinkLoadingTitle': 'Comprobando el enlace',
+    'auth.passwordResetLinkLoadingBody':
+      'Estamos comprobando tu enlace de restablecimiento.',
+    'auth.passwordResetInvalidTitle': 'Enlace no válido o caducado',
+    'auth.passwordResetInvalidBody':
+      'Solicita un nuevo enlace de restablecimiento para continuar.',
+    'auth.passwordResetRequestAnotherAction': 'Solicitar un nuevo enlace',
+    'auth.passwordResetCompleteTitle': 'Contraseña modificada',
+    'auth.passwordResetCompleteBody':
+      'Tu nueva contraseña está guardada. Ya puedes iniciar sesión.',
+    'auth.newPasswordLabel': 'Nueva contraseña',
+    'auth.confirmNewPasswordLabel': 'Confirmar nueva contraseña',
+    'auth.passwordResetUpdating': 'Modificando...',
+    'auth.passwordResetUpdateAction': 'Cambiar mi contraseña',
     'auth.confirmationTitle': 'Revisa tu email',
     'auth.confirmationMessage':
       'Tu cuenta ha sido creada. Abre el mensaje recibido para confirmar tu dirección antes de iniciar sesión.',

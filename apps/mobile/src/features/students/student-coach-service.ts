@@ -10,7 +10,12 @@ import {
 } from '@nextpoint/shared';
 
 import { supabase } from '@/lib/supabase/client';
-import { getStudentHistoryDisplayEvents } from '@/features/students/student-history-view';
+import {
+  buildStudentHistoryCursorFilter,
+  getStudentHistoryCursor,
+  studentHistoryPageSize,
+  type StudentHistoryCursor,
+} from '@/features/students/student-history-pagination';
 
 type RelationshipRow = Tables<'student_coach_relationships'>;
 type StudentHistoryRow = Tables<'student_history_events'>;
@@ -31,7 +36,7 @@ export type CompleteAssociatedStudent = {
   email: string;
   phone: string;
   padelLevel: number;
-  age: number;
+  age: number | null;
   sex: StudentSex;
   accountStatus: StudentAccountStatus;
   profileComplete: true;
@@ -63,24 +68,29 @@ export type StudentHistoryEvent = {
 
 export type AssociatedStudentDetail = {
   student: AssociatedStudent;
-  history: StudentHistoryEvent[];
+};
+
+export type StudentHistoryPage = {
+  data: StudentHistoryEvent[];
+  hasMore: boolean;
+  nextCursor: StudentHistoryCursor | null;
 };
 
 type AssociationResult =
-  | { ok: true; data: StudentCoachAssociation | null }
-  | { ok: false };
+  { ok: true; data: StudentCoachAssociation | null } | { ok: false };
 
 type AssociatedStudentsResult =
-  | { ok: true; data: AssociatedStudent[] }
-  | { ok: false };
+  { ok: true; data: AssociatedStudent[] } | { ok: false };
 
 type AssociatedStudentResult =
-  | { ok: true; data: AssociatedStudent }
-  | { ok: false; code?: string };
+  { ok: true; data: AssociatedStudent } | { ok: false; code?: string };
 
 type AssociatedStudentDetailResult =
   | { ok: true; data: AssociatedStudentDetail }
   | { ok: false; code: 'not_found' | 'load_failed' };
+
+type StudentHistoryPageResult =
+  { ok: true; data: StudentHistoryPage } | { ok: false };
 
 function mapAssociation(row: RelationshipRow): StudentCoachAssociation {
   return {
@@ -110,12 +120,13 @@ function mapStudent(row: StudentProfileRow): CompleteAssociatedStudent {
 type AssociatedStudentReadRow =
   Database['public']['Functions']['get_associated_students']['Returns'][number];
 
-function mapAssociatedStudent(row: AssociatedStudentReadRow): AssociatedStudent {
+function mapAssociatedStudent(
+  row: AssociatedStudentReadRow,
+): AssociatedStudent {
   if (
     row.profile_complete &&
     row.phone !== null &&
     row.padel_level !== null &&
-    row.age !== null &&
     row.sex !== null &&
     row.account_status !== null
   ) {
@@ -158,7 +169,7 @@ function mapHistoryEvent(row: StudentHistoryRow): StudentHistoryEvent {
 }
 
 export async function getStudentCoachAssociation(
-  studentId: string
+  studentId: string,
 ): Promise<AssociationResult> {
   if (!supabase) return { ok: false };
 
@@ -174,7 +185,7 @@ export async function getStudentCoachAssociation(
 }
 
 export async function getAssociatedStudents(
-  coachId: string
+  coachId: string,
 ): Promise<AssociatedStudentsResult> {
   if (!supabase) return { ok: false };
 
@@ -187,7 +198,7 @@ export async function getAssociatedStudents(
 }
 
 export async function getAssociatedStudentDetail(
-  studentId: string
+  studentId: string,
 ): Promise<AssociatedStudentDetailResult> {
   if (!supabase) return { ok: false, code: 'load_failed' };
 
@@ -205,31 +216,62 @@ export async function getAssociatedStudentDetail(
   const student = students.data.find((item) => item.user_id === studentId);
   if (!student) return { ok: false, code: 'not_found' };
 
-  const history = await supabase
-    .from('student_history_events')
-    .select('*')
-    .eq('student_id', studentId)
-    .order('occurred_at', { ascending: false });
-
-  if (history.error) return { ok: false, code: 'load_failed' };
-
   return {
     ok: true,
     data: {
       student: mapAssociatedStudent(student),
-      history: getStudentHistoryDisplayEvents(history.data.map(mapHistoryEvent)),
+    },
+  };
+}
+
+export async function getAssociatedStudentHistoryPage(
+  studentId: string,
+  {
+    cursor = null,
+    limit = studentHistoryPageSize,
+    status,
+  }: {
+    cursor?: StudentHistoryCursor | null;
+    limit?: number;
+    status?: StudentHistoryEventStatus;
+  } = {},
+): Promise<StudentHistoryPageResult> {
+  if (!supabase) return { ok: false };
+
+  const pageLimit = Math.min(Math.max(Math.trunc(limit), 1), 100);
+  let query = supabase
+    .from('student_history_events')
+    .select('*')
+    .eq('student_id', studentId)
+    .order('occurred_at', { ascending: false })
+    .order('id', { ascending: false })
+    .limit(pageLimit + 1);
+
+  if (status) query = query.eq('status', status);
+  if (cursor) query = query.or(buildStudentHistoryCursorFilter(cursor));
+
+  const { data, error } = await query;
+  if (error) return { ok: false };
+
+  const events = data.slice(0, pageLimit).map(mapHistoryEvent);
+  return {
+    ok: true,
+    data: {
+      data: events,
+      hasMore: data.length > pageLimit,
+      nextCursor: getStudentHistoryCursor(events),
     },
   };
 }
 
 export async function createManualStudent(
-  profile: ManualStudentProfileInput
+  profile: ManualStudentProfileInput,
 ): Promise<AssociatedStudentResult> {
   if (!supabase) return { ok: false };
 
   const { data, error } = await supabase.functions.invoke(
     'create-manual-student',
-    { body: profile }
+    { body: profile },
   );
   const parsed = createManualStudentResponseSchema.safeParse(data as unknown);
 

@@ -2,9 +2,10 @@ import { Platform } from 'react-native';
 
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
 
 import type { PushPermissionStatus, PushProvider } from '@nextpoint/shared';
+
+import { getPushInstallationId } from './push-installation-id';
 
 export type ClientPushPermissionResult = {
   permissionStatus: PushPermissionStatus;
@@ -12,12 +13,6 @@ export type ClientPushPermissionResult = {
   deviceId: string | null;
   token: string | null;
 };
-
-function webDeviceId() {
-  if (typeof navigator === 'undefined') return 'web';
-
-  return `web:${navigator.userAgent.slice(0, 100)}`;
-}
 
 function getExpoProjectId() {
   return (
@@ -27,24 +22,15 @@ function getExpoProjectId() {
   );
 }
 
-function nativeDeviceId() {
-  return [
-    Platform.OS,
-    Device.osBuildId,
-    Device.modelId,
-    Device.deviceName,
-  ]
-    .filter(Boolean)
-    .join(':')
-    .slice(0, 120);
-}
-
 async function requestNativePushPermission(): Promise<ClientPushPermissionResult> {
+  const Notifications = await import('expo-notifications');
+  const deviceId = await getPushInstallationId();
+
   if (!Device.isDevice) {
     return {
       permissionStatus: 'unavailable',
       provider: 'none',
-      deviceId: Platform.OS,
+      deviceId,
       token: null,
     };
   }
@@ -66,7 +52,7 @@ async function requestNativePushPermission(): Promise<ClientPushPermissionResult
     return {
       permissionStatus: 'denied',
       provider: 'none',
-      deviceId: nativeDeviceId(),
+      deviceId,
       token: null,
     };
   }
@@ -76,7 +62,7 @@ async function requestNativePushPermission(): Promise<ClientPushPermissionResult
     return {
       permissionStatus: 'unavailable',
       provider: 'none',
-      deviceId: nativeDeviceId(),
+      deviceId,
       token: null,
     };
   }
@@ -86,7 +72,7 @@ async function requestNativePushPermission(): Promise<ClientPushPermissionResult
   return {
     permissionStatus: 'granted',
     provider: 'expo',
-    deviceId: nativeDeviceId(),
+    deviceId,
     token: token.data,
   };
 }
@@ -108,22 +94,26 @@ export async function requestClientPushPermission(): Promise<ClientPushPermissio
   return {
     permissionStatus: permission === 'granted' ? 'granted' : 'denied',
     provider: 'web',
-    deviceId: webDeviceId(),
+    deviceId: null,
     token: null,
   };
 }
 
-export function buildPushRefusalPreference(): ClientPushPermissionResult {
-  return buildPushPreferenceWithoutToken('denied');
+export async function buildPushRefusalPreference(): Promise<ClientPushPermissionResult> {
+  return buildPushPreferenceWithoutToken(
+    'denied',
+    Platform.OS === 'web' ? null : await getPushInstallationId()
+  );
 }
 
 function buildPushPreferenceWithoutToken(
-  permissionStatus: PushPermissionStatus
+  permissionStatus: PushPermissionStatus,
+  deviceId: string | null = null
 ): ClientPushPermissionResult {
   return {
     permissionStatus,
     provider: 'none',
-    deviceId: Platform.OS,
+    deviceId,
     token: null,
   };
 }

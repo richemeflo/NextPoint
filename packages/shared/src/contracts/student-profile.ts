@@ -36,11 +36,26 @@ export type StudentProfileFormInput = z.infer<typeof studentProfileSchema>;
 
 export const manualStudentProfileSchema = studentProfileSchema.pick({
   fullName: true,
-  phone: true,
   email: true,
   padelLevel: true,
-  age: true,
   sex: true,
+}).extend({
+  phone: z
+    .string()
+    .trim()
+    .refine(
+      (value) => value === '' || /^\+?[0-9][0-9 .()-]{5,29}$/.test(value),
+      'invalid_phone'
+    ),
+  age: z
+    .string()
+    .trim()
+    .refine(
+      (value) =>
+        value === '' ||
+        (/^\d+$/.test(value) && Number(value) >= 5 && Number(value) <= 100),
+      'invalid_age'
+    ),
 });
 
 export type ManualStudentProfileFormInput = z.infer<
@@ -59,8 +74,8 @@ export type StudentProfileInput = {
 
 export type ManualStudentProfileInput = Omit<
   StudentProfileInput,
-  'preferredLanguage'
->;
+  'preferredLanguage' | 'age'
+> & { age: number | null };
 
 export function toStudentProfileInput(
   form: StudentProfileFormInput
@@ -84,7 +99,7 @@ export function toManualStudentProfileInput(
     phone: form.phone.trim(),
     email: form.email.trim().toLowerCase(),
     padelLevel: Number(form.padelLevel),
-    age: Number(form.age),
+    age: form.age.trim() === '' ? null : Number(form.age),
     sex: form.sex,
   };
 }

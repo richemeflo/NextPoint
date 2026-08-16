@@ -117,7 +117,7 @@ export function ManualStudentForm({
               containerStyle={styles.column}
               error={translateError(error?.message)}
               keyboardType="phone-pad"
-              label={t('profile.phoneLabel')}
+              label={t('students.optionalPhoneLabel')}
               onBlur={onBlur}
               onChangeText={onChange}
               placeholder={t('profile.phonePlaceholder')}
@@ -157,7 +157,7 @@ export function ManualStudentForm({
               error={translateError(error?.message)}
               inputMode="numeric"
               keyboardType="number-pad"
-              label={t('profile.ageLabel')}
+              label={t('students.optionalAgeLabel')}
               onBlur={onBlur}
               onChangeText={onChange}
               placeholder={t('profile.agePlaceholder')}

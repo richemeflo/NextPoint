@@ -8,7 +8,8 @@ import { supabase } from '@/lib/supabase/client';
 
 type StudentProfileRow = Tables<'student_profiles'>;
 
-export type StudentProfile = StudentProfileInput & {
+export type StudentProfile = Omit<StudentProfileInput, 'age'> & {
+  age: number | null;
   updatedAt: string;
 };
 

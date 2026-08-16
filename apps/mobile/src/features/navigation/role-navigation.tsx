@@ -2,6 +2,7 @@ import type { AppRole } from '@nextpoint/shared';
 import { Link, Slot, usePathname, useRouter, type Href } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import {
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -119,67 +120,76 @@ export function RoleNavigation({ role }: { role: AppRole }) {
   const items = role === 'coach' ? coachItems : eleveItems;
   const isMobile = width < 768;
   const navigation = (
-    <ScrollView
-      contentContainerStyle={[
-        styles.navigationContent,
-        isMobile ? styles.navigationContentMobile : null,
-      ]}
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={[
-        isMobile ? styles.navigationMobile : styles.navigationDesktop,
-        { borderColor: theme.border },
-      ]}>
-      {items.map((item) => {
-        const href = typeof item.href === 'string' ? item.href : item.href.pathname;
-        const selected =
-          pathname === href || (href !== `/${role}` && pathname.startsWith(`${href}/`));
+    <View accessibilityLabel={t('nav.mainLabel')} role="navigation">
+      <ScrollView
+        contentContainerStyle={[
+          styles.navigationContent,
+          isMobile ? styles.navigationContentMobile : null,
+        ]}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={[
+          isMobile ? styles.navigationMobile : styles.navigationDesktop,
+          { borderColor: theme.border },
+        ]}>
+        {items.map((item) => {
+          const href =
+            typeof item.href === 'string' ? item.href : item.href.pathname;
+          const selected =
+            pathname === href ||
+            (href !== `/${role}` && pathname.startsWith(`${href}/`));
 
-        return (
-          <Link asChild href={item.href} key={String(href)}>
-            <Pressable
-              accessibilityLabel={t(item.labelKey)}
-              accessibilityRole="tab"
-              accessibilityState={{ selected }}
-              style={StyleSheet.flatten([
-                styles.navigationItem,
-                isMobile
-                  ? styles.navigationItemMobile
-                  : styles.navigationItemDesktop,
-                {
-                  backgroundColor: selected
-                    ? theme.backgroundSelected
-                    : theme.surface,
-                },
-              ])}>
-              {isMobile ? (
-                <SymbolView
-                  name={item.icon}
-                  size={22}
-                  weight={selected ? 'bold' : 'medium'}
-                  tintColor={selected ? theme.primary : theme.textMuted}
-                />
-              ) : (
-                <>
+          return (
+            <Link asChild href={item.href} key={String(href)}>
+              <Pressable
+                accessibilityLabel={t(item.labelKey)}
+                accessibilityRole="link"
+                accessibilityState={
+                  Platform.OS === 'web' ? undefined : { selected }
+                }
+                aria-current={
+                  Platform.OS === 'web' && selected ? 'page' : undefined
+                }
+                style={StyleSheet.flatten([
+                  styles.navigationItem,
+                  isMobile
+                    ? styles.navigationItemMobile
+                    : styles.navigationItemDesktop,
+                  {
+                    backgroundColor: selected
+                      ? theme.backgroundSelected
+                      : theme.surface,
+                  },
+                ])}>
+                {isMobile ? (
                   <SymbolView
                     name={item.icon}
-                    size={18}
+                    size={22}
                     weight={selected ? 'bold' : 'medium'}
                     tintColor={selected ? theme.primary : theme.textMuted}
                   />
-                  <ThemedText
-                    numberOfLines={1}
-                    type="smallBold"
-                    themeColor={selected ? 'primary' : 'textMuted'}>
-                    {t(item.labelKey)}
-                  </ThemedText>
-                </>
-              )}
-            </Pressable>
-          </Link>
-        );
-      })}
-    </ScrollView>
+                ) : (
+                  <>
+                    <SymbolView
+                      name={item.icon}
+                      size={18}
+                      weight={selected ? 'bold' : 'medium'}
+                      tintColor={selected ? theme.primary : theme.textMuted}
+                    />
+                    <ThemedText
+                      numberOfLines={1}
+                      type="smallBold"
+                      themeColor={selected ? 'primary' : 'textMuted'}>
+                      {t(item.labelKey)}
+                    </ThemedText>
+                  </>
+                )}
+              </Pressable>
+            </Link>
+          );
+        })}
+      </ScrollView>
+    </View>
   );
 
   return (

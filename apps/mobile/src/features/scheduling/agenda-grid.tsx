@@ -39,16 +39,19 @@ type AgendaGridProps<TItem extends AgendaGridItem> = {
   slots: TItem[];
   onSlotPress?: (slot: TItem, desiredStartsAt: string) => void;
   isSlotPressable?: (slot: TItem) => boolean;
+  selectionRoundingMinutes?: 15 | 30;
 };
 
 function AgendaSlotBlock<TItem extends AgendaGridItem>({
   children,
   onPress,
+  roundingMinutes,
   slot,
   style,
 }: {
   children: ReactNode;
   onPress?: (slot: TItem, desiredStartsAt: string) => void;
+  roundingMinutes?: 15 | 30;
   slot: TItem;
   style: StyleProp<ViewStyle>;
 }) {
@@ -67,6 +70,7 @@ function AgendaSlotBlock<TItem extends AgendaGridItem>({
       endsAt: slot.endsAt,
       height: blockHeight,
       locationY,
+      roundingMinutes,
     });
     if (desiredStartsAt) onPress(slot, desiredStartsAt);
   };
@@ -108,6 +112,7 @@ export function AgendaGrid<TItem extends AgendaGridItem>({
   slots,
   onSlotPress,
   isSlotPressable,
+  selectionRoundingMinutes,
 }: AgendaGridProps<TItem>) {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -231,6 +236,7 @@ export function AgendaGrid<TItem extends AgendaGridItem>({
                           ? onSlotPress
                           : undefined
                       }
+                      roundingMinutes={selectionRoundingMinutes}
                       slot={slot}
                       style={[
                         styles.slotBlock,
@@ -307,6 +313,7 @@ export function AgendaGrid<TItem extends AgendaGridItem>({
                       ? onSlotPress
                       : undefined
                   }
+                  roundingMinutes={selectionRoundingMinutes}
                   slot={slot}
                   style={[
                     styles.slotBlock,

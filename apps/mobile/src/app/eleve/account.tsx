@@ -111,7 +111,7 @@ export default function EleveAccountScreen() {
             phone: result.data.phone,
             email: result.data.email,
             padelLevel: String(result.data.padelLevel),
-            age: String(result.data.age),
+            age: result.data.age === null ? '' : String(result.data.age),
             sex: result.data.sex,
             preferredLanguage: result.data.preferredLanguage,
           });
@@ -152,7 +152,7 @@ export default function EleveAccountScreen() {
       phone: result.data.phone,
       email: result.data.email,
       padelLevel: String(result.data.padelLevel),
-      age: String(result.data.age),
+      age: result.data.age === null ? '' : String(result.data.age),
       sex: result.data.sex,
       preferredLanguage: result.data.preferredLanguage,
     });

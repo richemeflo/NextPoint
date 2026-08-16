@@ -1,25 +1,13 @@
 import {
-  bookingCancellationMessageMaxLength,
-  bookingParticipantLimits,
-  availabilitySlotDurations,
   canCancelBooking,
   getSchedulingDateLabelInstant,
-  getSchedulingTime,
-  getSchedulingToday,
-  isBookingParticipantCountValid,
-  pricingLessonTypes,
   schedulingTimeZone,
-  studentCancelBookingSchema,
-  type PricingLessonType,
-  type AvailabilitySlotDuration,
 } from '@nextpoint/shared';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Modal,
   Pressable,
-  ScrollView,
   StyleSheet,
   useWindowDimensions,
   View,
@@ -29,62 +17,31 @@ import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Feedback } from '@/components/ui/feedback';
-import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/auth-context';
 import {
   getEarliestBookingRequestStartsAt,
   getBookingRequestProposal,
-  toBookingRequestStartsAt,
 } from '@/features/scheduling/booking-request-time';
 import {
-  cancelBooking,
-  getRequestableBookingParticipants,
-  getStudentBookingsInRange,
-  requestBooking,
   type Booking,
-  type BookingParticipant,
   type BookingMutationError,
 } from '@/features/bookings/booking-service';
-import {
-  acquireBookingMutationLock,
-  releaseBookingMutationLock,
-} from '@/features/bookings/booking-mutation-lock';
-import {
-  getPublishedPricingRates,
-  type PricingRate,
-} from '@/features/pricing/pricing-service';
-import { ProfileOptionSelector } from '@/features/profiles/profile-option-selector';
+import { useBookingPresentation } from '@/features/bookings/use-booking-presentation';
 import { AgendaGrid } from '@/features/scheduling/agenda-grid';
-import { planningControlIcons } from '@/features/scheduling/planning-control-icons';
-import {
-  beginPlanningRequest,
-  invalidatePlanningRequest,
-  isLatestPlanningRequest,
-} from '@/features/scheduling/latest-planning-request';
-import {
-  getStudentRequestableAvailabilitySlotsInRange,
-  type AvailabilitySlot,
-} from '@/features/scheduling/availability-service';
-import {
-  getPlanningWindow,
-  getSlotDateKey,
-  movePlanningAnchor,
-  type PlanningViewMode,
-} from '@/features/scheduling/planning-window';
+import { PlanningControls } from '@/features/scheduling/planning-controls';
+import type { AvailabilitySlot } from '@/features/scheduling/availability-service';
+import { getSlotDateKey } from '@/features/scheduling/planning-window';
+import { StudentBookingCancellationModal } from '@/features/scheduling/student-booking-cancellation-modal';
+import { StudentBookingRequestModal } from '@/features/scheduling/student-booking-request-modal';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
-
-const today = () => getSchedulingToday();
-
-function formatPrice(booking: Booking, locale: string) {
-  if (!booking.pricing) return null;
-
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: booking.pricing.currency,
-  }).format(booking.pricing.amountCents / 100);
-}
+import { useStudentAgendaData } from '@/features/scheduling/use-student-agenda-data';
+import {
+  useStudentAgendaItems,
+  type StudentHomeAgendaItem,
+} from '@/features/scheduling/use-student-agenda-items';
+import { usePlanningView } from '@/features/scheduling/use-planning-view';
 
 function canStudentCancel(booking: Booking) {
   return canCancelBooking(
@@ -97,31 +54,8 @@ type StudentAgendaProps = {
   surface?: 'requestable' | 'bookings';
 };
 
-type StudentHomeAgendaItem =
-  | {
-      id: string;
-      startsAt: string;
-      endsAt: string;
-      kind: 'slot';
-      slot: AvailabilitySlot;
-    }
-  | {
-      id: string;
-      startsAt: string;
-      endsAt: string;
-      kind: 'booking';
-      booking: Booking;
-    };
-
-const homeBookingStatuses: Booking['status'][] = [
-  'pending',
-  'confirmed',
-  'modified',
-  'refused',
-];
-
-function isHomeBookingVisible(booking: Booking) {
-  return homeBookingStatuses.includes(booking.status);
+function getCurrentTimestamp() {
+  return Date.now();
 }
 
 export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
@@ -130,110 +64,49 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
   const theme = useTheme();
   const { width } = useWindowDimensions();
   const isMobile = width < 760;
-  const [mode, setMode] = useState<PlanningViewMode>('week');
-  const [displayMode, setDisplayMode] = useState<'agenda' | 'list'>('agenda');
-  const [anchorDate, setAnchorDate] = useState(today);
-  const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [participants, setParticipants] = useState<BookingParticipant[]>([]);
-  const [pricingRates, setPricingRates] = useState<PricingRate[]>([]);
-  const [agendaLoadedAt, setAgendaLoadedAt] = useState<number | null>(null);
-  const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>(
-    'loading'
-  );
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const planningRequestVersion = useRef(0);
-  const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
-  const [desiredStartsAt, setDesiredStartsAt] = useState<string | null>(null);
-  const [requestStartTime, setRequestStartTime] = useState('');
-  const [requestDurationMinutes, setRequestDurationMinutes] =
-    useState<AvailabilitySlotDuration>(60);
-  const [lessonType, setLessonType] = useState<PricingLessonType>('individual');
-  const [studentComment, setStudentComment] = useState('');
+  const {
+    bookingStatusKey,
+    bookingStatusThemeColor,
+    formatBookingPrice,
+    getBookingStatusStyle,
+  } = useBookingPresentation(locale);
+  const {
+    displayMode,
+    goToToday,
+    mode,
+    move,
+    setDisplayMode,
+    setMode,
+    window,
+  } = usePlanningView();
+  const [requestSelection, setRequestSelection] = useState<{
+    slotId: string;
+    startsAt: string;
+  } | null>(null);
   const [cancellationBookingId, setCancellationBookingId] = useState<
     string | null
   >(null);
-  const [cancellationMessage, setCancellationMessage] = useState('');
-  const [cancellationError, setCancellationError] =
-    useState<BookingMutationError | null>(null);
-  const bookingMutationLock = useRef(false);
-  const [bookingMutationKind, setBookingMutationKind] = useState<
-    'request' | 'cancel' | null
-  >(null);
-  const [selectedParticipantIds, setSelectedParticipantIds] = useState<
-    string[]
-  >([]);
   const [feedback, setFeedback] = useState<
     'none' | 'requested' | 'cancelled' | BookingMutationError
   >('none');
   const showRequestableSlots = surface === 'requestable';
   const showBookingSchedule = surface === 'bookings';
-  const useRequestModal = showRequestableSlots;
-  const isRequestSubmitting = bookingMutationKind === 'request';
-  const isCancelling = bookingMutationKind === 'cancel';
 
-  const window = useMemo(
-    () => getPlanningWindow(anchorDate, mode),
-    [anchorDate, mode]
-  );
-
-  const loadAgenda = useCallback(async () => {
-    const requestVersion = beginPlanningRequest(planningRequestVersion);
-    setIsRefreshing(true);
-    try {
-      const [slotsResult, bookingsResult, participantsResult, pricingResult] =
-        await Promise.all([
-          showRequestableSlots
-            ? getStudentRequestableAvailabilitySlotsInRange(
-                window.startsAt,
-                window.endsAt
-              )
-            : Promise.resolve({ ok: true as const, data: [] }),
-          getStudentBookingsInRange(window.startsAt, window.endsAt),
-          showRequestableSlots
-            ? getRequestableBookingParticipants()
-            : Promise.resolve({ ok: true as const, data: [] }),
-          showRequestableSlots
-            ? getPublishedPricingRates()
-            : Promise.resolve({ ok: true as const, data: [] }),
-        ]);
-
-      if (!isLatestPlanningRequest(planningRequestVersion, requestVersion)) {
-        return;
-      }
-
-      if (!slotsResult.ok || !bookingsResult.ok || !pricingResult.ok) {
-        setLoadState('error');
-        return;
-      }
-
-      setSlots(slotsResult.data);
-      setBookings(bookingsResult.data);
-      setAgendaLoadedAt(Date.now());
-      if (participantsResult.ok) setParticipants(participantsResult.data);
-      setPricingRates(pricingResult.data);
-      setLoadState('ready');
-    } catch {
-      if (!isLatestPlanningRequest(planningRequestVersion, requestVersion)) {
-        return;
-      }
-      setLoadState('error');
-    } finally {
-      if (isLatestPlanningRequest(planningRequestVersion, requestVersion)) {
-        setIsRefreshing(false);
-      }
-    }
-  }, [showRequestableSlots, window.endsAt, window.startsAt]);
-
-  useEffect(() => {
-    void Promise.resolve()
-      .then(loadAgenda)
-      .catch(() => undefined);
-
-    return () => {
-      invalidatePlanningRequest(planningRequestVersion);
-    };
-  }, [loadAgenda]);
+  const {
+    agendaLoadedAt,
+    bookings,
+    isRefreshing,
+    loadAgenda,
+    loadState,
+    participants,
+    pricingRates,
+    slots,
+    updateBookings,
+  } = useStudentAgendaData({
+    includeRequestableSlots: showRequestableSlots,
+    startsAt: window.startsAt,
+    endsAt: window.endsAt,
+  });
 
   const formatDay = (value: string) =>
     new Intl.DateTimeFormat(locale, {
@@ -250,134 +123,23 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
       timeZone: schedulingTimeZone,
     }).format(new Date(value));
 
-  const move = (direction: -1 | 1) =>
-    setAnchorDate((current) => movePlanningAnchor(current, mode, direction));
-
-  const bookingStatusKey = (status: Booking['status']) =>
-    `status.${status}` as TranslationKey;
-
-  const getBookingStatusStyle = (status: Booking['status'] | undefined) => {
-    if (status === 'pending') {
-      return {
-        backgroundColor: theme.warningSurface,
-        borderColor: theme.warning,
-      };
-    }
-
-    if (status === 'confirmed' || status === 'modified') {
-      return {
-        backgroundColor: theme.successSurface,
-        borderColor: theme.success,
-      };
-    }
-
-    if (status === 'refused') {
-      return { backgroundColor: theme.errorSurface, borderColor: theme.error };
-    }
-
-    return undefined;
-  };
-
-  const bookingStatusThemeColor = (
-    status: Booking['status']
-  ): 'warning' | 'success' | 'error' | 'primary' => {
-    if (status === 'pending') return 'warning';
-    if (status === 'confirmed' || status === 'modified') return 'success';
-    if (status === 'refused') return 'error';
-    return 'primary';
-  };
-
-  const visibleBookings = bookings;
-  const windowBookings = useMemo(
-    () =>
-      visibleBookings.filter((booking) => {
-        const startsAt = new Date(booking.startsAt).getTime();
-        return (
-          startsAt >= new Date(window.startsAt).getTime() &&
-          startsAt < new Date(window.endsAt).getTime()
-        );
-      }),
-    [visibleBookings, window.endsAt, window.startsAt]
-  );
-  const bookingsByDay = useMemo(() => {
-    const grouped = new Map<string, Booking[]>();
-
-    for (const booking of windowBookings) {
-      const key = getSlotDateKey(booking.startsAt);
-      const current = grouped.get(key) ?? [];
-      current.push(booking);
-      grouped.set(key, current);
-    }
-
-    return grouped;
-  }, [windowBookings]);
-
-  const homeWindowBookings = useMemo(
-    () => windowBookings.filter(isHomeBookingVisible),
-    [windowBookings]
-  );
-
   const requestableSlots = slots;
-
-  const homeAgendaItems = useMemo<StudentHomeAgendaItem[]>(
-    () =>
-      [
-        ...homeWindowBookings.map((booking) => ({
-          id: `booking-${booking.id}`,
-          startsAt: booking.startsAt,
-          endsAt: booking.endsAt,
-          kind: 'booking' as const,
-          booking,
-        })),
-        ...requestableSlots.map((slot) => ({
-          id: `slot-${slot.id}`,
-          startsAt: slot.startsAt,
-          endsAt: slot.endsAt,
-          kind: 'slot' as const,
-          slot,
-        })),
-      ].sort(
-        (first, second) =>
-          new Date(first.startsAt).getTime() -
-          new Date(second.startsAt).getTime()
-      ),
-    [homeWindowBookings, requestableSlots]
-  );
-
-  const homeItemsByDay = useMemo(() => {
-    const grouped = new Map<string, StudentHomeAgendaItem[]>();
-
-    for (const item of homeAgendaItems) {
-      const key = getSlotDateKey(item.startsAt);
-      const current = grouped.get(key) ?? [];
-      current.push(item);
-      grouped.set(key, current);
-    }
-
-    return grouped;
-  }, [homeAgendaItems]);
-  const selectedSlot = useMemo(
-    () => requestableSlots.find((slot) => slot.id === selectedSlotId) ?? null,
-    [requestableSlots, selectedSlotId]
-  );
-  const studentScheduleOccupations = useMemo(
-    () =>
-      bookings
-        .filter(
-          (booking) =>
-            booking.status === 'confirmed' ||
-            booking.status === 'modified' ||
-            (booking.status === 'pending' &&
-              (!booking.expiresAt ||
-                agendaLoadedAt === null ||
-                new Date(booking.expiresAt).getTime() > agendaLoadedAt))
-        )
-        .map((booking) => ({
-          startsAt: booking.startsAt,
-          endsAt: booking.endsAt,
-        })),
-    [agendaLoadedAt, bookings]
-  );
+  const {
+    bookingsByDay,
+    homeAgendaItems,
+    homeItemsByDay,
+    selectedSlot,
+    studentScheduleOccupations,
+    visibleBookings,
+    windowBookings,
+  } = useStudentAgendaItems({
+    agendaLoadedAt,
+    bookings,
+    endsAt: window.endsAt,
+    selectedSlotId: requestSelection?.slotId ?? null,
+    slots: requestableSlots,
+    startsAt: window.startsAt,
+  });
   const getRequestProposalForSlot = useCallback(
     (slot: AvailabilitySlot, startsAt: string) => {
       const earliestStartsAt = getEarliestBookingRequestStartsAt();
@@ -401,59 +163,11 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
     },
     [studentScheduleOccupations]
   );
-  const selectedRequestProposal = useMemo(() => {
-    if (!selectedSlot || !desiredStartsAt) return null;
-
-    return getRequestProposalForSlot(selectedSlot, desiredStartsAt);
-  }, [desiredStartsAt, getRequestProposalForSlot, selectedSlot]);
-  const selectedRequestStartsAt = selectedRequestProposal?.startsAt ?? null;
-  const availableRequestDurations =
-    selectedRequestProposal?.availableDurations ?? [];
-  const selectedRequestEndsAt = selectedRequestStartsAt
-    ? new Date(
-        new Date(selectedRequestStartsAt).getTime() +
-          requestDurationMinutes * 60_000
-      ).toISOString()
-    : null;
   const selectedCancellationBooking = useMemo(
     () =>
       bookings.find((booking) => booking.id === cancellationBookingId) ?? null,
     [bookings, cancellationBookingId]
   );
-  const normalizedCancellationMessage = cancellationMessage.trim();
-  const cancellationMessageLength = Array.from(
-    normalizedCancellationMessage
-  ).length;
-  const cancellationMessageError =
-    cancellationMessageLength === 0
-      ? t('booking.cancellationMessageRequired')
-      : cancellationMessageLength > bookingCancellationMessageMaxLength
-        ? t('booking.cancellationMessageTooLong')
-        : undefined;
-  const selectedSlotLessonTypes = useMemo(() => {
-    if (!selectedSlot) return [...pricingLessonTypes];
-
-    return pricingLessonTypes.filter((type) =>
-      pricingRates.some(
-        (rate) =>
-          rate.isActive &&
-          rate.lessonType === type &&
-          rate.durationMinutes === requestDurationMinutes
-      )
-    );
-  }, [pricingRates, requestDurationMinutes, selectedSlot]);
-  const selectedLessonType = selectedSlotLessonTypes.includes(lessonType)
-    ? lessonType
-    : (selectedSlotLessonTypes[0] ?? 'individual');
-  const selectedAdditionalParticipantIds = selectedParticipantIds.filter(
-    (id) => id !== user?.id
-  );
-  const hasValidParticipantSelection = isBookingParticipantCountValid(
-    selectedLessonType,
-    selectedAdditionalParticipantIds.length + 1
-  );
-  const additionalParticipantLimit =
-    bookingParticipantLimits[selectedLessonType].max - 1;
 
   const feedbackCopy: Partial<
     Record<typeof feedback, [TranslationKey, TranslationKey]>
@@ -483,167 +197,25 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
     unknown: ['booking.errorTitle', 'booking.unknownError'],
   };
 
-  const submitRequest = async (slot: AvailabilitySlot) => {
-    if (!selectedRequestStartsAt) return;
-    if (new Date(selectedRequestStartsAt).getTime() <= Date.now()) {
-      setFeedback('past_booking');
-      return;
-    }
-    if (!acquireBookingMutationLock(bookingMutationLock)) return;
-
-    setBookingMutationKind('request');
-    try {
-      if (!selectedSlotLessonTypes.includes(selectedLessonType)) {
-        setFeedback('pricing_rate_missing');
-        return;
-      }
-
-      setFeedback('none');
-      const result = await requestBooking({
-        slotId: slot.occurrenceId,
-        startsAt: selectedRequestStartsAt,
-        durationMinutes: requestDurationMinutes,
-        lessonType: selectedLessonType,
-        studentComment,
-        participantIds:
-          selectedLessonType !== 'individual'
-            ? selectedAdditionalParticipantIds
-            : [],
-      });
-
-      if (!result.ok) {
-        setFeedback(result.error);
-        return;
-      }
-
-      setSelectedSlotId(null);
-      setDesiredStartsAt(null);
-      setRequestStartTime('');
-      setStudentComment('');
-      setSelectedParticipantIds([]);
-      setFeedback('requested');
-      await loadAgenda();
-    } catch {
-      setFeedback('unknown');
-    } finally {
-      releaseBookingMutationLock(bookingMutationLock);
-      setBookingMutationKind(null);
-    }
-  };
-
   const openRequest = (slot: AvailabilitySlot, startsAt = slot.startsAt) => {
     const proposal = getRequestProposalForSlot(slot, startsAt);
     if (!proposal.startsAt) {
       setFeedback(
-        new Date(slot.endsAt).getTime() <= Date.now()
+        new Date(slot.endsAt).getTime() <= getCurrentTimestamp()
           ? 'past_booking'
           : 'slot_unavailable'
       );
       return;
     }
-    const proposedStartsAt = proposal.startsAt;
-
-    setSelectedSlotId(slot.id);
-    setDesiredStartsAt(proposedStartsAt);
-    setRequestStartTime(getSchedulingTime(proposedStartsAt));
-    setRequestDurationMinutes(60);
+    setRequestSelection({ slotId: slot.id, startsAt: proposal.startsAt });
     setFeedback('none');
-  };
-
-  const updateRequestStartTime = (
-    slot: AvailabilitySlot,
-    localTime: string
-  ) => {
-    const requestedStartsAt = toBookingRequestStartsAt(
-      getSlotDateKey(slot.startsAt),
-      localTime
-    );
-    if (!requestedStartsAt) {
-      setRequestStartTime(localTime);
-      setDesiredStartsAt(null);
-      return;
-    }
-
-    const proposal = getRequestProposalForSlot(slot, requestedStartsAt);
-    const proposedStartsAt = proposal.startsAt ?? requestedStartsAt;
-    setRequestStartTime(getSchedulingTime(proposedStartsAt));
-    setDesiredStartsAt(proposedStartsAt);
-    if (!proposal.availableDurations.includes(requestDurationMinutes)) {
-      setRequestDurationMinutes(60);
-    }
-  };
-
-  const toggleParticipant = (studentId: string) => {
-    setSelectedParticipantIds((current) =>
-      current.includes(studentId)
-        ? current.filter((id) => id !== studentId)
-        : [...current, studentId]
-    );
   };
 
   const openCancellation = (booking: Booking) => {
     if (!canStudentCancel(booking)) return;
 
     setCancellationBookingId(booking.id);
-    setCancellationMessage('');
-    setCancellationError(null);
     setFeedback('none');
-  };
-
-  const closeCancellation = () => {
-    if (isCancelling) return;
-
-    setCancellationBookingId(null);
-    setCancellationMessage('');
-    setCancellationError(null);
-  };
-
-  const cancelStudentBooking = async () => {
-    if (
-      !selectedCancellationBooking ||
-      !acquireBookingMutationLock(bookingMutationLock)
-    ) {
-      return;
-    }
-
-    const parsedInput = studentCancelBookingSchema.safeParse({
-      bookingId: selectedCancellationBooking.id,
-      cancellationMessage,
-    });
-    if (!parsedInput.success) {
-      releaseBookingMutationLock(bookingMutationLock);
-      return;
-    }
-
-    setFeedback('none');
-    setCancellationError(null);
-    setBookingMutationKind('cancel');
-    try {
-      const result = await cancelBooking(
-        parsedInput.data.bookingId,
-        parsedInput.data.cancellationMessage
-      );
-
-      if (!result.ok) {
-        setCancellationError(result.error);
-        return;
-      }
-
-      setBookings((current) =>
-        current.map((booking) =>
-          booking.id === result.data.id ? result.data : booking
-        )
-      );
-      setCancellationBookingId(null);
-      setCancellationMessage('');
-      setFeedback('cancelled');
-      await loadAgenda();
-    } catch {
-      setCancellationError('unknown');
-    } finally {
-      releaseBookingMutationLock(bookingMutationLock);
-      setBookingMutationKind(null);
-    }
   };
 
   const renderSlotContent = (slot: AvailabilitySlot) => (
@@ -681,303 +253,8 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
     </View>
   );
 
-  const renderRequestPanel = (slot: AvailabilitySlot) =>
-    selectedSlotId === slot.id ? (
-      <View style={styles.requestPanel}>
-        <TextField
-          autoCapitalize="none"
-          error={
-            requestStartTime && !desiredStartsAt
-              ? t('booking.invalidStartTime')
-              : undefined
-          }
-          inputMode="numeric"
-          keyboardType="numbers-and-punctuation"
-          label={t('booking.startTimeLabel')}
-          maxLength={5}
-          onChangeText={(value) => updateRequestStartTime(slot, value)}
-          placeholder={t('booking.startTimePlaceholder')}
-          value={requestStartTime}
-        />
-        <ProfileOptionSelector<'60' | '90'>
-          label={t('booking.durationLabel')}
-          onChange={(value) => {
-            const duration = value === '60' ? 60 : 90;
-            if (availableRequestDurations.includes(duration)) {
-              setRequestDurationMinutes(duration);
-            }
-          }}
-          options={availabilitySlotDurations.map((duration) => ({
-            value: duration === 60 ? '60' : '90',
-            label: t(`availability.duration.${duration}` as TranslationKey),
-            disabled: !availableRequestDurations.includes(duration),
-          }))}
-          value={requestDurationMinutes === 60 ? '60' : '90'}
-        />
-        {selectedRequestStartsAt && selectedRequestEndsAt ? (
-          <ThemedText type="smallBold">
-            {t('booking.proposedTime', {
-              start: formatTime(selectedRequestStartsAt),
-              end: formatTime(selectedRequestEndsAt),
-            })}
-          </ThemedText>
-        ) : (
-          <Feedback
-            message={t('booking.noDurationFitBody')}
-            title={t('booking.noDurationFitTitle')}
-            tone="warning"
-          />
-        )}
-        <ProfileOptionSelector<PricingLessonType>
-          label={t('booking.lessonTypeLabel')}
-          onChange={(value) => {
-            setLessonType(value);
-            setSelectedParticipantIds([]);
-          }}
-          options={selectedSlotLessonTypes.map((type) => ({
-            value: type,
-            label: t(`pricing.type.${type}` as TranslationKey),
-          }))}
-          value={selectedLessonType}
-        />
-        {selectedSlotLessonTypes.length === 0 ? (
-          <Feedback
-            message={t('booking.pricingMissing')}
-            title={t('booking.errorTitle')}
-            tone="error"
-          />
-        ) : null}
-        {selectedLessonType !== 'individual' ? (
-          <View style={styles.participantList}>
-            <ThemedText type="smallBold">
-              {t('booking.participantsLabel')}
-            </ThemedText>
-            {participants.map((participant) => (
-              <Button
-                key={participant.studentId}
-                label={
-                  participant.studentId === user?.id
-                    ? t('booking.requesterIncluded')
-                    : (participant.fullName ?? t('booking.unknownStudent'))
-                }
-                onPress={() => toggleParticipant(participant.studentId)}
-                variant={
-                  participant.studentId === user?.id ||
-                  selectedParticipantIds.includes(participant.studentId)
-                    ? 'primary'
-                    : 'secondary'
-                }
-                disabled={
-                  participant.studentId === user?.id ||
-                  isRequestSubmitting ||
-                  (!selectedAdditionalParticipantIds.includes(
-                    participant.studentId
-                  ) &&
-                    selectedAdditionalParticipantIds.length >=
-                      additionalParticipantLimit)
-                }
-              />
-            ))}
-            {selectedLessonType === 'duo' && !hasValidParticipantSelection ? (
-              <ThemedText type="small" themeColor="error">
-                {t('booking.duoParticipantRequired')}
-              </ThemedText>
-            ) : null}
-          </View>
-        ) : null}
-        <TextField
-          label={t('booking.commentLabel')}
-          onChangeText={setStudentComment}
-          placeholder={t('booking.commentPlaceholder')}
-          value={studentComment}
-        />
-        <View style={styles.requestActions}>
-          <Button
-            label={t('booking.requestAction')}
-            onPress={() => void submitRequest(slot)}
-            disabled={
-              selectedSlotLessonTypes.length === 0 ||
-              !selectedRequestStartsAt ||
-              !availableRequestDurations.includes(requestDurationMinutes) ||
-              !hasValidParticipantSelection ||
-              bookingMutationKind !== null
-            }
-          />
-          <Button
-            disabled={bookingMutationKind !== null}
-            label={t('availability.cancelAction')}
-            onPress={() => {
-              setSelectedSlotId(null);
-              setDesiredStartsAt(null);
-              setRequestStartTime('');
-            }}
-            variant="secondary"
-          />
-        </View>
-      </View>
-    ) : null;
-
-  const renderRequestModal = () =>
-    useRequestModal && selectedSlot ? (
-      <Modal
-        animationType="fade"
-        onRequestClose={() => {
-          if (!isRequestSubmitting) setSelectedSlotId(null);
-        }}
-        transparent
-        visible>
-        <View style={styles.modalRoot}>
-          <Pressable
-            accessibilityRole="button"
-            disabled={isRequestSubmitting}
-            onPress={() => setSelectedSlotId(null)}
-            style={styles.modalBackdrop}
-          />
-          <View
-            style={[
-              styles.modalCard,
-              { backgroundColor: theme.surface, borderColor: theme.border },
-            ]}>
-            <View style={styles.modalHeader}>
-              <View style={styles.modalTitle}>
-                <ThemedText type="subtitle">
-                  {t('booking.requestAction')}
-                </ThemedText>
-                <ThemedText type="small" themeColor="textMuted">
-                  {selectedRequestStartsAt && selectedRequestEndsAt
-                    ? t('planning.slotTime', {
-                        start: formatTime(selectedRequestStartsAt),
-                        end: formatTime(selectedRequestEndsAt),
-                      })
-                    : t('booking.noDurationFitTitle')}
-                </ThemedText>
-              </View>
-              <Pressable
-                accessibilityLabel={t('availability.cancelAction')}
-                accessibilityRole="button"
-                disabled={isRequestSubmitting}
-                onPress={() => setSelectedSlotId(null)}
-                style={[
-                  styles.modalClose,
-                  { borderColor: theme.border, backgroundColor: theme.surface },
-                ]}>
-                <ThemedText type="smallBold">X</ThemedText>
-              </Pressable>
-            </View>
-            <ScrollView
-              contentContainerStyle={styles.modalBody}
-              showsVerticalScrollIndicator={false}>
-              <ThemedText type="small" themeColor="textMuted">
-                {selectedSlot.location}
-              </ThemedText>
-              {renderRequestPanel(selectedSlot)}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-    ) : null;
-
-  const renderCancellationModal = () =>
-    selectedCancellationBooking ? (
-      <Modal
-        animationType="fade"
-        onRequestClose={closeCancellation}
-        transparent
-        visible>
-        <View style={styles.modalRoot}>
-          <Pressable
-            accessibilityElementsHidden
-            disabled={isCancelling}
-            importantForAccessibility="no-hide-descendants"
-            onPress={closeCancellation}
-            style={styles.modalBackdrop}
-          />
-          <View
-            style={[
-              styles.modalCard,
-              { backgroundColor: theme.surface, borderColor: theme.border },
-            ]}>
-            <View style={styles.modalHeader}>
-              <View style={styles.modalTitle}>
-                <ThemedText type="subtitle">
-                  {t('booking.cancellationTitle')}
-                </ThemedText>
-                <ThemedText type="small" themeColor="textMuted">
-                  {t('booking.cancellationBody')}
-                </ThemedText>
-              </View>
-              <Pressable
-                accessibilityLabel={t('booking.cancellationCloseAction')}
-                accessibilityRole="button"
-                disabled={isCancelling}
-                onPress={closeCancellation}
-                style={[
-                  styles.modalClose,
-                  { borderColor: theme.border, backgroundColor: theme.surface },
-                ]}>
-                <ThemedText type="smallBold">X</ThemedText>
-              </Pressable>
-            </View>
-            <ScrollView
-              contentContainerStyle={styles.modalBody}
-              showsVerticalScrollIndicator={false}>
-              {renderBookingContent(selectedCancellationBooking)}
-              <TextField
-                error={
-                  cancellationMessage.length > 0
-                    ? cancellationMessageError
-                    : undefined
-                }
-                label={t('booking.cancellationMessageLabel')}
-                multiline
-                numberOfLines={4}
-                onChangeText={(value) => {
-                  setCancellationMessage(value);
-                  setCancellationError(null);
-                }}
-                placeholder={t('booking.cancellationMessagePlaceholder')}
-                style={styles.cancellationInput}
-                textAlignVertical="top"
-                value={cancellationMessage}
-              />
-              <ThemedText type="small" themeColor="textMuted">
-                {t('booking.cancellationMessageCount', {
-                  count: cancellationMessageLength,
-                  max: bookingCancellationMessageMaxLength,
-                })}
-              </ThemedText>
-              {cancellationError && feedbackCopy[cancellationError] ? (
-                <Feedback
-                  message={t(feedbackCopy[cancellationError][1])}
-                  title={t(feedbackCopy[cancellationError][0])}
-                  tone="error"
-                />
-              ) : null}
-              <View style={styles.requestActions}>
-                <Button
-                  disabled={!!cancellationMessageError || isCancelling}
-                  label={
-                    isCancelling
-                      ? t('booking.cancellationSubmitting')
-                      : t('booking.cancellationConfirmAction')
-                  }
-                  onPress={() => void cancelStudentBooking()}
-                />
-                <Button
-                  disabled={isCancelling}
-                  label={t('availability.cancelAction')}
-                  onPress={closeCancellation}
-                  variant="secondary"
-                />
-              </View>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-    ) : null;
-
   const renderBookingContent = (booking: Booking, includeDate = true) => {
-    const price = formatPrice(booking, locale);
+    const price = formatBookingPrice(booking);
 
     return (
       <>
@@ -1100,11 +377,6 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
   const renderHomeListItem = (item: StudentHomeAgendaItem) =>
     item.kind === 'booking' ? (
       renderBookingCard(item.booking)
-    ) : selectedSlotId === item.slot.id && !useRequestModal ? (
-      <Card key={item.id} style={styles.slotCard}>
-        {renderSlotContent(item.slot)}
-        {renderRequestPanel(item.slot)}
-      </Card>
     ) : (
       <Pressable key={item.id} onPress={() => openRequest(item.slot)}>
         <Card style={styles.slotCard}>{renderSlotContent(item.slot)}</Card>
@@ -1151,62 +423,34 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
       </View>
 
       {showRequestableSlots || showBookingSchedule ? (
-        <View style={styles.toolbar}>
-          <View style={styles.segmented}>
-            {(['agenda', 'list'] as const).map((candidate) => (
-              <Button
-                key={candidate}
-                icon={planningControlIcons[candidate]}
-                label={t(`planning.display.${candidate}` as TranslationKey)}
-                onPress={() => setDisplayMode(candidate)}
-                style={styles.toolbarButton}
-                variant={displayMode === candidate ? 'primary' : 'secondary'}
-              />
-            ))}
-          </View>
-          <View style={styles.segmented}>
-            {(['week', 'day'] as const).map((candidate) => (
-              <Button
-                key={candidate}
-                label={t(`planning.mode.${candidate}` as TranslationKey)}
-                onPress={() => setMode(candidate)}
-                style={styles.toolbarButton}
-                variant={mode === candidate ? 'primary' : 'secondary'}
-              />
-            ))}
-          </View>
-          <View style={styles.periodActions}>
-            <Button
-              icon={planningControlIcons.previous}
-              label={t('planning.previousAction')}
-              onPress={() => move(-1)}
-              style={[styles.toolbarButton, styles.periodButton]}
-              variant="secondary"
-            />
-            <Button
-              label={t('planning.todayAction')}
-              onPress={() => setAnchorDate(today())}
-              style={[styles.toolbarButton, styles.periodButton]}
-              variant="secondary"
-            />
-            <Button
-              icon={planningControlIcons.next}
-              iconPosition="right"
-              label={t('planning.nextAction')}
-              onPress={() => move(1)}
-              style={[styles.toolbarButton, styles.periodButton]}
-              variant="secondary"
-            />
-          </View>
-        </View>
+        <PlanningControls
+          displayMode={displayMode}
+          mode={mode}
+          onDisplayModeChange={setDisplayMode}
+          onModeChange={setMode}
+          onMove={move}
+          onToday={goToToday}
+        />
       ) : null}
 
       {loadState === 'error' ? (
-        <Feedback
-          message={t('studentAgenda.loadErrorBody')}
-          title={t('studentAgenda.loadErrorTitle')}
-          tone="error"
-        />
+        <View style={styles.loadError}>
+          <Feedback
+            message={t('studentAgenda.loadErrorBody')}
+            title={t('studentAgenda.loadErrorTitle')}
+            tone="error"
+          />
+          <Button
+            disabled={isRefreshing}
+            label={
+              isRefreshing
+                ? t('planning.refreshing')
+                : t('studentAgenda.retryAction')
+            }
+            onPress={() => void loadAgenda()}
+            variant="secondary"
+          />
+        </View>
       ) : null}
 
       {feedback !== 'none' && feedbackCopy[feedback] ? (
@@ -1221,8 +465,43 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
         />
       ) : null}
 
-      {renderRequestModal()}
-      {renderCancellationModal()}
+      {selectedSlot && requestSelection ? (
+        <StudentBookingRequestModal
+          formatTime={formatTime}
+          getRequestProposal={getRequestProposalForSlot}
+          initialStartsAt={requestSelection.startsAt}
+          key={`${selectedSlot.id}:${requestSelection.startsAt}`}
+          onClose={() => setRequestSelection(null)}
+          onError={setFeedback}
+          onSuccess={async () => {
+            setRequestSelection(null);
+            setFeedback('requested');
+            await loadAgenda();
+          }}
+          participants={participants}
+          pricingRates={pricingRates}
+          requesterId={user?.id}
+          slot={selectedSlot}
+        />
+      ) : null}
+      {selectedCancellationBooking ? (
+        <StudentBookingCancellationModal
+          booking={selectedCancellationBooking}
+          bookingSummary={renderBookingContent(selectedCancellationBooking)}
+          key={selectedCancellationBooking.id}
+          onClose={() => setCancellationBookingId(null)}
+          onSuccess={async (updatedBooking) => {
+            updateBookings((current) =>
+              current.map((booking) =>
+                booking.id === updatedBooking.id ? updatedBooking : booking
+              )
+            );
+            setCancellationBookingId(null);
+            setFeedback('cancelled');
+            await loadAgenda();
+          }}
+        />
+      ) : null}
 
       {showRequestableSlots && displayMode === 'agenda' ? (
         <>
@@ -1231,6 +510,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
             formatDay={formatDay}
             getSlotStyle={getHomeAgendaItemStyle}
             renderSlot={renderHomeAgendaItem}
+            selectionRoundingMinutes={30}
             slots={homeAgendaItems}
             isSlotPressable={(item) =>
               item.kind === 'slot' &&
@@ -1240,12 +520,6 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
               if (item.kind === 'slot') openRequest(item.slot, startsAt);
             }}
           />
-          {selectedSlot && !useRequestModal ? (
-            <Card style={styles.selectedAgendaSlot}>
-              {renderSlotContent(selectedSlot)}
-              {renderRequestPanel(selectedSlot)}
-            </Card>
-          ) : null}
         </>
       ) : showRequestableSlots ? (
         <View style={styles.days}>
@@ -1346,28 +620,15 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
     paddingVertical: Spacing.four,
   },
+  loadError: {
+    alignItems: 'flex-start',
+    gap: Spacing.two,
+  },
   header: {
     gap: Spacing.one,
   },
   heading: {
     gap: Spacing.one,
-  },
-  toolbar: {
-    gap: Spacing.three,
-  },
-  segmented: {
-    flexDirection: 'row',
-    gap: Spacing.two,
-  },
-  periodActions: {
-    flexDirection: 'row',
-    gap: Spacing.two,
-  },
-  toolbarButton: {
-    flex: 1,
-  },
-  periodButton: {
-    paddingHorizontal: Spacing.one,
   },
   days: {
     gap: Spacing.four,
@@ -1390,70 +651,6 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: Spacing.one,
   },
-  agendaSlotPressableSelected: {
-    borderWidth: 1,
-    borderRadius: 6,
-    margin: -2,
-    padding: 2,
-  },
-  selectedAgendaSlot: {
-    gap: Spacing.two,
-  },
-  modalRoot: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  modalBackdrop: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.42)',
-  },
-  modalCard: {
-    maxHeight: '86%',
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    borderWidth: 1,
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
-    paddingBottom: Spacing.four,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: Spacing.three,
-  },
-  modalTitle: {
-    flex: 1,
-    gap: Spacing.one,
-  },
-  modalClose: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 22,
-    borderWidth: 1,
-  },
-  modalBody: {
-    gap: Spacing.two,
-    paddingTop: Spacing.three,
-  },
-  requestPanel: {
-    gap: Spacing.three,
-    paddingTop: Spacing.two,
-  },
-  requestActions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.two,
-  },
-  participantList: {
-    gap: Spacing.two,
-  },
   bookingCard: {
     minWidth: 240,
     flex: 1,
@@ -1462,9 +659,5 @@ const styles = StyleSheet.create({
   agendaBookingPressable: {
     flex: 1,
     gap: Spacing.one,
-  },
-  cancellationInput: {
-    minHeight: 112,
-    paddingTop: Spacing.three,
   },
 });

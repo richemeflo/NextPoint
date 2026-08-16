@@ -3,8 +3,14 @@ import {
   schedulingTimeZone,
   type LessonPackAdjustment,
 } from '@nextpoint/shared';
-import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
@@ -17,14 +23,13 @@ import {
   adjustLessonPackSessions,
   assignLessonPack,
   consumeLessonPackSession,
-  getStudentLessonPacks,
   type LessonPack,
 } from '@/features/lesson-packs/lesson-pack-service';
 import {
   getLessonPackAdjustmentDisabledReason,
   getLessonPackConsumptionDisabledReason,
-  replaceAdjustedLessonPack,
 } from '@/features/lesson-packs/lesson-pack-state';
+import { useStudentLessonPacks } from '@/features/lesson-packs/use-student-lesson-packs';
 import {
   acquireMutationLock,
   releaseMutationLock,
@@ -32,19 +37,25 @@ import {
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/i18n';
 
-export function StudentLessonPackCard({
-  studentId,
-}: {
-  studentId: string;
-}) {
+export function StudentLessonPackCard({ studentId }: { studentId: string }) {
+  return <StudentLessonPackCardContent key={studentId} studentId={studentId} />;
+}
+
+function StudentLessonPackCardContent({ studentId }: { studentId: string }) {
   const theme = useTheme();
   const { locale, t } = useTranslation();
-  const [packs, setPacks] = useState<LessonPack[]>([]);
+  const { width } = useWindowDimensions();
+  const {
+    loadMore,
+    loadMoreState,
+    loadState,
+    packs,
+    prependPack,
+    replacePack,
+  } = useStudentLessonPacks(studentId);
+  const packWidth = Math.max(240, Math.min(width - 96, 640));
   const [includedSessions, setIncludedSessions] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>(
-    'loading'
-  );
   const [saveState, setSaveState] = useState<
     'idle' | 'saving' | 'saved' | 'duplicate' | 'error'
   >('idle');
@@ -64,28 +75,6 @@ export function StudentLessonPackCard({
   const [validationError, setValidationError] = useState<string | null>(null);
   const mutationLock = useRef(false);
 
-  useEffect(() => {
-    let active = true;
-    void getStudentLessonPacks(studentId)
-      .then((result) => {
-        if (!active) return;
-        if (!result.ok) {
-          setLoadState('error');
-          return;
-        }
-        setPacks(result.data);
-        setLoadState('ready');
-      })
-      .catch(() => {
-        if (!active) return;
-        setLoadState('error');
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [studentId]);
-
   const activePack = packs.find((pack) => pack.status === 'active');
   const adjustablePack = activePack ?? packs[0];
 
@@ -104,12 +93,12 @@ export function StudentLessonPackCard({
       const result = await assignLessonPack(studentId, parsed.data);
       if (!result.ok) {
         setSaveState(
-          result.code === 'active_pack_exists' ? 'duplicate' : 'error'
+          result.code === 'active_pack_exists' ? 'duplicate' : 'error',
         );
         return;
       }
 
-      setPacks((current) => [result.data, ...current]);
+      prependPack(result.data);
       setIncludedSessions('');
       setIsFormOpen(false);
       setSaveState('saved');
@@ -122,13 +111,13 @@ export function StudentLessonPackCard({
 
   const adjustPack = async (
     pack: LessonPack,
-    adjustment: LessonPackAdjustment
+    adjustment: LessonPackAdjustment,
   ) => {
     if (!acquireMutationLock(mutationLock)) return;
 
     const disabledReason = getLessonPackAdjustmentDisabledReason(
       pack,
-      adjustment
+      adjustment,
     );
     if (disabledReason === 'no_remaining_session') {
       setAdjustmentState('noRemaining');
@@ -155,7 +144,7 @@ export function StudentLessonPackCard({
         return;
       }
 
-      setPacks((current) => replaceAdjustedLessonPack(current, result.data));
+      replacePack(result.data);
       setAdjustmentState(adjustment === 1 ? 'increased' : 'decreased');
     } catch {
       setAdjustmentState('error');
@@ -182,7 +171,7 @@ export function StudentLessonPackCard({
         return;
       }
 
-      setPacks((current) => replaceAdjustedLessonPack(current, result.data));
+      replacePack(result.data);
       setConsumptionState('consumed');
     } catch {
       setConsumptionState('error');
@@ -361,9 +350,31 @@ export function StudentLessonPackCard({
           {t('lessonPack.emptyBody')}
         </ThemedText>
       ) : (
-        <View style={styles.packList}>
-          {packs.map((pack) => (
-            <View key={pack.id} style={styles.pack}>
+        <FlatList
+          contentContainerStyle={styles.packListContent}
+          data={packs}
+          horizontal
+          ItemSeparatorComponent={() => <View style={styles.packSeparator} />}
+          keyExtractor={(pack) => pack.id}
+          ListFooterComponent={
+            loadMoreState === 'idle' ? null : (
+              <View style={styles.loadMore}>
+                {loadMoreState === 'loading' ? (
+                  <ActivityIndicator color={theme.primary} />
+                ) : (
+                  <Button
+                    label={t('lessonPack.loadMoreAction')}
+                    onPress={() => void loadMore()}
+                    variant="secondary"
+                  />
+                )}
+              </View>
+            )
+          }
+          onEndReached={() => void loadMore()}
+          onEndReachedThreshold={0.4}
+          renderItem={({ item: pack }) => (
+            <Card style={[styles.pack, { width: packWidth }]}>
               <View style={styles.packHeading}>
                 <View style={styles.packTitle}>
                   <ThemedText type="smallBold">
@@ -388,9 +399,7 @@ export function StudentLessonPackCard({
                   </ThemedText>
                 </View>
                 <View style={styles.metric}>
-                  <ThemedText type="subtitle">
-                    {pack.usedSessions}
-                  </ThemedText>
+                  <ThemedText type="subtitle">{pack.usedSessions}</ThemedText>
                   <ThemedText type="small" themeColor="textMuted">
                     {t('lessonPack.usedMetric')}
                   </ThemedText>
@@ -403,7 +412,7 @@ export function StudentLessonPackCard({
                     <View style={styles.counterControls}>
                       <Button
                         accessibilityLabel={t(
-                          'lessonPack.decrementAccessibilityLabel'
+                          'lessonPack.decrementAccessibilityLabel',
                         )}
                         disabled={
                           adjustmentState === 'adjusting' ||
@@ -427,13 +436,14 @@ export function StudentLessonPackCard({
                         <ThemedText
                           accessibilityLiveRegion="polite"
                           style={styles.counterValue}
-                          type="subtitle">
+                          type="subtitle"
+                        >
                           {pack.remainingSessions}
                         </ThemedText>
                       )}
                       <Button
                         accessibilityLabel={t(
-                          'lessonPack.incrementAccessibilityLabel'
+                          'lessonPack.incrementAccessibilityLabel',
                         )}
                         disabled={
                           adjustmentState === 'adjusting' ||
@@ -474,9 +484,12 @@ export function StudentLessonPackCard({
                   variant="secondary"
                 />
               ) : null}
-            </View>
-          ))}
-        </View>
+            </Card>
+          )}
+          showsHorizontalScrollIndicator
+          style={styles.packList}
+          windowSize={5}
+        />
       )}
     </Card>
   );
@@ -512,10 +525,22 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   packList: {
-    gap: Spacing.three,
+    width: '100%',
+  },
+  packListContent: {
+    paddingRight: Spacing.one,
+  },
+  packSeparator: {
+    width: Spacing.three,
   },
   pack: {
     gap: Spacing.three,
+  },
+  loadMore: {
+    minWidth: 160,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.three,
   },
   packHeading: {
     flexDirection: 'row',

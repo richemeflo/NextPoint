@@ -1,6 +1,6 @@
 begin;
 
-select plan(38);
+select plan(41);
 
 select ok(
   to_regtype('public.notification_type') is not null,
@@ -249,12 +249,35 @@ values
     'booking_approved', 'Cours confirmé', 'Votre cours est confirmé.', now()
   );
 
+insert into public.notification_push_tokens (
+  id, user_id, provider, device_id, token
+)
+values (
+  '13000000-0000-4000-8000-000000000021',
+  '13000000-0000-4000-8000-000000000001',
+  'expo',
+  'ios:legacy-build:legacy-device-name',
+  'ExponentPushToken[test-installation]'
+);
+
 select set_config(
   'request.jwt.claim.sub',
   '13000000-0000-4000-8000-000000000001',
   true
 );
 set local role authenticated;
+
+select lives_ok(
+  $$
+    select public.update_push_notification_preference(
+      'granted',
+      'expo',
+      '13000000-0000-4000-8000-000000000099',
+      'ExponentPushToken[test-installation]'
+    )
+  $$,
+  'an installation UUID can replace a legacy device identifier'
+);
 
 select is(
   public.delete_notification('13000000-0000-4000-8000-000000000011'),
@@ -269,6 +292,26 @@ select throws_ok(
 );
 
 reset role;
+
+select is(
+  (
+    select is_active
+    from public.notification_push_tokens
+    where id = '13000000-0000-4000-8000-000000000021'
+  ),
+  false,
+  'the legacy push token row is deactivated'
+);
+select is(
+  (
+    select count(*)
+    from public.notification_push_tokens
+    where token = 'ExponentPushToken[test-installation]'
+      and is_active
+  ),
+  1::bigint,
+  'only the installation UUID remains active for a provider token'
+);
 
 select is(
   (

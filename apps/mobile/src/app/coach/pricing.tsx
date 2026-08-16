@@ -329,7 +329,7 @@ export default function CoachPricingScreen() {
                     options={students.map((student) => ({
                       value: student.userId,
                       label: student.fullName,
-                      description: student.email,
+                      description: student.email || undefined,
                     }))}
                     query={studentSearch}
                     values={value}

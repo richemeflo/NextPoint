@@ -46,6 +46,32 @@ test('agenda selection rounds down to the previous quarter hour', () => {
   );
 });
 
+test('student selection can round down to the previous half hour', () => {
+  const longSlot = {
+    startsAt: '2026-07-01T16:00:00.000Z',
+    endsAt: '2026-07-01T18:00:00.000Z',
+  };
+
+  assert.equal(
+    getAgendaGridSelection({
+      ...longSlot,
+      height: 120,
+      locationY: 18,
+      roundingMinutes: 30,
+    }),
+    '2026-07-01T16:00:00.000Z'
+  );
+  assert.equal(
+    getAgendaGridSelection({
+      ...longSlot,
+      height: 120,
+      locationY: 47,
+      roundingMinutes: 30,
+    }),
+    '2026-07-01T16:30:00.000Z'
+  );
+});
+
 test('agenda selection stays on quarter hours at availability boundaries', () => {
   assert.equal(
     getAgendaGridSelection({

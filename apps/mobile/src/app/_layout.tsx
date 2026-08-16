@@ -1,7 +1,14 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+  type ErrorBoundaryProps,
+  usePathname,
+} from 'expo-router';
 import Stack from 'expo-router/stack';
 import { ActivityIndicator, StyleSheet, useColorScheme, View } from 'react-native';
 
+import { AppErrorFallback } from '@/components/app-error-fallback';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/ui/button';
@@ -13,6 +20,14 @@ import '@/features/notifications/push-notification-handler';
 import { ProfileLocaleSync } from '@/features/profiles/profile-locale-sync';
 import { useTheme } from '@/hooks/use-theme';
 import { I18nProvider, useTranslation } from '@/i18n';
+
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  return (
+    <I18nProvider>
+      <AppErrorFallback error={error} retry={retry} scope="root" />
+    </I18nProvider>
+  );
+}
 
 function SessionLoadingScreen() {
   const theme = useTheme();
@@ -33,13 +48,15 @@ function SessionLoadingScreen() {
 function RootNavigator() {
   const { role, signOut, status } = useAuth();
   const { t } = useTranslation();
+  const pathname = usePathname();
   const access = getAuthRouteAccess(status, role);
+  const isPasswordRecovery = pathname === '/reset-password';
 
-  if (access.isLoading) {
+  if (access.isLoading && !isPasswordRecovery) {
     return <SessionLoadingScreen />;
   }
 
-  if (access.hasAccessError) {
+  if (access.hasAccessError && !isPasswordRecovery) {
     return (
       <ThemedView style={styles.loadingScreen}>
         <View style={styles.accessError}>
@@ -57,6 +74,7 @@ function RootNavigator() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="activate-student" />
+      <Stack.Screen name="reset-password" />
       <Stack.Protected guard={access.allowAuthRoutes}>
         <Stack.Screen name="(auth)" />
       </Stack.Protected>

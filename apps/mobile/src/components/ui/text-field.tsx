@@ -1,4 +1,6 @@
+import { useId } from 'react';
 import {
+  Platform,
   StyleSheet,
   TextInput,
   View,
@@ -25,13 +27,28 @@ export function TextField({
   ...props
 }: TextFieldProps) {
   const theme = useTheme();
+  const fieldId = `text-field-${useId().replaceAll(':', '')}`;
+  const labelId = `${fieldId}-label`;
+  const errorId = `${fieldId}-error`;
+  const webErrorProps =
+    Platform.OS === 'web'
+      ? {
+          'aria-describedby': error ? errorId : undefined,
+          'aria-invalid': Boolean(error),
+        }
+      : {};
 
   return (
     <View style={[styles.wrapper, containerStyle]}>
-      <ThemedText type="smallBold">{label}</ThemedText>
+      <ThemedText nativeID={labelId} type="smallBold">
+        {label}
+      </ThemedText>
       <TextInput
-        accessibilityHint={error}
+        accessibilityLabel={Platform.OS === 'web' ? undefined : label}
+        accessibilityLabelledBy={Platform.OS === 'android' ? labelId : undefined}
+        aria-labelledby={Platform.OS === 'web' ? labelId : undefined}
         placeholderTextColor={theme.textMuted}
+        {...webErrorProps}
         style={[
           styles.input,
           {
@@ -44,7 +61,12 @@ export function TextField({
         {...props}
       />
       {error ? (
-        <ThemedText type="small" themeColor="error">
+        <ThemedText
+          accessibilityLiveRegion="polite"
+          accessibilityRole="alert"
+          nativeID={errorId}
+          type="small"
+          themeColor="error">
           {error}
         </ThemedText>
       ) : null}

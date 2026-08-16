@@ -1,16 +1,19 @@
 import { schedulingTimeZone } from '@nextpoint/shared';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Feedback } from '@/components/ui/feedback';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Spacing } from '@/constants/theme';
-import {
-  getStudentLessonPacks,
-  type LessonPack,
-} from '@/features/lesson-packs/lesson-pack-service';
+import { useStudentLessonPacks } from '@/features/lesson-packs/use-student-lesson-packs';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/i18n';
 
@@ -19,36 +22,25 @@ export function StudentLessonPacksReadonlyCard({
 }: {
   studentId: string;
 }) {
+  return (
+    <StudentLessonPacksReadonlyCardContent
+      key={studentId}
+      studentId={studentId}
+    />
+  );
+}
+
+function StudentLessonPacksReadonlyCardContent({
+  studentId,
+}: {
+  studentId: string;
+}) {
   const theme = useTheme();
   const { locale, t } = useTranslation();
-  const [packs, setPacks] = useState<LessonPack[]>([]);
-  const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>(
-    'loading'
-  );
-
-  useEffect(() => {
-    let active = true;
-
-    void getStudentLessonPacks(studentId)
-      .then((result) => {
-        if (!active) return;
-
-        if (!result.ok) {
-          setLoadState('error');
-          return;
-        }
-
-        setPacks(result.data);
-        setLoadState('ready');
-      })
-      .catch(() => {
-        if (active) setLoadState('error');
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [studentId]);
+  const { width } = useWindowDimensions();
+  const { loadMore, loadMoreState, loadState, packs } =
+    useStudentLessonPacks(studentId);
+  const packWidth = Math.max(240, Math.min(width - 96, 640));
 
   if (loadState === 'loading') {
     return (
@@ -87,9 +79,31 @@ export function StudentLessonPacksReadonlyCard({
           {t('lessonPack.studentEmptyBody')}
         </ThemedText>
       ) : (
-        <View style={styles.packList}>
-          {packs.map((pack) => (
-            <View key={pack.id} style={styles.pack}>
+        <FlatList
+          contentContainerStyle={styles.packListContent}
+          data={packs}
+          horizontal
+          ItemSeparatorComponent={() => <View style={styles.packSeparator} />}
+          keyExtractor={(pack) => pack.id}
+          ListFooterComponent={
+            loadMoreState === 'idle' ? null : (
+              <View style={styles.loadMore}>
+                {loadMoreState === 'loading' ? (
+                  <ActivityIndicator color={theme.primary} />
+                ) : (
+                  <Button
+                    label={t('lessonPack.loadMoreAction')}
+                    onPress={() => void loadMore()}
+                    variant="secondary"
+                  />
+                )}
+              </View>
+            )
+          }
+          onEndReached={() => void loadMore()}
+          onEndReachedThreshold={0.4}
+          renderItem={({ item: pack }) => (
+            <Card style={[styles.pack, { width: packWidth }]}>
               <View style={styles.packHeading}>
                 <View style={styles.packTitle}>
                   <ThemedText type="smallBold">
@@ -129,9 +143,12 @@ export function StudentLessonPacksReadonlyCard({
                   </ThemedText>
                 </View>
               </View>
-            </View>
-          ))}
-        </View>
+            </Card>
+          )}
+          showsHorizontalScrollIndicator
+          style={styles.packList}
+          windowSize={5}
+        />
       )}
     </Card>
   );
@@ -150,10 +167,22 @@ const styles = StyleSheet.create({
     gap: Spacing.one,
   },
   packList: {
-    gap: Spacing.three,
+    width: '100%',
+  },
+  packListContent: {
+    paddingRight: Spacing.one,
+  },
+  packSeparator: {
+    width: Spacing.three,
   },
   pack: {
     gap: Spacing.three,
+  },
+  loadMore: {
+    minWidth: 160,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.three,
   },
   packHeading: {
     flexDirection: 'row',
