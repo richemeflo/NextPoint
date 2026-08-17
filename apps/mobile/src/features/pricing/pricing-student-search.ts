@@ -23,3 +23,18 @@ export function filterPricingStudentOptions(
     normalizeStudentName(option.label).includes(normalizedQuery)
   );
 }
+
+export function updateStudentSelection(
+  values: string[],
+  value: string,
+  maxSelected?: number
+) {
+  if (values.includes(value)) {
+    return values.filter((candidate) => candidate !== value);
+  }
+
+  if (maxSelected === 1) return [value];
+  if (maxSelected !== undefined && values.length >= maxSelected) return values;
+
+  return [...values, value];
+}

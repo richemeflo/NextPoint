@@ -5,10 +5,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Button } from '@/components/ui/button';
+import { Button, type ButtonIcon } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Feedback } from '@/components/ui/feedback';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { useAuth } from '@/features/auth/auth-context';
 import { useTranslation } from '@/i18n';
 
 import { getLegalPageCopy, getLegalUiCopy, type LegalPageId } from './legal-copy';
@@ -19,8 +20,15 @@ import {
 } from './legal-config';
 import { LegalFooter } from './legal-footer';
 
+const homeIcon = {
+  ios: 'house',
+  android: 'home',
+  web: 'home',
+} satisfies ButtonIcon;
+
 export function LegalDocumentScreen({ page }: { page: LegalPageId }) {
   const router = useRouter();
+  const { role } = useAuth();
   const { locale } = useTranslation();
   const document = getLegalPageCopy(page, locale);
   const ui = getLegalUiCopy(locale);
@@ -28,6 +36,11 @@ export function LegalDocumentScreen({ page }: { page: LegalPageId }) {
   const openEmail = (email: string, subject: string) => {
     const query = new URLSearchParams({ subject });
     void Linking.openURL(`mailto:${email}?${query.toString()}`);
+  };
+
+  const returnHome = () => {
+    const href: '/' | '/coach' | '/eleve' = role ? `/${role}` : '/';
+    router.replace(href);
   };
 
   return (
@@ -109,8 +122,9 @@ export function LegalDocumentScreen({ page }: { page: LegalPageId }) {
           ) : null}
 
           <Button
+            icon={homeIcon}
             label={ui.home}
-            onPress={() => router.navigate('/')}
+            onPress={returnHome}
             variant="secondary"
           />
           <LegalFooter />
@@ -162,4 +176,3 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
   },
 });
-

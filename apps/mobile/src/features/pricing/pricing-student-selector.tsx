@@ -6,12 +6,14 @@ import { Radii, Spacing } from '@/constants/theme';
 import {
   filterPricingStudentOptions,
   type PricingStudentSearchOption,
+  updateStudentSelection,
 } from '@/features/pricing/pricing-student-search';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/i18n';
 
 type PricingStudentSelectorProps = {
   label: string;
+  maxSelected?: number;
   onChange: (values: string[]) => void;
   onQueryChange: (query: string) => void;
   options: PricingStudentSearchOption[];
@@ -21,6 +23,7 @@ type PricingStudentSelectorProps = {
 
 export function PricingStudentSelector({
   label,
+  maxSelected,
   onChange,
   onQueryChange,
   options,
@@ -35,11 +38,7 @@ export function PricingStudentSelector({
   const matchingOptions = filterPricingStudentOptions(options, query);
 
   const toggle = (value: string) =>
-    onChange(
-      values.includes(value)
-        ? values.filter((candidate) => candidate !== value)
-        : [...values, value]
-    );
+    onChange(updateStudentSelection(values, value, maxSelected));
 
   return (
     <View style={styles.field}>
@@ -69,7 +68,10 @@ export function PricingStudentSelector({
                     borderColor: theme.primary,
                   },
                 ]}>
-                <ThemedText type="smallBold" themeColor="primary">
+                <ThemedText
+                  numberOfLines={1}
+                  type="smallBold"
+                  themeColor="primary">
                   {option.label} ×
                 </ThemedText>
               </Pressable>
@@ -99,11 +101,17 @@ export function PricingStudentSelector({
         <View style={styles.results}>
           {matchingOptions.map((option) => {
             const selected = values.includes(option.value);
+            const disabled =
+              !selected &&
+              maxSelected !== 1 &&
+              maxSelected !== undefined &&
+              values.length >= maxSelected;
 
             return (
               <Pressable
                 accessibilityRole="checkbox"
-                accessibilityState={{ checked: selected }}
+                accessibilityState={{ checked: selected, disabled }}
+                disabled={disabled}
                 key={option.value}
                 onPress={() => toggle(option.value)}
                 style={[
@@ -113,12 +121,18 @@ export function PricingStudentSelector({
                       ? theme.backgroundSelected
                       : theme.surface,
                     borderColor: selected ? theme.primary : theme.border,
+                    opacity: disabled ? 0.45 : 1,
                   },
                 ]}>
                 <View style={styles.resultCopy}>
-                  <ThemedText type="smallBold">{option.label}</ThemedText>
+                  <ThemedText numberOfLines={1} type="smallBold">
+                    {option.label}
+                  </ThemedText>
                   {option.description ? (
-                    <ThemedText type="small" themeColor="textMuted">
+                    <ThemedText
+                      numberOfLines={1}
+                      type="small"
+                      themeColor="textMuted">
                       {option.description}
                     </ThemedText>
                   ) : null}
@@ -143,6 +157,9 @@ export function PricingStudentSelector({
 
 const styles = StyleSheet.create({
   field: {
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: 0,
     gap: Spacing.three,
   },
   selectedSection: {
@@ -154,7 +171,9 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   selectedOption: {
+    maxWidth: '100%',
     minHeight: 40,
+    flexShrink: 1,
     justifyContent: 'center',
     borderWidth: 1,
     borderRadius: Radii.medium,
@@ -164,6 +183,9 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   result: {
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: 0,
     minHeight: 56,
     flexDirection: 'row',
     alignItems: 'center',
@@ -176,6 +198,7 @@ const styles = StyleSheet.create({
   },
   resultCopy: {
     flex: 1,
+    minWidth: 0,
     gap: Spacing.one,
   },
 });

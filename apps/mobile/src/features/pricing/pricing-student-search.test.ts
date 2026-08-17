@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { filterPricingStudentOptions } from './pricing-student-search';
+import {
+  filterPricingStudentOptions,
+  updateStudentSelection,
+} from './pricing-student-search';
 
 const students = [
   { value: '1', label: 'Élodie Martin' },
@@ -23,4 +26,15 @@ test('pricing student search matches names without accent or case sensitivity', 
 test('pricing student search waits for a name and returns no false match', () => {
   assert.deepEqual(filterPricingStudentOptions(students, '   '), []);
   assert.deepEqual(filterPricingStudentOptions(students, 'Camille'), []);
+});
+
+test('student selection replaces the current student when only one is allowed', () => {
+  assert.deepEqual(updateStudentSelection(['1'], '2', 1), ['2']);
+  assert.deepEqual(updateStudentSelection(['1'], '1', 1), []);
+});
+
+test('student selection respects participant limits', () => {
+  assert.deepEqual(updateStudentSelection(['1'], '2', 2), ['1', '2']);
+  assert.deepEqual(updateStudentSelection(['1', '2'], '3', 2), ['1', '2']);
+  assert.deepEqual(updateStudentSelection(['1', '2'], '2', 2), ['1']);
 });

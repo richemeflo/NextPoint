@@ -63,15 +63,22 @@ export function StudentAgeRangeSlider({
 
 const styles = StyleSheet.create({
   field: {
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: 0,
     gap: Spacing.two,
   },
   values: {
+    width: '100%',
+    minWidth: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: Spacing.three,
   },
   slider: {
     width: '100%',
+    maxWidth: '100%',
+    minWidth: 0,
     height: 48,
   },
 });

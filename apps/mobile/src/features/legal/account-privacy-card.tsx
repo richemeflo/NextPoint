@@ -1,5 +1,6 @@
 import { useRouter, type Href } from 'expo-router';
 import { useState } from 'react';
+import { StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
@@ -58,7 +59,7 @@ export function AccountPrivacyCard() {
   };
 
   return (
-    <Card style={{ gap: Spacing.three }}>
+    <Card elevated style={styles.card}>
       <ThemedText type="subtitle">{ui.accountToolsTitle}</ThemedText>
       <ThemedText themeColor="textMuted" type="small">
         {ui.accountToolsBody}
@@ -95,3 +96,9 @@ export function AccountPrivacyCard() {
     </Card>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    gap: Spacing.three,
+  },
+});

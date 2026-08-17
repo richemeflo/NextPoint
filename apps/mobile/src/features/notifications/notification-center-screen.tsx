@@ -39,6 +39,11 @@ import {
   type PushPreference,
 } from '@/features/notifications/notification-service';
 import {
+  decrementNotificationUnreadCount,
+  setNotificationUnreadCount,
+  useNotificationUnreadCount,
+} from '@/features/notifications/notification-unread-count';
+import {
   mergeNotificationPages,
   type NotificationCursor,
 } from '@/features/notifications/notification-pagination';
@@ -277,7 +282,7 @@ export function NotificationCenterScreen({ role }: { role: AppRole }) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [nextCursor, setNextCursor] = useState<NotificationCursor | null>(null);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const unreadCount = useNotificationUnreadCount();
   const [notice, setNotice] = useState<
     'loadError' | 'saveError' | 'deleteError' | 'linkMissing' | null
   >(null);
@@ -312,7 +317,7 @@ export function NotificationCenterScreen({ role }: { role: AppRole }) {
           setNotifications(notificationsResult.data.data);
           setHasMore(notificationsResult.data.hasMore);
           setNextCursor(notificationsResult.data.nextCursor);
-          setUnreadCount(unreadResult.count);
+          setNotificationUnreadCount(unreadResult.count);
           setPushPreference(preferenceResult.data);
         }
       })
@@ -403,7 +408,7 @@ export function NotificationCenterScreen({ role }: { role: AppRole }) {
 
       const readAt = new Date().toISOString();
       markedAllReadAt.current = readAt;
-      setUnreadCount(0);
+      setNotificationUnreadCount(0);
       setNotifications((current) =>
         current.map((notification) => ({
           ...notification,
@@ -434,7 +439,7 @@ export function NotificationCenterScreen({ role }: { role: AppRole }) {
         current.filter((notification) => notification.id !== result.id)
       );
       if (deletedNotification && !deletedNotification.readAt) {
-        setUnreadCount((current) => Math.max(0, current - 1));
+        decrementNotificationUnreadCount();
       }
       setPendingDeleteNotificationId(null);
     } catch {
@@ -463,7 +468,7 @@ export function NotificationCenterScreen({ role }: { role: AppRole }) {
               : currentNotification
           )
         );
-        setUnreadCount((current) => Math.max(0, current - 1));
+        decrementNotificationUnreadCount();
       } else if (markResult && !markResult.ok) {
         setNotice('saveError');
       }

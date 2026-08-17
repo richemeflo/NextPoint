@@ -19,6 +19,7 @@ import type { BookingMutationError } from '@/features/bookings/booking-service';
 import { getCoachBookingPricingOptions } from '@/features/bookings/coach-booking-pricing';
 import { ProfileOptionSelector } from '@/features/profiles/profile-option-selector';
 import type { PricingRate } from '@/features/pricing/pricing-service';
+import { PricingStudentSelector } from '@/features/pricing/pricing-student-selector';
 import type { AssociatedStudent } from '@/features/students/student-coach-service';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
@@ -83,6 +84,7 @@ export function CoachBookingCreateSection({
   const { t } = useTranslation();
   const theme = useTheme();
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
+  const [studentQuery, setStudentQuery] = useState('');
   const [lessonType, setLessonType] =
     useState<PricingLessonType>('individual');
   const [date, setDate] = useState(getSchedulingToday);
@@ -102,21 +104,23 @@ export function CoachBookingCreateSection({
       ),
     [duration, lessonType, pricingRates, selectedStudentIds]
   );
+  const studentOptions = useMemo(
+    () =>
+      students.map((student) => ({
+        value: student.userId,
+        label: student.fullName,
+        description:
+          [student.phone, student.email].filter(Boolean).join(' · ') ||
+          undefined,
+      })),
+    [students]
+  );
   const selectedLessonType = pricingOptions.selection.lessonType;
   const participantLimit = bookingParticipantLimits[selectedLessonType].max;
   const hasValidParticipants = isBookingParticipantCountValid(
     selectedLessonType,
     selectedStudentIds.length
   );
-
-  const toggleStudent = (studentId: string) => {
-    setSelectedStudentIds((current) => {
-      if (selectedLessonType === 'individual') return [studentId];
-      return current.includes(studentId)
-        ? current.filter((id) => id !== studentId)
-        : [...current, studentId];
-    });
-  };
 
   const submit = async () => {
     await onCreate({
@@ -130,6 +134,7 @@ export function CoachBookingCreateSection({
 
   const reset = () => {
     setSelectedStudentIds([]);
+    setStudentQuery('');
     setRecurrenceEndsOn('');
     onReset();
   };
@@ -157,32 +162,19 @@ export function CoachBookingCreateSection({
           }))}
           value={pricingOptions.selection.lessonType}
         />
-        <View style={styles.studentPicker}>
-          <ThemedText type="smallBold">
-            {selectedLessonType === 'individual'
+        <PricingStudentSelector
+          label={
+            selectedLessonType === 'individual'
               ? t('booking.studentLabel')
-              : t('booking.participantsLabel')}
-          </ThemedText>
-          <View style={styles.segmented}>
-            {students.map((student) => (
-              <Button
-                disabled={
-                  selectedLessonType !== 'individual' &&
-                  selectedStudentIds.length >= participantLimit &&
-                  !selectedStudentIds.includes(student.userId)
-                }
-                key={student.userId}
-                label={student.fullName}
-                onPress={() => toggleStudent(student.userId)}
-                variant={
-                  selectedStudentIds.includes(student.userId)
-                    ? 'primary'
-                    : 'secondary'
-                }
-              />
-            ))}
-          </View>
-        </View>
+              : t('booking.participantsLabel')
+          }
+          maxSelected={participantLimit}
+          onChange={setSelectedStudentIds}
+          onQueryChange={setStudentQuery}
+          options={studentOptions}
+          query={studentQuery}
+          values={selectedStudentIds}
+        />
         <View style={styles.formGrid}>
           <TextField
             label={t('availability.dateLabel')}
@@ -275,14 +267,6 @@ export function CoachBookingCreateSection({
 const styles = StyleSheet.create({
   formCard: {
     gap: Spacing.three,
-  },
-  segmented: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.two,
-  },
-  studentPicker: {
-    gap: Spacing.two,
   },
   formGrid: {
     gap: Spacing.three,

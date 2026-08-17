@@ -1,6 +1,7 @@
 import type { AppRole } from '@nextpoint/shared';
 import { Link, Slot, usePathname, useRouter, type Href } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
+import { useEffect } from 'react';
 import {
   Platform,
   Pressable,
@@ -16,6 +17,12 @@ import { ThemedView } from '@/components/themed-view';
 import { Button, type ButtonIcon } from '@/components/ui/button';
 import { MaxContentWidth, Radii, Spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/auth-context';
+import { getUnreadNotificationCount } from '@/features/notifications/notification-service';
+import {
+  formatNotificationUnreadCount,
+  setNotificationUnreadCount,
+  useNotificationUnreadCount,
+} from '@/features/notifications/notification-unread-count';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
 
@@ -117,8 +124,31 @@ export function RoleNavigation({ role }: { role: AppRole }) {
   const { t } = useTranslation();
   const theme = useTheme();
   const { width } = useWindowDimensions();
+  const unreadCount = useNotificationUnreadCount();
   const items = role === 'coach' ? coachItems : eleveItems;
   const isMobile = width < 768;
+
+  useEffect(() => {
+    if (!user?.id) {
+      setNotificationUnreadCount(0);
+      return undefined;
+    }
+
+    let active = true;
+    const refreshUnreadCount = async () => {
+      const result = await getUnreadNotificationCount();
+      if (active && result.ok) setNotificationUnreadCount(result.count);
+    };
+
+    void refreshUnreadCount();
+    const interval = setInterval(() => void refreshUnreadCount(), 30_000);
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [pathname, user?.id]);
+
   const navigation = (
     <View accessibilityLabel={t('nav.mainLabel')} role="navigation">
       <ScrollView
@@ -138,11 +168,18 @@ export function RoleNavigation({ role }: { role: AppRole }) {
           const selected =
             pathname === href ||
             (href !== `/${role}` && pathname.startsWith(`${href}/`));
+          const isNotificationsItem = href === `/${role}/notifications`;
+          const showUnreadBadge = isNotificationsItem && unreadCount > 0;
+          const accessibilityLabel = showUnreadBadge
+            ? `${t(item.labelKey)}, ${t('notifications.unreadCount', {
+                count: unreadCount,
+              })}`
+            : t(item.labelKey);
 
           return (
             <Link asChild href={item.href} key={String(href)}>
               <Pressable
-                accessibilityLabel={t(item.labelKey)}
+                accessibilityLabel={accessibilityLabel}
                 accessibilityRole="link"
                 accessibilityState={
                   Platform.OS === 'web' ? undefined : { selected }
@@ -161,28 +198,48 @@ export function RoleNavigation({ role }: { role: AppRole }) {
                       : theme.surface,
                   },
                 ])}>
-                {isMobile ? (
+                <View
+                  style={[
+                    styles.navigationIcon,
+                    showUnreadBadge && !isMobile
+                      ? styles.navigationIconWithDesktopBadge
+                      : null,
+                  ]}>
                   <SymbolView
                     name={item.icon}
-                    size={22}
+                    size={isMobile ? 22 : 18}
                     weight={selected ? 'bold' : 'medium'}
                     tintColor={selected ? theme.primary : theme.textMuted}
                   />
-                ) : (
-                  <>
-                    <SymbolView
-                      name={item.icon}
-                      size={18}
-                      weight={selected ? 'bold' : 'medium'}
-                      tintColor={selected ? theme.primary : theme.textMuted}
-                    />
-                    <ThemedText
-                      numberOfLines={1}
-                      type="smallBold"
-                      themeColor={selected ? 'primary' : 'textMuted'}>
-                      {t(item.labelKey)}
-                    </ThemedText>
-                  </>
+                  {showUnreadBadge ? (
+                    <View
+                      accessibilityElementsHidden
+                      importantForAccessibility="no-hide-descendants"
+                      style={[
+                        styles.unreadBadge,
+                        {
+                          backgroundColor: theme.error,
+                          borderColor: selected
+                            ? theme.backgroundSelected
+                            : theme.surface,
+                        },
+                      ]}>
+                      <ThemedText
+                        allowFontScaling={false}
+                        style={styles.unreadBadgeText}
+                        themeColor="surface">
+                        {formatNotificationUnreadCount(unreadCount)}
+                      </ThemedText>
+                    </View>
+                  ) : null}
+                </View>
+                {isMobile ? null : (
+                  <ThemedText
+                    numberOfLines={1}
+                    type="smallBold"
+                    themeColor={selected ? 'primary' : 'textMuted'}>
+                    {t(item.labelKey)}
+                  </ThemedText>
                 )}
               </Pressable>
             </Link>
@@ -387,6 +444,35 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,
+  },
+  navigationIcon: {
+    width: 24,
+    height: 24,
+    flexShrink: 0,
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navigationIconWithDesktopBadge: {
+    marginRight: Spacing.one,
+  },
+  unreadBadge: {
+    position: 'absolute',
+    top: -7,
+    right: -10,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 3,
+    borderWidth: 2,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  unreadBadgeText: {
+    fontSize: 10,
+    lineHeight: 14,
+    fontWeight: 700,
+    textAlign: 'center',
   },
   content: {
     flex: 1,
