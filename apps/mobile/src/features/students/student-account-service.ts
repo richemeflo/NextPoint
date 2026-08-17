@@ -12,6 +12,8 @@ import { supabase } from '@/lib/supabase/client';
 
 export type StudentActivationFailureCode =
   | 'invalid_activation'
+  | 'email_required'
+  | 'email_in_use'
   | 'password_update_failed'
   | 'activation_failed'
   | 'configuration_error';
@@ -36,7 +38,7 @@ export type GenerateStudentActivationLinkResult =
     };
 
 export async function activateStudentAccount(
-  input: Pick<ActivateStudentAccountInput, 'token' | 'password'>
+  input: Pick<ActivateStudentAccountInput, 'token' | 'email' | 'password'>
 ): Promise<StudentActivationResult> {
   if (!supabase) return { ok: false, code: 'configuration_error' };
 
@@ -60,6 +62,8 @@ export async function activateStudentAccount(
     return {
       ok: false,
       code:
+        parsed.data.error.code === 'email_required' ||
+        parsed.data.error.code === 'email_in_use' ||
         parsed.data.error.code === 'password_update_failed' ||
         parsed.data.error.code === 'activation_failed'
           ? parsed.data.error.code

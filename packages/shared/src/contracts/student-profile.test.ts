@@ -89,7 +89,7 @@ test('manualStudentProfileSchema accepts only the fields required by manual crea
   assert.equal(
     manualStudentProfileSchema.safeParse({ ...manualProfile, email: '' })
       .success,
-    false
+    true
   );
   assert.equal(
     manualStudentProfileSchema.safeParse({ ...manualProfile, fullName: '' })
@@ -119,12 +119,12 @@ test('toManualStudentProfileInput normalizes the manual profile command', () => 
   );
 });
 
-test('toManualStudentProfileInput preserves missing optional phone and age', () => {
+test('toManualStudentProfileInput preserves missing optional contacts and age', () => {
   assert.deepEqual(
     toManualStudentProfileInput({
       fullName: 'Camille Martin',
       phone: ' ',
-      email: ' Camille@Example.com ',
+      email: ' ',
       padelLevel: '6',
       age: ' ',
       sex: 'female',
@@ -132,7 +132,7 @@ test('toManualStudentProfileInput preserves missing optional phone and age', () 
     {
       fullName: 'Camille Martin',
       phone: '',
-      email: 'camille@example.com',
+      email: '',
       padelLevel: 6,
       age: null,
       sex: 'female',

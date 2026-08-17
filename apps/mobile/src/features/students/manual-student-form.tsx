@@ -137,7 +137,7 @@ export function ManualStudentForm({
               error={translateError(error?.message)}
               inputMode="email"
               keyboardType="email-address"
-              label={t('profile.emailLabel')}
+              label={t('students.optionalEmailLabel')}
               onBlur={onBlur}
               onChangeText={onChange}
               placeholder={t('auth.emailPlaceholder')}

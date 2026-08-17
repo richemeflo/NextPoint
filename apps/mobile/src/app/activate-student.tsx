@@ -55,12 +55,13 @@ export default function ActivateStudentScreen() {
     resolver: zodResolver(activateStudentAccountSchema),
     defaultValues: {
       token: '',
+      email: '',
       password: '',
       confirmPassword: '',
     },
   });
   const [result, setResult] = useState<
-    'idle' | 'success' | 'invalid' | 'error'
+    'idle' | 'success' | 'invalid' | 'email_required' | 'email_in_use' | 'error'
   >('idle');
   const [isRedirectingToSignIn, setIsRedirectingToSignIn] = useState(false);
   const [acceptedLegal, setAcceptedLegal] = useState(false);
@@ -108,6 +109,7 @@ export default function ActivateStudentScreen() {
 
   const validationKeys: Record<string, TranslationKey> = {
     required: 'auth.validation.required',
+    invalid_email: 'auth.validation.invalidEmail',
     password_too_short: 'auth.validation.passwordTooShort',
     password_too_weak: 'auth.validation.passwordTooWeak',
     password_mismatch: 'auth.validation.passwordMismatch',
@@ -115,18 +117,28 @@ export default function ActivateStudentScreen() {
   const translateError = (message: string | undefined) =>
     message ? t(validationKeys[message] ?? 'auth.validation.invalid') : undefined;
 
-  const onSubmit = handleSubmit(async ({ token, password }) => {
+  const onSubmit = handleSubmit(async ({ token, email, password }) => {
     if (!acceptedLegal) {
       setShowLegalError(true);
       return;
     }
 
     setResult('idle');
-    const activation = await activateStudentAccount({ token, password });
+    const activation = await activateStudentAccount({ token, email, password });
     if (!activation.ok) {
-      setResult(
-        activation.code === 'invalid_activation' ? 'invalid' : 'error'
-      );
+      if (
+        activation.code === 'invalid_activation' ||
+        activation.code === 'email_required' ||
+        activation.code === 'email_in_use'
+      ) {
+        setResult(
+          activation.code === 'invalid_activation'
+            ? 'invalid'
+            : activation.code
+        );
+      } else {
+        setResult('error');
+      }
       return;
     }
     setResult('success');
@@ -169,6 +181,31 @@ export default function ActivateStudentScreen() {
               </>
             ) : (
               <>
+                <Controller
+                  control={control}
+                  name="email"
+                  render={({
+                    field: { onBlur, onChange, value },
+                    fieldState: { error },
+                  }) => (
+                    <TextField
+                      autoCapitalize="none"
+                      autoComplete="email"
+                      error={translateError(error?.message)}
+                      inputMode="email"
+                      keyboardType="email-address"
+                      label={t('activation.emailLabel')}
+                      onBlur={onBlur}
+                      onChangeText={onChange}
+                      placeholder={t('auth.emailPlaceholder')}
+                      textContentType="emailAddress"
+                      value={value}
+                    />
+                  )}
+                />
+                <ThemedText type="small" themeColor="textMuted">
+                  {t('activation.emailHint')}
+                </ThemedText>
                 <Controller
                   control={control}
                   name="password"
@@ -224,6 +261,20 @@ export default function ActivateStudentScreen() {
                   <Feedback
                     message={t('activation.invalidBody')}
                     title={t('activation.invalidTitle')}
+                    tone="error"
+                  />
+                ) : null}
+                {result === 'email_required' ? (
+                  <Feedback
+                    message={t('activation.emailRequiredBody')}
+                    title={t('activation.emailRequiredTitle')}
+                    tone="error"
+                  />
+                ) : null}
+                {result === 'email_in_use' ? (
+                  <Feedback
+                    message={t('activation.emailInUseBody')}
+                    title={t('activation.emailInUseTitle')}
                     tone="error"
                   />
                 ) : null}

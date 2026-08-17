@@ -23,6 +23,13 @@ export function isStudentAccountStatus(
 export const activateStudentAccountSchema = z
   .object({
     token: z.string().trim().min(1, 'required'),
+    email: z
+      .string()
+      .trim()
+      .refine(
+        (value) => value === '' || z.email().safeParse(value).success,
+        'invalid_email'
+      ),
     password: strongPasswordSchema,
     confirmPassword: z.string().min(1, 'required'),
   })

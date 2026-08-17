@@ -36,7 +36,6 @@ export type StudentProfileFormInput = z.infer<typeof studentProfileSchema>;
 
 export const manualStudentProfileSchema = studentProfileSchema.pick({
   fullName: true,
-  email: true,
   padelLevel: true,
   sex: true,
 }).extend({
@@ -46,6 +45,13 @@ export const manualStudentProfileSchema = studentProfileSchema.pick({
     .refine(
       (value) => value === '' || /^\+?[0-9][0-9 .()-]{5,29}$/.test(value),
       'invalid_phone'
+    ),
+  email: z
+    .string()
+    .trim()
+    .refine(
+      (value) => value === '' || z.email().safeParse(value).success,
+      'invalid_email'
     ),
   age: z
     .string()

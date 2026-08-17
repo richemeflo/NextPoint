@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Radii, Spacing } from '@/constants/theme';
@@ -27,10 +27,7 @@ export function StudentFilterSelector<T extends FilterValue>({
   return (
     <View style={styles.field}>
       <ThemedText type="smallBold">{label}</ThemedText>
-      <ScrollView
-        contentContainerStyle={styles.options}
-        horizontal
-        showsHorizontalScrollIndicator={false}>
+      <View style={styles.options}>
         {options.map((option) => {
           const selected = option.value === value;
 
@@ -51,6 +48,7 @@ export function StudentFilterSelector<T extends FilterValue>({
               ]}>
               <ThemedText
                 numberOfLines={1}
+                style={styles.optionLabel}
                 type="smallBold"
                 themeColor={selected ? 'primary' : 'textMuted'}>
                 {option.label}
@@ -58,24 +56,36 @@ export function StudentFilterSelector<T extends FilterValue>({
             </Pressable>
           );
         })}
-      </ScrollView>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   field: {
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: 0,
     gap: Spacing.two,
   },
   options: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: 0,
     gap: Spacing.two,
-    paddingRight: Spacing.two,
   },
   option: {
+    maxWidth: '100%',
     minHeight: 40,
+    flexShrink: 1,
     justifyContent: 'center',
     borderWidth: 1,
     borderRadius: Radii.small,
     paddingHorizontal: Spacing.three,
+  },
+  optionLabel: {
+    flexShrink: 1,
   },
 });

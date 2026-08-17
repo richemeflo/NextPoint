@@ -1,7 +1,5 @@
 import { handleOptions, jsonResponse } from '../_shared/http.ts';
-import {
-  randomTemporaryPassword,
-} from '../_shared/security.ts';
+import { randomTemporaryPassword } from '../_shared/security.ts';
 import {
   adminClient,
   getRequestUser,
@@ -35,7 +33,7 @@ function parseInput(input: unknown) {
     fullName.length < 2 ||
     fullName.length > 100 ||
     (phone !== '' && !/^\+?[0-9][0-9 .()-]{5,29}$/.test(phone)) ||
-    !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) ||
+    (email !== '' && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) ||
     !Number.isInteger(padelLevel) ||
     padelLevel < 1 ||
     padelLevel > 10 ||
@@ -70,11 +68,13 @@ Deno.serve(async (request) => {
   }
 
   const [duplicateEmail, duplicatePhone] = await Promise.all([
-    adminClient
-      .from('student_profiles')
-      .select('user_id')
-      .eq('email', input.email)
-      .limit(1),
+    input.email
+      ? adminClient
+          .from('student_profiles')
+          .select('user_id')
+          .eq('email', input.email)
+          .limit(1)
+      : Promise.resolve({ data: [], error: null }),
     input.phone
       ? adminClient
           .from('student_profiles')
@@ -97,13 +97,18 @@ Deno.serve(async (request) => {
     });
   }
 
+  const hasContactEmail = input.email !== '';
+  const authEmail = hasContactEmail
+    ? input.email
+    : `manual-${crypto.randomUUID()}@activation.equationpadel.invalid`;
   const createdUser = await adminClient.auth.admin.createUser({
-    email: input.email,
+    email: authEmail,
     password: randomTemporaryPassword(),
-    email_confirm: true,
+    email_confirm: hasContactEmail,
     user_metadata: {
       role: 'eleve',
       provisioned_by_coach: true,
+      contact_email_missing: !hasContactEmail,
     },
   });
 

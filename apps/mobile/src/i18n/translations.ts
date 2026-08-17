@@ -342,7 +342,7 @@ export const dictionaries = {
     'pricing.studentSearchLabel': 'Recherche par nom',
     'pricing.studentSearchPlaceholder': 'Nom de l’élève',
     'pricing.studentSearchHint':
-      'Saisissez un nom pour trouver l’élève à cibler.',
+      'Saisissez un nom pour trouver un élève.',
     'pricing.studentSearchEmpty':
       'Aucun élève ne correspond à cette recherche.',
     'pricing.selectedStudentsLabel': 'Élèves sélectionnés ({{count}})',
@@ -471,7 +471,9 @@ export const dictionaries = {
     'students.createBody':
       'Ajoutez un élève et préparez son compte non activé. Son accès sera finalisé avec un lien valable 24 heures.',
     'students.optionalPhoneLabel': 'Téléphone (facultatif)',
+    'students.optionalEmailLabel': 'Email (facultatif)',
     'students.optionalAgeLabel': 'Âge (facultatif)',
+    'students.noContact': 'Aucun contact renseigné',
     'students.createSubmitAction': 'Créer la fiche',
     'students.createCancelAction': 'Annuler',
     'students.creating': 'Création...',
@@ -563,6 +565,9 @@ export const dictionaries = {
     'studentDetail.activationCopiedTitle': 'Lien copié',
     'studentDetail.activationCopiedBody':
       'Vous pouvez maintenant le transmettre à l’élève.',
+    'studentDetail.activationNoEmailTitle': 'Aucun email renseigné',
+    'studentDetail.activationNoEmailBody':
+      'Le lien reste disponible : copiez-le ou partagez-le manuellement. Il ne peut pas être envoyé par email depuis cette fiche.',
     'studentDetail.activationErrorTitle': 'Lien indisponible',
     'studentDetail.activationErrorBody':
       'Le lien n’a pas pu être généré ou partagé. Vérifiez l’état du compte puis réessayez.',
@@ -779,6 +784,8 @@ export const dictionaries = {
     'auth.passwordLabel': 'Mot de passe',
     'auth.passwordPlaceholder': 'Votre mot de passe',
     'auth.passwordCreatePlaceholder': '12 caractères, majuscule, minuscule et chiffre',
+    'auth.passwordShowAction': 'Afficher le mot de passe',
+    'auth.passwordHideAction': 'Masquer le mot de passe',
     'auth.confirmPasswordLabel': 'Confirmer le mot de passe',
     'auth.confirmPasswordPlaceholder': 'Répétez votre mot de passe',
     'auth.signInAction': 'Se connecter',
@@ -819,6 +826,9 @@ export const dictionaries = {
     'activation.title': 'Activez votre compte élève',
     'activation.subtitle':
       'Définissez votre mot de passe pour accéder à l’espace préparé par votre coach.',
+    'activation.emailLabel': 'Email de connexion (si nécessaire)',
+    'activation.emailHint':
+      'Saisissez votre email si votre coach ne l’a pas renseigné. Sinon, laissez ce champ vide.',
     'activation.passwordLabel': 'Nouveau mot de passe',
     'activation.confirmPasswordLabel': 'Confirmer le nouveau mot de passe',
     'activation.submitAction': 'Activer mon compte',
@@ -830,6 +840,12 @@ export const dictionaries = {
     'activation.invalidTitle': 'Lien invalide',
     'activation.invalidBody':
       'Ce lien a expiré, a déjà été utilisé ou a été remplacé. Demandez un nouveau lien à votre coach.',
+    'activation.emailRequiredTitle': 'Email requis pour se connecter',
+    'activation.emailRequiredBody':
+      'Votre fiche ne contient pas encore d’email. Saisissez votre adresse pour activer le compte.',
+    'activation.emailInUseTitle': 'Email déjà utilisé',
+    'activation.emailInUseBody':
+      'Cette adresse appartient déjà à un compte. Utilisez une autre adresse ou contactez votre coach.',
     'activation.errorTitle': 'Activation impossible',
     'activation.errorBody':
       'Le compte n’a pas été activé. Vérifiez votre connexion puis réessayez.',
@@ -1235,7 +1251,7 @@ export const dictionaries = {
     'pricing.studentSearchLabel': 'Search by name',
     'pricing.studentSearchPlaceholder': 'Student name',
     'pricing.studentSearchHint':
-      'Enter a name to find the student you want to target.',
+      'Enter a name to find a student.',
     'pricing.studentSearchEmpty': 'No student matches this search.',
     'pricing.selectedStudentsLabel': 'Selected students ({{count}})',
     'pricing.selectStudentAction': 'Select',
@@ -1362,7 +1378,9 @@ export const dictionaries = {
     'students.createBody':
       'Add a student and prepare an inactive account. Access will be completed through a 24-hour link.',
     'students.optionalPhoneLabel': 'Phone (optional)',
+    'students.optionalEmailLabel': 'Email (optional)',
     'students.optionalAgeLabel': 'Age (optional)',
+    'students.noContact': 'No contact details provided',
     'students.createSubmitAction': 'Create record',
     'students.createCancelAction': 'Cancel',
     'students.creating': 'Creating...',
@@ -1451,6 +1469,9 @@ export const dictionaries = {
       'Activate your Equation Padel account with this 24-hour link: {{link}}',
     'studentDetail.activationCopiedTitle': 'Link copied',
     'studentDetail.activationCopiedBody': 'You can now send it to the student.',
+    'studentDetail.activationNoEmailTitle': 'No email address provided',
+    'studentDetail.activationNoEmailBody':
+      'The link is still available: copy it or share it manually. It cannot be emailed from this record.',
     'studentDetail.activationErrorTitle': 'Link unavailable',
     'studentDetail.activationErrorBody':
       'The link could not be generated or shared. Check the account status and try again.',
@@ -1661,6 +1682,8 @@ export const dictionaries = {
     'auth.passwordLabel': 'Password',
     'auth.passwordPlaceholder': 'Your password',
     'auth.passwordCreatePlaceholder': '12 characters, upper/lowercase and a number',
+    'auth.passwordShowAction': 'Show password',
+    'auth.passwordHideAction': 'Hide password',
     'auth.confirmPasswordLabel': 'Confirm password',
     'auth.confirmPasswordPlaceholder': 'Enter your password again',
     'auth.signInAction': 'Sign in',
@@ -1701,6 +1724,9 @@ export const dictionaries = {
     'activation.title': 'Activate your student account',
     'activation.subtitle':
       'Set your password to access the space prepared by your coach.',
+    'activation.emailLabel': 'Sign-in email (if needed)',
+    'activation.emailHint':
+      'Enter your email if your coach did not provide it. Otherwise, leave this field blank.',
     'activation.passwordLabel': 'New password',
     'activation.confirmPasswordLabel': 'Confirm new password',
     'activation.submitAction': 'Activate my account',
@@ -1711,6 +1737,12 @@ export const dictionaries = {
     'activation.invalidTitle': 'Invalid link',
     'activation.invalidBody':
       'This link expired, was already used, or was replaced. Ask your coach for a new link.',
+    'activation.emailRequiredTitle': 'Email required to sign in',
+    'activation.emailRequiredBody':
+      'Your record does not have an email yet. Enter your address to activate the account.',
+    'activation.emailInUseTitle': 'Email already in use',
+    'activation.emailInUseBody':
+      'This address belongs to another account. Use a different address or contact your coach.',
     'activation.errorTitle': 'Unable to activate',
     'activation.errorBody':
       'The account was not activated. Check your connection and try again.',
@@ -2122,7 +2154,7 @@ export const dictionaries = {
     'pricing.studentSearchLabel': 'Buscar por nombre',
     'pricing.studentSearchPlaceholder': 'Nombre del alumno',
     'pricing.studentSearchHint':
-      'Escribe un nombre para encontrar al alumno que quieres seleccionar.',
+      'Escribe un nombre para encontrar un alumno.',
     'pricing.studentSearchEmpty': 'Ningún alumno coincide con esta búsqueda.',
     'pricing.selectedStudentsLabel': 'Alumnos seleccionados ({{count}})',
     'pricing.selectStudentAction': 'Seleccionar',
@@ -2252,7 +2284,9 @@ export const dictionaries = {
     'students.createBody':
       'Añade un alumno y prepara su cuenta sin activar. El acceso se completará con un enlace válido durante 24 horas.',
     'students.optionalPhoneLabel': 'Teléfono (opcional)',
+    'students.optionalEmailLabel': 'Email (opcional)',
     'students.optionalAgeLabel': 'Edad (opcional)',
+    'students.noContact': 'No se han indicado datos de contacto',
     'students.createSubmitAction': 'Crear ficha',
     'students.createCancelAction': 'Cancelar',
     'students.creating': 'Creando...',
@@ -2342,6 +2376,9 @@ export const dictionaries = {
       'Activa tu cuenta Equation Padel con este enlace válido durante 24 horas: {{link}}',
     'studentDetail.activationCopiedTitle': 'Enlace copiado',
     'studentDetail.activationCopiedBody': 'Ya puedes enviárselo al alumno.',
+    'studentDetail.activationNoEmailTitle': 'No se ha indicado ningún email',
+    'studentDetail.activationNoEmailBody':
+      'El enlace sigue disponible: cópialo o compártelo manualmente. No se puede enviar por email desde esta ficha.',
     'studentDetail.activationErrorTitle': 'Enlace no disponible',
     'studentDetail.activationErrorBody':
       'No se ha podido generar o compartir el enlace. Revisa el estado de la cuenta e inténtalo de nuevo.',
@@ -2558,6 +2595,8 @@ export const dictionaries = {
     'auth.passwordLabel': 'Contraseña',
     'auth.passwordPlaceholder': 'Tu contraseña',
     'auth.passwordCreatePlaceholder': '12 caracteres, mayúscula, minúscula y número',
+    'auth.passwordShowAction': 'Mostrar contraseña',
+    'auth.passwordHideAction': 'Ocultar contraseña',
     'auth.confirmPasswordLabel': 'Confirmar contraseña',
     'auth.confirmPasswordPlaceholder': 'Repite tu contraseña',
     'auth.signInAction': 'Iniciar sesión',
@@ -2598,6 +2637,9 @@ export const dictionaries = {
     'activation.title': 'Activa tu cuenta de alumno',
     'activation.subtitle':
       'Define tu contraseña para acceder al espacio preparado por tu coach.',
+    'activation.emailLabel': 'Email de acceso (si es necesario)',
+    'activation.emailHint':
+      'Introduce tu email si tu coach no lo indicó. En caso contrario, deja este campo vacío.',
     'activation.passwordLabel': 'Nueva contraseña',
     'activation.confirmPasswordLabel': 'Confirmar nueva contraseña',
     'activation.submitAction': 'Activar mi cuenta',
@@ -2609,6 +2651,12 @@ export const dictionaries = {
     'activation.invalidTitle': 'Enlace no válido',
     'activation.invalidBody':
       'Este enlace ha caducado, ya se utilizó o fue reemplazado. Pide uno nuevo a tu coach.',
+    'activation.emailRequiredTitle': 'Email necesario para iniciar sesión',
+    'activation.emailRequiredBody':
+      'Tu ficha todavía no contiene ningún email. Introduce tu dirección para activar la cuenta.',
+    'activation.emailInUseTitle': 'Email ya utilizado',
+    'activation.emailInUseBody':
+      'Esta dirección pertenece a otra cuenta. Utiliza otra o contacta con tu coach.',
     'activation.errorTitle': 'No se puede activar',
     'activation.errorBody':
       'La cuenta no se ha activado. Comprueba tu conexión e inténtalo de nuevo.',

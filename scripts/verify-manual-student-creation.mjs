@@ -36,6 +36,20 @@ const adminClient = createClient(
 );
 const createdUserIds = [];
 const password = 'NextPoint-test-2026';
+const legalActivationData = {
+  legalAcceptanceSource: 'student_activation',
+  privacyPolicyVersion: '2026-08-16',
+  termsVersion: '2026-08-16',
+};
+
+function activationBody(token, activationPassword, email = '') {
+  return {
+    token,
+    email,
+    password: activationPassword,
+    ...legalActivationData,
+  };
+}
 
 async function createUser(role, suffix) {
   const client = createClient(
@@ -228,8 +242,68 @@ try {
     },
     coach.session.access_token
   );
-  assert.equal(withoutEmail.ok, false);
-  assert.equal(withoutEmail.error.code, 'invalid_student');
+  assert.equal(withoutEmail.ok, true);
+  assert.equal(withoutEmail.data.email, '');
+  assert.equal(withoutEmail.data.account_status, 'pending_activation');
+  createdUserIds.push(withoutEmail.data.user_id);
+
+  const withoutEmailAuthUser = await adminClient.auth.admin.getUserById(
+    withoutEmail.data.user_id
+  );
+  assert.equal(withoutEmailAuthUser.error, null);
+  assert.match(
+    withoutEmailAuthUser.data.user.email,
+    /@activation\.equationpadel\.invalid$/
+  );
+
+  const withoutEmailLink = await invoke(
+    'generate-student-activation-link',
+    { studentId: withoutEmail.data.user_id },
+    coach.session.access_token
+  );
+  assert.equal(withoutEmailLink.ok, true);
+  const withoutEmailToken = new URLSearchParams(
+    new URL(withoutEmailLink.data.activationLink).hash.replace(/^#/, '')
+  ).get('token');
+  assert.ok(withoutEmailToken);
+
+  const missingActivationEmail = await invoke(
+    'activate-student-account',
+    activationBody(withoutEmailToken, 'Activated-Without-Email-2026')
+  );
+  assert.equal(missingActivationEmail.ok, false);
+  assert.equal(missingActivationEmail.error.code, 'email_required');
+
+  const claimedEmail = `claimed-${Date.now()}@nextpoint.local`;
+  const activatedWithoutInitialEmail = await invoke(
+    'activate-student-account',
+    activationBody(
+      withoutEmailToken,
+      'Activated-Without-Email-2026',
+      claimedEmail
+    )
+  );
+  assert.equal(activatedWithoutInitialEmail.ok, true);
+
+  const claimedProfile = await adminClient
+    .from('student_profiles')
+    .select('account_status, email')
+    .eq('user_id', withoutEmail.data.user_id)
+    .single();
+  assert.equal(claimedProfile.error, null);
+  assert.equal(claimedProfile.data.account_status, 'active');
+  assert.equal(claimedProfile.data.email, claimedEmail);
+
+  const claimedSignIn = await createClient(
+    environment.API_URL,
+    environment.PUBLISHABLE_KEY,
+    clientOptions
+  ).auth.signInWithPassword({
+    email: claimedEmail,
+    password: 'Activated-Without-Email-2026',
+  });
+  assert.equal(claimedSignIn.error, null);
+  assert.ok(claimedSignIn.data.session);
 
   const forbidden = await invoke(
     'create-manual-student',
@@ -274,17 +348,17 @@ try {
     new Date(secondLink.data.expiresAt).getTime() - Date.now();
   assert.ok(lifetime > 86_390_000 && lifetime <= 86_400_000);
 
-  const oldLinkRejected = await invoke('activate-student-account', {
-    token: firstToken,
-    password: 'Activated-Password-2026',
-  });
+  const oldLinkRejected = await invoke(
+    'activate-student-account',
+    activationBody(firstToken, 'Activated-Password-2026')
+  );
   assert.equal(oldLinkRejected.ok, false);
   assert.equal(oldLinkRejected.error.code, 'invalid_activation');
 
-  const activated = await invoke('activate-student-account', {
-    token: secondToken,
-    password: 'Activated-Password-2026',
-  });
+  const activated = await invoke(
+    'activate-student-account',
+    activationBody(secondToken, 'Activated-Password-2026')
+  );
   assert.equal(activated.ok, true);
 
   const activeProfile = await adminClient
@@ -295,10 +369,10 @@ try {
   assert.equal(activeProfile.error, null);
   assert.equal(activeProfile.data.account_status, 'active');
 
-  const reusedLink = await invoke('activate-student-account', {
-    token: secondToken,
-    password: 'Another-Password-2026',
-  });
+  const reusedLink = await invoke(
+    'activate-student-account',
+    activationBody(secondToken, 'Another-Password-2026')
+  );
   assert.equal(reusedLink.ok, false);
   assert.equal(reusedLink.error.code, 'invalid_activation');
 
@@ -357,7 +431,7 @@ try {
   }
 
   console.log(
-    'MANUAL_STUDENT_ACTIVATION_INTEGRATION_OK provision, duplicate denial, coach-only links, 24h regeneration, one-time activation, non-pending refusal'
+    'MANUAL_STUDENT_ACTIVATION_INTEGRATION_OK optional email, duplicate denial, coach-only links, 24h regeneration, one-time activation, non-pending refusal'
   );
 } finally {
   for (const userId of [...new Set(createdUserIds)]) {

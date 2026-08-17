@@ -97,21 +97,25 @@ function HistoryRow({ event }: { event: StudentHistoryEvent }) {
     <Card style={styles.historyRow}>
       <View style={styles.historyHeading}>
         <View style={styles.historyTitle}>
-          <ThemedText type="smallBold">
+          <ThemedText numberOfLines={1} type="smallBold">
             {t(historyTypeKeys[event.eventType])}
           </ThemedText>
-          <ThemedText type="small" themeColor="textMuted">
+          <ThemedText numberOfLines={1} type="small" themeColor="textMuted">
             {occurredAt}
           </ThemedText>
         </View>
         <StatusBadge status={historyStatusBadges[event.status]} />
       </View>
-      <ThemedText type="default">{event.title}</ThemedText>
-      {event.description ? (
-        <ThemedText type="small" themeColor="textMuted">
-          {event.description}
-        </ThemedText>
-      ) : null}
+      <ThemedText numberOfLines={1} type="default">
+        {event.title}
+      </ThemedText>
+      <View style={styles.historyDescription}>
+        {event.description ? (
+          <ThemedText numberOfLines={2} type="small" themeColor="textMuted">
+            {event.description}
+          </ThemedText>
+        ) : null}
+      </View>
     </Card>
   );
 }
@@ -310,8 +314,7 @@ function CoachStudentDetailContent({ studentId }: { studentId: string }) {
                 )}
               </View>
               {student.profileComplete &&
-              student.accountStatus === 'pending_activation' &&
-              student.email ? (
+              student.accountStatus === 'pending_activation' ? (
                 <Button
                   disabled={activationState === 'generating'}
                   label={
@@ -326,6 +329,16 @@ function CoachStudentDetailContent({ studentId }: { studentId: string }) {
                 />
               ) : null}
             </View>
+
+            {student.profileComplete &&
+            student.accountStatus === 'pending_activation' &&
+            !student.email ? (
+              <Feedback
+                message={t('studentDetail.activationNoEmailBody')}
+                title={t('studentDetail.activationNoEmailTitle')}
+                tone="info"
+              />
+            ) : null}
 
             {activationLink ? (
               <Card elevated style={styles.activationCard}>
@@ -618,17 +631,21 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.three,
   },
   historyRow: {
+    minHeight: 176,
     gap: Spacing.two,
   },
   historyHeading: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: Spacing.two,
   },
   historyTitle: {
     flex: 1,
-    minWidth: 180,
+    minWidth: 0,
     gap: Spacing.one,
+  },
+  historyDescription: {
+    minHeight: 40,
   },
 });

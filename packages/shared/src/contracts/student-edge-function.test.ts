@@ -25,7 +25,7 @@ test('manual student response requires a complete valid student row', () => {
   assert.equal(
     createManualStudentResponseSchema.safeParse({
       ok: true,
-      data: { ...studentRow, age: null },
+      data: { ...studentRow, age: null, email: '' },
     }).success,
     true
   );

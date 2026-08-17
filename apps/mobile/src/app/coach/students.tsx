@@ -7,6 +7,7 @@ import {
   Platform,
   Pressable,
   StyleSheet,
+  useWindowDimensions,
   View,
   type ViewStyle,
 } from 'react-native';
@@ -49,51 +50,103 @@ const emptyFilters: StudentListFilters = {
 const webScrollStyle =
   Platform.OS === 'web'
     ? ({
+        overflowX: 'hidden',
         overflowY: 'auto',
         overscrollBehavior: 'contain',
       } as unknown as ViewStyle)
     : undefined;
 
-function StudentRow({ student }: { student: AssociatedStudent }) {
+function StudentRow({
+  compact,
+  student,
+}: {
+  compact: boolean;
+  student: AssociatedStudent;
+}) {
   const { t } = useTranslation();
   const router = useRouter();
+  const theme = useTheme();
+  const initials = student.fullName
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part.slice(0, 1).toUpperCase())
+    .join('');
 
   const content = (pressed = false) => (
-    <Card style={[styles.studentRow, pressed && styles.studentRowPressed]}>
-      <View style={styles.studentMain}>
-        <ThemedText type="smallBold">{student.fullName}</ThemedText>
-        {student.profileComplete ? (
-          <ThemedText type="small" themeColor="textMuted">
-            {[
-              t('students.levelValue', { level: student.padelLevel }),
-              student.age === null
-                ? null
-                : t('students.ageValue', { age: student.age }),
-              t(
-                `profile.sex.${student.sex === 'not_specified' ? 'notSpecified' : student.sex}`
-              ),
-            ]
-              .filter(Boolean)
-              .join(' · ')}
+    <Card
+      elevated
+      style={[
+        styles.studentRow,
+        compact && styles.studentRowCompact,
+        pressed && styles.studentRowPressed,
+      ]}>
+      <View style={styles.studentIdentity}>
+        <View
+          style={[
+            styles.studentAvatar,
+            { backgroundColor: theme.backgroundSelected },
+          ]}>
+          <ThemedText type="smallBold" themeColor="primary">
+            {initials || '—'}
           </ThemedText>
-        ) : (
-          <ThemedText type="smallBold" themeColor="warning">
-            {t('students.incompleteProfile')}
+        </View>
+        <View style={styles.studentMain}>
+          <ThemedText numberOfLines={1} type="smallBold">
+            {student.fullName}
           </ThemedText>
-        )}
+          {student.profileComplete ? (
+            <ThemedText
+              numberOfLines={1}
+              type="small"
+              themeColor="textMuted">
+              {[
+                t('students.levelValue', { level: student.padelLevel }),
+                student.age === null
+                  ? null
+                  : t('students.ageValue', { age: student.age }),
+                t(
+                  `profile.sex.${student.sex === 'not_specified' ? 'notSpecified' : student.sex}`
+                ),
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </ThemedText>
+          ) : (
+            <ThemedText
+              numberOfLines={1}
+              type="smallBold"
+              themeColor="warning">
+              {t('students.incompleteProfile')}
+            </ThemedText>
+          )}
+        </View>
       </View>
-      <View style={styles.contact}>
+      <View style={[styles.contact, compact && styles.contactCompact]}>
         {student.phone ? (
-          <ThemedText type="small" themeColor="textMuted">
+          <ThemedText numberOfLines={1} type="small" themeColor="textMuted">
             {student.phone}
           </ThemedText>
         ) : null}
         {student.email ? (
-          <ThemedText type="small" themeColor="textMuted">
+          <ThemedText numberOfLines={1} type="small" themeColor="textMuted">
             {student.email}
           </ThemedText>
         ) : null}
+        {!student.phone && !student.email ? (
+          <ThemedText numberOfLines={1} type="small" themeColor="textMuted">
+            {t('students.noContact')}
+          </ThemedText>
+        ) : null}
       </View>
+      <ThemedText
+        accessibilityElementsHidden
+        importantForAccessibility="no"
+        style={[styles.disclosure, compact && styles.disclosureCompact]}
+        themeColor="primary"
+        type="subtitle">
+        ›
+      </ThemedText>
     </Card>
   );
 
@@ -110,6 +163,7 @@ function StudentRow({ student }: { student: AssociatedStudent }) {
 }
 
 export default function CoachStudentsScreen() {
+  const { width } = useWindowDimensions();
   const { user } = useAuth();
   const { t } = useTranslation();
   const theme = useTheme();
@@ -123,6 +177,7 @@ export default function CoachStudentsScreen() {
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>(
     'loading'
   );
+  const compactStudentRows = width < 680;
 
   useEffect(() => {
     if (!user) return;
@@ -270,11 +325,13 @@ export default function CoachStudentsScreen() {
           <Card elevated style={styles.filters}>
             <TextField
               autoCapitalize="words"
+              containerStyle={styles.searchField}
               label={t('students.searchLabel')}
               onChangeText={(query) =>
                 setFilters((current) => ({ ...current, query }))
               }
               placeholder={t('students.searchPlaceholder')}
+              style={styles.searchInput}
               value={filters.query}
             />
             <StudentFilterSelector
@@ -324,7 +381,9 @@ export default function CoachStudentsScreen() {
           </View>
         }
         maxToRenderPerBatch={12}
-        renderItem={({ item }) => <StudentRow student={item} />}
+        renderItem={({ item }) => (
+          <StudentRow compact={compactStudentRows} student={item} />
+        )}
         scrollEnabled={!isAgeSliderActive}
         style={[styles.listScroller, webScrollStyle]}
         windowSize={7}
@@ -336,6 +395,9 @@ export default function CoachStudentsScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: 0,
   },
   centered: {
     flex: 1,
@@ -345,15 +407,21 @@ const styles = StyleSheet.create({
   },
   listScroller: {
     flex: 1,
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: 0,
   },
   scrollContent: {
-    alignItems: 'center',
+    alignItems: 'stretch',
+    minWidth: 0,
     paddingHorizontal: Spacing.four,
     paddingVertical: Spacing.five,
   },
   content: {
+    alignSelf: 'center',
     width: '100%',
     maxWidth: MaxContentWidth,
+    minWidth: 0,
     gap: Spacing.four,
     marginBottom: Spacing.four,
   },
@@ -366,12 +434,27 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.one,
   },
   filters: {
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: 0,
     gap: Spacing.four,
+    overflow: 'hidden',
+  },
+  searchField: {
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: 0,
+  },
+  searchInput: {
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: 0,
   },
   resultsHeader: {
     gap: Spacing.one,
   },
   emptyResult: {
+    alignSelf: 'center',
     width: '100%',
     maxWidth: MaxContentWidth,
   },
@@ -379,26 +462,68 @@ const styles = StyleSheet.create({
     height: Spacing.two,
   },
   studentListItem: {
+    alignSelf: 'center',
     width: '100%',
     maxWidth: MaxContentWidth,
+    minWidth: 0,
   },
   studentRow: {
+    width: '100%',
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    alignItems: 'center',
+    minHeight: 112,
     gap: Spacing.three,
+    paddingRight: Spacing.three,
+  },
+  studentRowCompact: {
+    alignItems: 'stretch',
+    flexDirection: 'column',
+    minHeight: 164,
+    paddingRight: Spacing.four,
   },
   studentRowPressed: {
     opacity: 0.76,
   },
+  studentIdentity: {
+    minWidth: 0,
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+  },
+  studentAvatar: {
+    width: 44,
+    height: 44,
+    flexShrink: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 22,
+  },
   studentMain: {
-    minWidth: 200,
+    minWidth: 0,
     flex: 1,
     gap: Spacing.one,
   },
   contact: {
-    minWidth: 220,
+    width: 260,
+    minWidth: 0,
+    minHeight: 44,
+    flexShrink: 1,
     alignItems: 'flex-start',
+    justifyContent: 'center',
     gap: Spacing.one,
+  },
+  contactCompact: {
+    width: '100%',
+    paddingLeft: 60,
+  },
+  disclosure: {
+    flexShrink: 0,
+    lineHeight: 32,
+  },
+  disclosureCompact: {
+    position: 'absolute',
+    top: Spacing.three,
+    right: Spacing.three,
   },
 });

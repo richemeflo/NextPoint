@@ -22,6 +22,7 @@ test('activation requires a token and a matching robust password', () => {
   assert.equal(
     activateStudentAccountSchema.safeParse({
       token: 'opaque-token',
+      email: '',
       password: 'NextPoint-2026',
       confirmPassword: 'NextPoint-2026',
     }).success,
@@ -30,9 +31,22 @@ test('activation requires a token and a matching robust password', () => {
   assert.equal(
     activateStudentAccountSchema.safeParse({
       token: '',
+      email: 'invalid-email',
       password: 'short',
       confirmPassword: 'different',
     }).success,
     false
+  );
+});
+
+test('activation accepts an optional valid login email', () => {
+  assert.equal(
+    activateStudentAccountSchema.safeParse({
+      token: 'opaque-token',
+      email: 'student@example.com',
+      password: 'NextPoint-2026',
+      confirmPassword: 'NextPoint-2026',
+    }).success,
+    true
   );
 });

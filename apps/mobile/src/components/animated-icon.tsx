@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import Animated, { Easing, Keyframe } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
@@ -32,19 +32,16 @@ export function AnimatedSplashOverlay() {
   );
 }
 
-const logoKeyframe = new Keyframe({
-  0: { opacity: 0, transform: [{ scale: 0.9 }] },
-  100: { opacity: 1, transform: [{ scale: 1 }], easing: Easing.elastic(0.7) },
-});
-
 export function AnimatedIcon() {
+  const theme = useTheme();
+
   return (
     <View style={styles.iconFrame}>
-      <Animated.Image
-        entering={logoKeyframe.duration(DURATION)}
+      <Image
+        accessible={false}
         resizeMode="contain"
         source={require('../../assets/images/equation-padel-logo.png')}
-        style={styles.icon}
+        style={[styles.icon, { tintColor: theme.brandLogo }]}
       />
     </View>
   );
