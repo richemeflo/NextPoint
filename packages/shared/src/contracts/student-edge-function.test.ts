@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   activateStudentAccountResponseSchema,
   createManualStudentResponseSchema,
+  deletePendingStudentResponseSchema,
   generateStudentActivationLinkResponseSchema,
 } from './student-edge-function';
 
@@ -53,9 +54,16 @@ test('activation response does not accept a truthy but malformed payload', () =>
   assert.equal(
     activateStudentAccountResponseSchema.safeParse({
       ok: true,
-      data: { activated: true },
+      data: { activated: true, email: studentRow.email },
     }).success,
     true
+  );
+  assert.equal(
+    activateStudentAccountResponseSchema.safeParse({
+      ok: true,
+      data: { activated: true },
+    }).success,
+    false
   );
 });
 
@@ -87,5 +95,22 @@ test('known error envelope remains parseable', () => {
       error: { code: 'unauthorized', message: 'Coach role required' },
     }).success,
     true
+  );
+});
+
+test('pending student deletion response requires the deleted student id', () => {
+  assert.equal(
+    deletePendingStudentResponseSchema.safeParse({
+      ok: true,
+      data: { deletedStudentId: studentRow.user_id },
+    }).success,
+    true
+  );
+  assert.equal(
+    deletePendingStudentResponseSchema.safeParse({
+      ok: true,
+      data: { deletedStudentId: 'not-a-uuid' },
+    }).success,
+    false
   );
 });

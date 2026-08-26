@@ -6,7 +6,7 @@ import {
   usePathname,
 } from 'expo-router';
 import Stack from 'expo-router/stack';
-import { ActivityIndicator, StyleSheet, useColorScheme, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { AppErrorFallback } from '@/components/app-error-fallback';
 import { ThemedText } from '@/components/themed-text';
@@ -18,6 +18,10 @@ import { AuthProvider } from '@/features/auth/auth-provider';
 import { useAuth } from '@/features/auth/auth-context';
 import '@/features/notifications/push-notification-handler';
 import { ProfileLocaleSync } from '@/features/profiles/profile-locale-sync';
+import {
+  ThemePreferenceProvider,
+  useThemePreference,
+} from '@/features/theme/theme-preference-context';
 import { useTheme } from '@/hooks/use-theme';
 import { I18nProvider, useTranslation } from '@/i18n';
 
@@ -104,10 +108,10 @@ function RootNavigator() {
 }
 
 function ThemedRoot() {
-  const colorScheme = useColorScheme();
+  const { resolvedTheme } = useThemePreference();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={resolvedTheme === 'dark' ? DarkTheme : DefaultTheme}>
       <RootNavigator />
     </ThemeProvider>
   );
@@ -115,12 +119,14 @@ function ThemedRoot() {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <I18nProvider>
-        <ProfileLocaleSync />
-        <ThemedRoot />
-      </I18nProvider>
-    </AuthProvider>
+    <ThemePreferenceProvider>
+      <AuthProvider>
+        <I18nProvider>
+          <ProfileLocaleSync />
+          <ThemedRoot />
+        </I18nProvider>
+      </AuthProvider>
+    </ThemePreferenceProvider>
   );
 }
 

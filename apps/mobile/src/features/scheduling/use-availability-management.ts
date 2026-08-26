@@ -4,7 +4,6 @@ import {
   type AvailabilityRangeFormInput,
 } from '@nextpoint/shared';
 import { useMemo, useRef, useState } from 'react';
-import { Alert } from 'react-native';
 
 import {
   acquireMutationLock,
@@ -17,8 +16,8 @@ import {
   type AvailabilityRange,
   type AvailabilitySlot,
 } from '@/features/scheduling/availability-service';
+import { canOfferAvailabilitySeriesScope } from '@/features/scheduling/availability-mutation-scope';
 import { isCoachPlanningSlotVisible } from '@/features/scheduling/coach-planning-visibility';
-import { useTranslation } from '@/i18n';
 
 export type AvailabilityFeedback =
   | 'blocked'
@@ -31,6 +30,11 @@ export type AvailabilityFeedback =
   | 'updated';
 
 type AvailabilityAction = 'delete' | 'save';
+type PendingScopeRequest = {
+  action: AvailabilityAction;
+  slot: AvailabilitySlot;
+  values?: AvailabilityRangeFormInput;
+};
 type AvailabilityMutationError =
   | 'blocked'
   | 'conflict'
@@ -54,10 +58,11 @@ export function useAvailabilityManagement({
   refresh: () => Promise<void>;
   slots: AvailabilitySlot[];
 }) {
-  const { t } = useTranslation();
   const [feedback, setFeedback] = useState<AvailabilityFeedback>('none');
   const [editingSlotId, setEditingSlotId] = useState<string | null>(null);
   const [mutationPending, setMutationPending] = useState(false);
+  const [pendingScopeRequest, setPendingScopeRequest] =
+    useState<PendingScopeRequest | null>(null);
   const mutationLock = useRef(false);
 
   const visibleSlots = useMemo(
@@ -88,6 +93,7 @@ export function useAvailabilityManagement({
     : null;
 
   const cancelEditing = () => {
+    setPendingScopeRequest(null);
     setEditingSlotId(null);
   };
 
@@ -124,11 +130,9 @@ export function useAvailabilityManagement({
   };
 
   const canOfferSeriesScope = (slot: AvailabilitySlot) => {
-    const range = rangeById.get(slot.rangeId);
-    if (!range || range.recurrenceType === 'none') return false;
-
-    return (slotsByRangeId.get(slot.rangeId) ?? []).every(
-      (candidate) => candidate.status === 'available'
+    return canOfferAvailabilitySeriesScope(
+      rangeById.get(slot.rangeId) ?? null,
+      slotsByRangeId.get(slot.rangeId) ?? []
     );
   };
 
@@ -187,63 +191,71 @@ export function useAvailabilityManagement({
     action: AvailabilityAction,
     values?: AvailabilityRangeFormInput
   ) => {
-    if (!acquireMutationLock(mutationLock)) return;
-    setMutationPending(true);
+    if (mutationLock.current || pendingScopeRequest) return;
 
-    const releasePendingMutation = () => {
-      setMutationPending(false);
-      releaseMutationLock(mutationLock);
-    };
-    const runMutation = async (applyToSeries: boolean) => {
-      try {
-        if (action === 'save') {
-          await saveEditedSlot(slot, applyToSeries, values);
-        } else {
-          await deleteSlot(slot, applyToSeries);
-        }
-      } catch {
-        setFeedback('error');
-      } finally {
-        releasePendingMutation();
-      }
-    };
-    const applyOccurrence = () => void runMutation(false);
-    const applySeries = () => void runMutation(true);
-
-    if (!canOfferSeriesScope(slot)) {
-      applyOccurrence();
+    if (
+      action === 'save' &&
+      (!values || !availabilityRangeSchema.safeParse(values).success)
+    ) {
+      setFeedback('error');
       return;
     }
 
-    Alert.alert(
-      t('availability.scopeDialogTitle'),
-      t('availability.scopeDialogBody'),
-      [
-        {
-          text: t('availability.scopeOccurrenceAction'),
-          onPress: applyOccurrence,
-        },
-        {
-          text: t('availability.scopeSeriesAction'),
-          onPress: applySeries,
-        },
-        {
-          text: t('availability.cancelAction'),
-          onPress: releasePendingMutation,
-          style: 'cancel',
-        },
-      ],
-      { cancelable: false }
-    );
+    setFeedback('none');
+    const request = { action, slot, values };
+
+    if (canOfferSeriesScope(slot)) {
+      setPendingScopeRequest(request);
+      return;
+    }
+
+    void runMutation(request, false);
+  };
+
+  const runMutation = async (
+    request: PendingScopeRequest,
+    applyToSeries: boolean
+  ) => {
+    if (!acquireMutationLock(mutationLock)) return;
+    setMutationPending(true);
+
+    try {
+      if (request.action === 'save') {
+        await saveEditedSlot(request.slot, applyToSeries, request.values);
+      } else {
+        await deleteSlot(request.slot, applyToSeries);
+      }
+    } catch {
+      setFeedback('error');
+    } finally {
+      setMutationPending(false);
+      releaseMutationLock(mutationLock);
+    }
+  };
+
+  const confirmMutationScope = (applyToSeries: boolean) => {
+    const request = pendingScopeRequest;
+    if (!request) return;
+
+    setPendingScopeRequest(null);
+    void runMutation(request, applyToSeries);
+  };
+
+  const cancelMutationScope = () => {
+    if (mutationPending) return;
+    setPendingScopeRequest(null);
   };
 
   return {
     cancelEditing,
+    cancelMutationScope,
+    confirmMutationScope,
     createRange,
     editingSlotId,
     feedback,
     mutationPending,
     requestMutationScope,
+    scopeSelectionAction: pendingScopeRequest?.action ?? null,
     selectedRange,
     selectedSlot,
     startEditing,

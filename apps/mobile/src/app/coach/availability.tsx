@@ -22,11 +22,14 @@ export default function CoachAvailabilityScreen() {
   );
   const {
     cancelEditing,
+    cancelMutationScope,
+    confirmMutationScope,
     createRange,
     editingSlotId,
     feedback,
     mutationPending,
     requestMutationScope,
+    scopeSelectionAction,
     selectedRange,
     selectedSlot,
     startEditing,
@@ -84,13 +87,17 @@ export default function CoachAvailabilityScreen() {
       </ScrollView>
 
       <AvailabilitySlotEditorModal
+        feedback={feedback}
         onClose={cancelEditing}
         onDelete={(slot) => requestMutationScope(slot, 'delete')}
+        onScopeCancel={cancelMutationScope}
+        onScopeSelect={confirmMutationScope}
         onSave={(slot, values) =>
           requestMutationScope(slot, 'save', values)
         }
         pending={mutationPending}
         range={selectedRange}
+        scopeSelectionAction={scopeSelectionAction}
         slot={selectedSlot}
       />
     </ThemedView>

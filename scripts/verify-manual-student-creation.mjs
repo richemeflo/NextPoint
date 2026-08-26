@@ -38,8 +38,8 @@ const createdUserIds = [];
 const password = 'NextPoint-test-2026';
 const legalActivationData = {
   legalAcceptanceSource: 'student_activation',
-  privacyPolicyVersion: '2026-08-16',
-  termsVersion: '2026-08-16',
+  privacyPolicyVersion: '2026-08-19',
+  termsVersion: '2026-08-19',
 };
 
 function activationBody(token, activationPassword, email = '') {
@@ -230,6 +230,37 @@ try {
   assert.equal(withoutAgeReadModel?.profile_complete, true);
   assert.equal(withoutAgeReadModel?.age, null);
 
+  const forbiddenDeletion = await invoke(
+    'delete-pending-student',
+    { studentId: withoutPhoneOrAge.data.user_id },
+    unauthorizedStudent.session.access_token
+  );
+  assert.equal(forbiddenDeletion.ok, false);
+  assert.equal(forbiddenDeletion.error.code, 'unauthorized');
+
+  const deletedPendingStudent = await invoke(
+    'delete-pending-student',
+    { studentId: withoutPhoneOrAge.data.user_id },
+    coach.session.access_token
+  );
+  assert.equal(deletedPendingStudent.ok, true);
+  assert.equal(
+    deletedPendingStudent.data.deletedStudentId,
+    withoutPhoneOrAge.data.user_id
+  );
+
+  const deletedAuthUser = await adminClient.auth.admin.getUserById(
+    withoutPhoneOrAge.data.user_id
+  );
+  assert.ok(deletedAuthUser.error);
+  const deletedProfile = await adminClient
+    .from('student_profiles')
+    .select('user_id')
+    .eq('user_id', withoutPhoneOrAge.data.user_id)
+    .maybeSingle();
+  assert.equal(deletedProfile.error, null);
+  assert.equal(deletedProfile.data, null);
+
   const withoutEmail = await invoke(
     'create-manual-student',
     {
@@ -293,6 +324,17 @@ try {
   assert.equal(claimedProfile.error, null);
   assert.equal(claimedProfile.data.account_status, 'active');
   assert.equal(claimedProfile.data.email, claimedEmail);
+
+  const activeDeletionRejected = await invoke(
+    'delete-pending-student',
+    { studentId: withoutEmail.data.user_id },
+    coach.session.access_token
+  );
+  assert.equal(activeDeletionRejected.ok, false);
+  assert.equal(
+    activeDeletionRejected.error.code,
+    'account_not_deletable'
+  );
 
   const claimedSignIn = await createClient(
     environment.API_URL,
@@ -431,7 +473,7 @@ try {
   }
 
   console.log(
-    'MANUAL_STUDENT_ACTIVATION_INTEGRATION_OK optional email, duplicate denial, coach-only links, 24h regeneration, one-time activation, non-pending refusal'
+    'MANUAL_STUDENT_ACTIVATION_INTEGRATION_OK optional email, duplicate denial, pending deletion, active deletion refusal, coach-only links, 24h regeneration, one-time activation, non-pending refusal'
   );
 } finally {
   for (const userId of [...new Set(createdUserIds)]) {

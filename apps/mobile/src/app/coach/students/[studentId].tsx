@@ -25,6 +25,7 @@ import { Feedback } from '@/components/ui/feedback';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import {
+  deletePendingStudent,
   generateStudentActivationLink,
   type GeneratedStudentActivationLink,
 } from '@/features/students/student-account-service';
@@ -146,6 +147,9 @@ function CoachStudentDetailContent({ studentId }: { studentId: string }) {
   const [activationState, setActivationState] = useState<
     'idle' | 'generating' | 'ready' | 'copied' | 'error'
   >('idle');
+  const [deletionState, setDeletionState] = useState<
+    'idle' | 'confirming' | 'deleting' | 'error'
+  >('idle');
   const [historyStatusFilter, setHistoryStatusFilter] =
     useState<HistoryStatusFilter>('all');
   const historyStatus =
@@ -214,6 +218,17 @@ function CoachStudentDetailContent({ studentId }: { studentId: string }) {
     } catch {
       setActivationState('error');
     }
+  };
+
+  const confirmStudentDeletion = async () => {
+    setDeletionState('deleting');
+    const result = await deletePendingStudent(studentId);
+    if (!result.ok) {
+      setDeletionState('error');
+      return;
+    }
+
+    router.replace('/coach/students');
   };
 
   if (studentId && loadState === 'loading') {
@@ -456,6 +471,66 @@ function CoachStudentDetailContent({ studentId }: { studentId: string }) {
             <StudentPrivateNoteCard studentId={student.userId} />
             <StudentLessonPackCard studentId={student.userId} />
 
+            {student.profileComplete &&
+            student.accountStatus === 'pending_activation' ? (
+              <Card
+                elevated
+                style={[styles.deleteCard, { borderColor: theme.error }]}>
+                <ThemedText type="subtitle">
+                  {t('studentDetail.deleteTitle')}
+                </ThemedText>
+                <ThemedText type="small" themeColor="textMuted">
+                  {t('studentDetail.deleteBody')}
+                </ThemedText>
+                {deletionState === 'confirming' ||
+                deletionState === 'deleting' ? (
+                  <>
+                    <Feedback
+                      message={t('studentDetail.deleteConfirmBody', {
+                        name: student.fullName,
+                      })}
+                      title={t('studentDetail.deleteConfirmTitle')}
+                      tone="warning"
+                    />
+                    <View style={styles.deleteActions}>
+                      <Button
+                        disabled={deletionState === 'deleting'}
+                        label={t('studentDetail.deleteCancelAction')}
+                        onPress={() => setDeletionState('idle')}
+                        style={styles.deleteAction}
+                        variant="secondary"
+                      />
+                      <Button
+                        disabled={deletionState === 'deleting'}
+                        label={
+                          deletionState === 'deleting'
+                            ? t('studentDetail.deleting')
+                            : t('studentDetail.deleteConfirmAction')
+                        }
+                        onPress={() => void confirmStudentDeletion()}
+                        style={styles.deleteAction}
+                        variant="danger"
+                      />
+                    </View>
+                  </>
+                ) : (
+                  <Button
+                    label={t('studentDetail.deleteAction')}
+                    onPress={() => setDeletionState('confirming')}
+                    style={styles.deleteButton}
+                    variant="danger"
+                  />
+                )}
+                {deletionState === 'error' ? (
+                  <Feedback
+                    message={t('studentDetail.deleteErrorBody')}
+                    title={t('studentDetail.deleteErrorTitle')}
+                    tone="error"
+                  />
+                ) : null}
+              </Card>
+            ) : null}
+
             <View style={styles.historySection}>
               <View style={styles.sectionHeading}>
                 <ThemedText type="subtitle">
@@ -601,6 +676,20 @@ const styles = StyleSheet.create({
   },
   contactList: {
     gap: Spacing.one,
+  },
+  deleteCard: {
+    gap: Spacing.three,
+  },
+  deleteButton: {
+    alignSelf: 'flex-start',
+  },
+  deleteActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+  },
+  deleteAction: {
+    flexGrow: 1,
   },
   historySection: {
     gap: Spacing.three,

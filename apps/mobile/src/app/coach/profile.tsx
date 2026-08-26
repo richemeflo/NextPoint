@@ -28,6 +28,7 @@ import {
   saveCoachProfile,
 } from '@/features/coaches/coach-profile-service';
 import { ProfileOptionSelector } from '@/features/profiles/profile-option-selector';
+import { ProfileThemeCard } from '@/features/profiles/profile-theme-card';
 import { AccountPrivacyCard } from '@/features/legal/account-privacy-card';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
@@ -280,6 +281,7 @@ export default function CoachProfileScreen() {
             />
           </Card>
 
+          <ProfileThemeCard />
           <View style={styles.settingsGrid}>
             <Card style={styles.settingCard}>
               <ThemedText type="subtitle">

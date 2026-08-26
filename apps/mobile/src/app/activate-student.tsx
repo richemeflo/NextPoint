@@ -7,7 +7,13 @@ import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { useEffect, useState } from 'react';
-import { Platform, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -25,6 +31,7 @@ import {
   getStudentActivationAllowedHttpsOrigins,
   parseStudentActivationUrl,
 } from '@/features/students/student-activation-link';
+import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
 
 function sanitizeWebActivationUrl(url: string) {
@@ -44,8 +51,9 @@ function sanitizeWebActivationUrl(url: string) {
 
 export default function ActivateStudentScreen() {
   const router = useRouter();
+  const theme = useTheme();
   const { t } = useTranslation();
-  const { signOut, status } = useAuth();
+  const { signIn, signOut, status } = useAuth();
   const {
     control,
     handleSubmit,
@@ -61,7 +69,13 @@ export default function ActivateStudentScreen() {
     },
   });
   const [result, setResult] = useState<
-    'idle' | 'success' | 'invalid' | 'email_required' | 'email_in_use' | 'error'
+    | 'idle'
+    | 'redirecting'
+    | 'sign_in_error'
+    | 'invalid'
+    | 'email_required'
+    | 'email_in_use'
+    | 'error'
   >('idle');
   const [isRedirectingToSignIn, setIsRedirectingToSignIn] = useState(false);
   const [acceptedLegal, setAcceptedLegal] = useState(false);
@@ -141,7 +155,14 @@ export default function ActivateStudentScreen() {
       }
       return;
     }
-    setResult('success');
+    setResult('redirecting');
+    const authentication = await signIn(activation.loginEmail, password);
+    if (!authentication.ok) {
+      setResult('sign_in_error');
+      return;
+    }
+
+    router.replace('/');
   });
 
   const goToSignIn = async () => {
@@ -166,12 +187,31 @@ export default function ActivateStudentScreen() {
             </ThemedText>
           </View>
           <Card elevated style={styles.form}>
-            {result === 'success' ? (
+            {result === 'redirecting' ? (
+              <>
+                <Feedback
+                  message={t('activation.redirectingBody')}
+                  title={t('activation.successTitle')}
+                  tone="success"
+                />
+                <View style={styles.redirecting}>
+                  <ActivityIndicator color={theme.primary} />
+                  <ThemedText type="small" themeColor="textMuted">
+                    {t('activation.signingIn')}
+                  </ThemedText>
+                </View>
+              </>
+            ) : result === 'sign_in_error' ? (
               <>
                 <Feedback
                   message={t('activation.successBody')}
                   title={t('activation.successTitle')}
                   tone="success"
+                />
+                <Feedback
+                  message={t('activation.autoSignInErrorBody')}
+                  title={t('activation.autoSignInErrorTitle')}
+                  tone="warning"
                 />
                 <Button
                   disabled={isRedirectingToSignIn}
@@ -328,5 +368,11 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 520,
     gap: Spacing.four,
+  },
+  redirecting: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.two,
   },
 });

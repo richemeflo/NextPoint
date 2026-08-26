@@ -26,6 +26,7 @@ import { useAuth } from '@/features/auth/auth-context';
 import { AccountPrivacyCard } from '@/features/legal/account-privacy-card';
 import { StudentLessonPacksReadonlyCard } from '@/features/lesson-packs/student-lesson-packs-readonly-card';
 import { ProfileOptionSelector } from '@/features/profiles/profile-option-selector';
+import { ProfileThemeCard } from '@/features/profiles/profile-theme-card';
 import {
   getStudentProfile,
   saveStudentProfile,
@@ -338,6 +339,7 @@ export default function EleveAccountScreen() {
               onPress={() => void onSubmit()}
             />
           </Card>
+          <ProfileThemeCard />
           {user ? <StudentLessonPacksReadonlyCard studentId={user.id} /> : null}
           <AccountPrivacyCard />
         </View>

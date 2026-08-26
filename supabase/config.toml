@@ -396,6 +396,9 @@ deno_version = 2
 [functions.activate-student-account]
 verify_jwt = false
 
+[functions.delete-pending-student]
+verify_jwt = true
+
 [functions.send-pending-push-notifications]
 verify_jwt = true
 

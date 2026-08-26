@@ -2,8 +2,8 @@ import { handleOptions, jsonResponse } from '../_shared/http.ts';
 import { sha256Hex } from '../_shared/security.ts';
 import { adminClient } from '../_shared/supabase.ts';
 
-const currentTermsVersion = '2026-08-16';
-const currentPrivacyPolicyVersion = '2026-08-16';
+const currentTermsVersion = '2026-08-19';
+const currentPrivacyPolicyVersion = '2026-08-19';
 const internalActivationEmailSuffix = '@activation.equationpadel.invalid';
 
 async function rollbackClaim(tokenId: string) {
@@ -201,5 +201,8 @@ Deno.serve(async (request) => {
     });
   }
 
-  return jsonResponse({ ok: true, data: { activated: true } });
+  return jsonResponse({
+    ok: true,
+    data: { activated: true, email: activationEmail },
+  });
 });

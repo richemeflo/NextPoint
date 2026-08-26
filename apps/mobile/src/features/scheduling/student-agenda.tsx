@@ -1,17 +1,12 @@
 import {
   canCancelBooking,
   getSchedulingDateLabelInstant,
+  getSchedulingToday,
   schedulingTimeZone,
 } from '@nextpoint/shared';
 
-import { useCallback, useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
@@ -31,16 +26,19 @@ import { useBookingPresentation } from '@/features/bookings/use-booking-presenta
 import { AgendaGrid } from '@/features/scheduling/agenda-grid';
 import { PlanningControls } from '@/features/scheduling/planning-controls';
 import type { AvailabilitySlot } from '@/features/scheduling/availability-service';
+import { StudentAvailabilityCalendar } from '@/features/scheduling/student-availability-calendar';
+import {
+  getStudentAvailabilityMonth,
+  isSameStudentAvailabilityMonth,
+  moveStudentAvailabilityMonth,
+} from '@/features/scheduling/student-availability-month';
 import { getSlotDateKey } from '@/features/scheduling/planning-window';
 import { StudentBookingCancellationModal } from '@/features/scheduling/student-booking-cancellation-modal';
 import { StudentBookingRequestModal } from '@/features/scheduling/student-booking-request-modal';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
 import { useStudentAgendaData } from '@/features/scheduling/use-student-agenda-data';
-import {
-  useStudentAgendaItems,
-  type StudentHomeAgendaItem,
-} from '@/features/scheduling/use-student-agenda-items';
+import { useStudentAgendaItems } from '@/features/scheduling/use-student-agenda-items';
 import { usePlanningView } from '@/features/scheduling/use-planning-view';
 
 function canStudentCancel(booking: Booking) {
@@ -62,8 +60,6 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
   const { user } = useAuth();
   const { locale, t } = useTranslation();
   const theme = useTheme();
-  const { width } = useWindowDimensions();
-  const isMobile = width < 760;
   const {
     bookingStatusKey,
     bookingStatusThemeColor,
@@ -91,6 +87,23 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
   >('none');
   const showRequestableSlots = surface === 'requestable';
   const showBookingSchedule = surface === 'bookings';
+  const currentDate = getSchedulingToday();
+  const [availabilityMonthAnchor, setAvailabilityMonthAnchor] = useState(
+    () => currentDate
+  );
+  const [selectedAvailabilityDate, setSelectedAvailabilityDate] = useState<
+    string | null
+  >(null);
+  const availabilityMonth = useMemo(
+    () => getStudentAvailabilityMonth(availabilityMonthAnchor),
+    [availabilityMonthAnchor]
+  );
+  const queryStartsAt = showRequestableSlots
+    ? availabilityMonth.startsAt
+    : window.startsAt;
+  const queryEndsAt = showRequestableSlots
+    ? availabilityMonth.endsAt
+    : window.endsAt;
 
   const {
     agendaLoadedAt,
@@ -104,8 +117,8 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
     updateBookings,
   } = useStudentAgendaData({
     includeRequestableSlots: showRequestableSlots,
-    startsAt: window.startsAt,
-    endsAt: window.endsAt,
+    startsAt: queryStartsAt,
+    endsAt: queryEndsAt,
   });
 
   const formatDay = (value: string) =>
@@ -126,8 +139,6 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
   const requestableSlots = slots;
   const {
     bookingsByDay,
-    homeAgendaItems,
-    homeItemsByDay,
     selectedSlot,
     studentScheduleOccupations,
     visibleBookings,
@@ -135,11 +146,36 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
   } = useStudentAgendaItems({
     agendaLoadedAt,
     bookings,
-    endsAt: window.endsAt,
+    endsAt: queryEndsAt,
     selectedSlotId: requestSelection?.slotId ?? null,
     slots: requestableSlots,
-    startsAt: window.startsAt,
+    startsAt: queryStartsAt,
   });
+  const availableDates = useMemo(
+    () =>
+      [
+        ...new Set(
+          requestableSlots
+            .map((slot) => getSlotDateKey(slot.startsAt))
+            .filter(
+              (date) =>
+                date >= availabilityMonth.startDate &&
+                date <= availabilityMonth.endDate
+            )
+        ),
+      ].sort(),
+    [availabilityMonth.endDate, availabilityMonth.startDate, requestableSlots]
+  );
+
+  useEffect(() => {
+    if (!showRequestableSlots || loadState !== 'ready') return;
+
+    setSelectedAvailabilityDate((current) => {
+      if (current && availableDates.includes(current)) return current;
+      if (availableDates.includes(currentDate)) return currentDate;
+      return availableDates[0] ?? null;
+    });
+  }, [availableDates, currentDate, loadState, showRequestableSlots]);
   const getRequestProposalForSlot = useCallback(
     (slot: AvailabilitySlot, startsAt: string) => {
       const earliestStartsAt = getEarliestBookingRequestStartsAt();
@@ -217,41 +253,6 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
     setCancellationBookingId(booking.id);
     setFeedback('none');
   };
-
-  const renderSlotContent = (slot: AvailabilitySlot) => (
-    <>
-      <ThemedText type="smallBold">
-        {t('planning.slotTime', {
-          start: formatTime(slot.startsAt),
-          end: formatTime(slot.endsAt),
-        })}
-      </ThemedText>
-      <ThemedText type="small" themeColor="textMuted">
-        {t('studentAgenda.slotDetail', {
-          date: formatDay(getSlotDateKey(slot.startsAt)),
-          duration: t('availability.continuousRange'),
-          location: slot.location,
-        })}
-      </ThemedText>
-      <ThemedText type="small" themeColor="textMuted">
-        {slot.location}
-      </ThemedText>
-    </>
-  );
-
-  const renderAgendaSlotContent = (slot: AvailabilitySlot) => (
-    <View style={styles.agendaSlotPressable}>
-      <ThemedText numberOfLines={1} type="smallBold">
-        {t('planning.slotTime', {
-          start: formatTime(slot.startsAt),
-          end: formatTime(slot.endsAt),
-        })}
-      </ThemedText>
-      <ThemedText numberOfLines={2} type="small" themeColor="textMuted">
-        {slot.location}
-      </ThemedText>
-    </View>
-  );
 
   const renderBookingContent = (booking: Booking, includeDate = true) => {
     const price = formatBookingPrice(booking);
@@ -360,29 +361,6 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
     );
   };
 
-  const renderHomeAgendaItem = (item: StudentHomeAgendaItem) =>
-    item.kind === 'slot'
-      ? renderAgendaSlotContent(item.slot)
-      : renderBookingAgendaContent(item.booking);
-
-  const getHomeAgendaItemStyle = (item: StudentHomeAgendaItem) =>
-    item.kind === 'booking'
-      ? getBookingStatusStyle(item.booking.status)
-      : {
-          backgroundColor: theme.backgroundSelected,
-          borderColor: theme.secondary,
-          borderLeftWidth: 5,
-        };
-
-  const renderHomeListItem = (item: StudentHomeAgendaItem) =>
-    item.kind === 'booking' ? (
-      renderBookingCard(item.booking)
-    ) : (
-      <Pressable key={item.id} onPress={() => openRequest(item.slot)}>
-        <Card style={styles.slotCard}>{renderSlotContent(item.slot)}</Card>
-      </Pressable>
-    );
-
   if (loadState === 'loading') {
     return (
       <View style={styles.loading}>
@@ -405,15 +383,13 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
                 : 'studentAgenda.title'
             )}
           </ThemedText>
-          {isMobile && surface === 'requestable' ? null : (
-            <ThemedText type="small" themeColor="textMuted">
-              {t(
-                surface === 'bookings'
-                  ? 'booking.studentListBody'
-                  : 'studentAgenda.body'
-              )}
-            </ThemedText>
-          )}
+          <ThemedText type="small" themeColor="textMuted">
+            {t(
+              surface === 'bookings'
+                ? 'booking.studentListBody'
+                : 'studentAgenda.body'
+            )}
+          </ThemedText>
         </View>
         {isRefreshing ? (
           <ThemedText type="small" themeColor="textMuted">
@@ -422,7 +398,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
         ) : null}
       </View>
 
-      {showRequestableSlots || showBookingSchedule ? (
+      {showBookingSchedule ? (
         <PlanningControls
           displayMode={displayMode}
           mode={mode}
@@ -503,47 +479,32 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
         />
       ) : null}
 
-      {showRequestableSlots && displayMode === 'agenda' ? (
-        <>
-          <AgendaGrid
-            days={window.days}
-            formatDay={formatDay}
-            getSlotStyle={getHomeAgendaItemStyle}
-            renderSlot={renderHomeAgendaItem}
-            selectionRoundingMinutes={30}
-            slots={homeAgendaItems}
-            isSlotPressable={(item) =>
-              item.kind === 'slot' &&
-              new Date(item.endsAt).getTime() > Date.now()
-            }
-            onSlotPress={(item, startsAt) => {
-              if (item.kind === 'slot') openRequest(item.slot, startsAt);
-            }}
-          />
-        </>
-      ) : showRequestableSlots ? (
-        <View style={styles.days}>
-          {window.days.map((day) => {
-            const dayItems = homeItemsByDay.get(day.date) ?? [];
-
-            return (
-              <View key={day.date} style={styles.daySection}>
-                <ThemedText type="smallBold">{formatDay(day.date)}</ThemedText>
-                {dayItems.length === 0 ? (
-                  <Feedback
-                    message={t('studentAgenda.emptyDayBody')}
-                    title={t('studentAgenda.emptyDayTitle')}
-                    tone="info"
-                  />
-                ) : (
-                  <View style={styles.slotGrid}>
-                    {dayItems.map((item) => renderHomeListItem(item))}
-                  </View>
-                )}
-              </View>
+      {showRequestableSlots ? (
+        <StudentAvailabilityCalendar
+          currentDate={currentDate}
+          disablePreviousMonth={
+            isSameStudentAvailabilityMonth(
+              availabilityMonth.startDate,
+              currentDate
+            )
+          }
+          formatTime={formatTime}
+          month={availabilityMonth}
+          onMoveMonth={(direction) => {
+            setSelectedAvailabilityDate(null);
+            setAvailabilityMonthAnchor((current) =>
+              moveStudentAvailabilityMonth(current, direction)
             );
-          })}
-        </View>
+          }}
+          onSelectDate={setSelectedAvailabilityDate}
+          onSelectSlot={openRequest}
+          onToday={() => {
+            setSelectedAvailabilityDate(null);
+            setAvailabilityMonthAnchor(currentDate);
+          }}
+          selectedDate={selectedAvailabilityDate}
+          slots={requestableSlots}
+        />
       ) : null}
 
       {showBookingSchedule ? (
@@ -640,16 +601,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.three,
-  },
-  slotCard: {
-    minHeight: 112,
-    minWidth: 220,
-    flex: 1,
-    gap: Spacing.two,
-  },
-  agendaSlotPressable: {
-    flex: 1,
-    gap: Spacing.one,
   },
   bookingCard: {
     minWidth: 240,

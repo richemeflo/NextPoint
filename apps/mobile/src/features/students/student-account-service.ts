@@ -1,5 +1,6 @@
 import {
   activateStudentAccountResponseSchema,
+  deletePendingStudentResponseSchema,
   generateStudentActivationLinkResponseSchema,
   type ActivateStudentAccountInput,
 } from '@nextpoint/shared';
@@ -19,7 +20,7 @@ export type StudentActivationFailureCode =
   | 'configuration_error';
 
 export type StudentActivationResult =
-  | { ok: true }
+  | { ok: true; loginEmail: string }
   | { ok: false; code: StudentActivationFailureCode };
 
 export type GeneratedStudentActivationLink = {
@@ -33,6 +34,16 @@ export type GenerateStudentActivationLinkResult =
       ok: false;
       code:
         | 'account_not_activatable'
+        | 'unauthorized'
+        | 'configuration_error';
+    };
+
+export type DeletePendingStudentResult =
+  | { ok: true }
+  | {
+      ok: false;
+      code:
+        | 'account_not_deletable'
         | 'unauthorized'
         | 'configuration_error';
     };
@@ -71,7 +82,7 @@ export async function activateStudentAccount(
     };
   }
 
-  return { ok: true };
+  return { ok: true, loginEmail: parsed.data.data.email };
 }
 
 export async function generateStudentActivationLink(
@@ -109,4 +120,33 @@ export async function generateStudentActivationLink(
       expiresAt: parsed.data.data.expiresAt,
     },
   };
+}
+
+export async function deletePendingStudent(
+  studentId: string
+): Promise<DeletePendingStudentResult> {
+  if (!supabase) return { ok: false, code: 'configuration_error' };
+
+  const { data, error } = await supabase.functions.invoke(
+    'delete-pending-student',
+    { body: { studentId } }
+  );
+  const parsed = deletePendingStudentResponseSchema.safeParse(data as unknown);
+
+  if (error || !parsed.success) {
+    return { ok: false, code: 'configuration_error' };
+  }
+  if (!parsed.data.ok) {
+    return {
+      ok: false,
+      code:
+        parsed.data.error.code === 'unauthorized'
+          ? 'unauthorized'
+          : parsed.data.error.code === 'account_not_deletable'
+            ? 'account_not_deletable'
+            : 'configuration_error',
+    };
+  }
+
+  return { ok: true };
 }

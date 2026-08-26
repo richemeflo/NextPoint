@@ -127,6 +127,7 @@ export {
 export {
   activateStudentAccountResponseSchema,
   createManualStudentResponseSchema,
+  deletePendingStudentResponseSchema,
   generateStudentActivationLinkResponseSchema,
 } from './contracts/student-edge-function';
 export { appLanguages } from './domain/languages';

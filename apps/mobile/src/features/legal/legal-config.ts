@@ -1,6 +1,6 @@
 export const productName = 'Equation Padel';
-export const termsVersion = '2026-08-16';
-export const privacyPolicyVersion = '2026-08-16';
+export const termsVersion = '2026-08-19';
+export const privacyPolicyVersion = '2026-08-19';
 
 function publicValue(value: string | undefined, fallback: string) {
   const normalized = value?.trim();
@@ -59,4 +59,3 @@ export const missingLegalConfiguration = Object.entries(legalConfiguration)
 
 export const isLegalConfigurationComplete =
   missingLegalConfiguration.length === 0;
-

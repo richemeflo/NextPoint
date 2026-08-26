@@ -46,14 +46,23 @@ const copyByFeedback: Record<
 };
 
 export function AvailabilityFeedback({
+  context = 'create',
   value,
 }: {
+  context?: 'create' | 'edit';
   value: AvailabilityFeedbackValue;
 }) {
   const { t } = useTranslation();
 
   if (value === 'none') return null;
 
-  const copy = copyByFeedback[value];
+  const copy =
+    value === 'error' && context === 'edit'
+      ? {
+          body: 'availability.updateErrorBody' as const,
+          title: 'availability.updateErrorTitle' as const,
+          tone: 'error' as const,
+        }
+      : copyByFeedback[value];
   return <Feedback message={t(copy.body)} title={t(copy.title)} tone={copy.tone} />;
 }

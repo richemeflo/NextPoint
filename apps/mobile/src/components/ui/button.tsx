@@ -12,7 +12,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Radii, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
-type ButtonVariant = 'primary' | 'secondary';
+type ButtonVariant = 'primary' | 'secondary' | 'danger';
 export type ButtonIcon = SymbolViewProps['name'];
 
 export type ButtonProps = Omit<PressableProps, 'style'> & {
@@ -34,6 +34,8 @@ export function Button({
 }: ButtonProps) {
   const theme = useTheme();
   const isPrimary = variant === 'primary';
+  const isDanger = variant === 'danger';
+  const isEmphasized = isPrimary || isDanger;
 
   return (
     <Pressable
@@ -42,8 +44,16 @@ export function Button({
       style={({ pressed }) => [
         styles.button,
         {
-          backgroundColor: isPrimary ? theme.primary : theme.surface,
-          borderColor: isPrimary ? theme.primary : theme.border,
+          backgroundColor: isDanger
+            ? theme.error
+            : isPrimary
+              ? theme.primary
+              : theme.surface,
+          borderColor: isDanger
+            ? theme.error
+            : isPrimary
+              ? theme.primary
+              : theme.border,
           opacity: disabled ? 0.55 : pressed ? 0.82 : 1,
         },
         style,
@@ -55,10 +65,12 @@ export function Button({
             name={icon}
             size={18}
             weight="semibold"
-            tintColor={isPrimary ? theme.surface : theme.text}
+            tintColor={isEmphasized ? theme.surface : theme.text}
           />
         ) : null}
-        <ThemedText type="smallBold" themeColor={isPrimary ? 'surface' : 'text'}>
+        <ThemedText
+          type="smallBold"
+          themeColor={isEmphasized ? 'surface' : 'text'}>
           {label}
         </ThemedText>
         {icon && iconPosition === 'right' ? (
@@ -66,7 +78,7 @@ export function Button({
             name={icon}
             size={18}
             weight="semibold"
-            tintColor={isPrimary ? theme.surface : theme.text}
+            tintColor={isEmphasized ? theme.surface : theme.text}
           />
         ) : null}
       </View>

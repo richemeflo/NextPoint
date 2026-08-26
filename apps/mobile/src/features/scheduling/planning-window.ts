@@ -29,6 +29,21 @@ export function getNonPastPlanningDays(
   return days.filter((day) => day.date >= currentDate);
 }
 
+export function getCompactPlanningDays(
+  days: PlanningDay[],
+  currentDate: string
+) {
+  const nonPastDays = getNonPastPlanningDays(days, currentDate);
+  return nonPastDays.length > 0 ? nonPastDays : days;
+}
+
+export function isHistoricalPlanningPeriod(
+  days: PlanningDay[],
+  currentDate: string
+) {
+  return days.length > 0 && days.every((day) => day.date < currentDate);
+}
+
 export const agendaStartHour = 8;
 export const agendaEndHour = 23;
 export const agendaHourMarks = Array.from(

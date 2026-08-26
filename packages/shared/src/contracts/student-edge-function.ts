@@ -39,7 +39,10 @@ export const createManualStudentResponseSchema = z.union([
 export const activateStudentAccountResponseSchema = z.union([
   z.object({
     ok: z.literal(true),
-    data: z.object({ activated: z.literal(true) }),
+    data: z.object({
+      activated: z.literal(true),
+      email: z.email(),
+    }),
   }),
   edgeFunctionFailureSchema,
 ]);
@@ -51,6 +54,14 @@ export const generateStudentActivationLinkResponseSchema = z.union([
       activationLink: z.url(),
       expiresAt: z.iso.datetime({ offset: true }),
     }),
+  }),
+  edgeFunctionFailureSchema,
+]);
+
+export const deletePendingStudentResponseSchema = z.union([
+  z.object({
+    ok: z.literal(true),
+    data: z.object({ deletedStudentId: z.uuid() }),
   }),
   edgeFunctionFailureSchema,
 ]);

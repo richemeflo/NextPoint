@@ -4,12 +4,14 @@ import test from 'node:test';
 import {
   agendaHourMarks,
   getAgendaTimePosition,
+  getCompactPlanningDays,
   getNonPastPlanningDays,
   getPlanningWindow,
   getAgendaSlotPosition,
   getSlotDateKey,
   movePlanningAnchor,
   planningViewModes,
+  isHistoricalPlanningPeriod,
 } from './planning-window';
 
 test('planning view modes stay limited to week and day', () => {
@@ -61,6 +63,26 @@ test('getNonPastPlanningDays keeps today and future days only', () => {
     { date: '2026-08-08' },
     { date: '2026-08-09' },
   ]);
+});
+
+test('compact planning keeps every day when the selected week is historical', () => {
+  const days = getPlanningWindow('2026-07-29', 'week').days;
+
+  assert.deepEqual(getCompactPlanningDays(days, '2026-08-05'), days);
+  assert.equal(isHistoricalPlanningPeriod(days, '2026-08-05'), true);
+});
+
+test('compact planning still hides elapsed days in the current week', () => {
+  const days = getPlanningWindow('2026-08-05', 'week').days;
+
+  assert.deepEqual(getCompactPlanningDays(days, '2026-08-05'), [
+    { date: '2026-08-05' },
+    { date: '2026-08-06' },
+    { date: '2026-08-07' },
+    { date: '2026-08-08' },
+    { date: '2026-08-09' },
+  ]);
+  assert.equal(isHistoricalPlanningPeriod(days, '2026-08-05'), false);
 });
 
 test('movePlanningAnchor moves by the active view span', () => {

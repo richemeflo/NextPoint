@@ -190,7 +190,7 @@ export const dictionaries = {
     'planning.refreshing': 'Mise à jour des créneaux...',
     'planning.coachTitle': 'Planning coach',
     'planning.coachBody':
-      'Consultez vos créneaux à venir en vue semaine ou jour.',
+      'Consultez vos créneaux et vos cours, passés ou à venir, en vue semaine ou jour.',
     'planning.display.agenda': 'Agenda',
     'planning.display.list': 'Liste',
     'planning.mode.week': 'Semaine',
@@ -231,6 +231,13 @@ export const dictionaries = {
     'profile.language.fr': 'Français',
     'profile.language.en': 'Anglais',
     'profile.language.es': 'Espagnol',
+    'profile.themeTitle': 'Apparence',
+    'profile.themeBody':
+      'Le mode Défaut suit automatiquement la préférence de votre navigateur ou de votre appareil.',
+    'profile.themeLabel': 'Thème de l’application',
+    'profile.theme.system': 'Défaut (préférence du navigateur)',
+    'profile.theme.light': 'Clair',
+    'profile.theme.dark': 'Sombre',
     'profile.saveAction': 'Enregistrer mon profil',
     'profile.saving': 'Enregistrement...',
     'profile.saveSuccessTitle': 'Profil enregistré',
@@ -304,6 +311,28 @@ export const dictionaries = {
       'Aucun créneau disponible n’est proposé sur cette journée.',
     'studentAgenda.slotDetail': '{{date}} · {{duration}} · {{location}}',
     'studentAgenda.requestableStatus': 'Demandable',
+    'studentAgenda.calendarTitle': 'Choisissez un jour',
+    'studentAgenda.calendarBody':
+      'Les jours mis en évidence proposent au moins une plage disponible.',
+    'studentAgenda.previousMonthAction': 'Voir le mois précédent',
+    'studentAgenda.nextMonthAction': 'Voir le mois suivant',
+    'studentAgenda.currentMonthAction': 'Revenir à ce mois-ci',
+    'studentAgenda.availableLegend': 'Jour avec une disponibilité',
+    'studentAgenda.availableDayLabel':
+      '{{date}}, une plage disponible',
+    'studentAgenda.availableDayLabelPlural':
+      '{{date}}, {{count}} plages disponibles',
+    'studentAgenda.selectedDateTitle': 'Disponibilités du {{date}}',
+    'studentAgenda.availableRangeCount':
+      'Une plage disponible pour réserver',
+    'studentAgenda.availableRangeCountPlural':
+      '{{count}} plages disponibles pour réserver',
+    'studentAgenda.selectRangeLabel':
+      'Choisir une heure entre {{start}} et {{end}}, {{location}}',
+    'studentAgenda.chooseTimeAction': 'Choisir une heure',
+    'studentAgenda.emptyMonthTitle': 'Aucune disponibilité ce mois-ci',
+    'studentAgenda.emptyMonthBody':
+      'Passez au mois suivant pour consulter les prochaines disponibilités.',
     'pricing.loading': 'Chargement des tarifs...',
     'pricing.loadErrorTitle': 'Tarifs indisponibles',
     'pricing.loadErrorBody':
@@ -419,6 +448,9 @@ export const dictionaries = {
     'availability.saveErrorTitle': 'Création impossible',
     'availability.saveErrorBody':
       'Aucune disponibilité n’a été créée. Vérifiez les informations puis réessayez.',
+    'availability.updateErrorTitle': 'Modification impossible',
+    'availability.updateErrorBody':
+      'La disponibilité n’a pas été modifiée. Vérifiez la date et les horaires puis réessayez.',
     'availability.conflictTitle': 'Plage en conflit',
     'availability.conflictBody':
       'Cette plage chevauche une disponibilité existante. Ajustez les horaires.',
@@ -446,6 +478,7 @@ export const dictionaries = {
     'availability.slotStatus.booked': 'Réservé',
     'availability.slotStatus.cancelled': 'Annulé',
     'availability.scopeDialogTitle': 'Appliquer la modification',
+    'availability.scopeDeleteDialogTitle': 'Appliquer la suppression',
     'availability.scopeDialogBody':
       'Choisissez si l’action concerne uniquement cette occurrence ou toute la série récurrente.',
     'availability.scopeOccurrenceAction': 'Cette occurrence',
@@ -506,6 +539,9 @@ export const dictionaries = {
     'students.resetFilters': 'Réinitialiser les filtres',
     'students.resultsTitle': 'Résultats',
     'students.resultCount': '{{count}} élève(s)',
+    'students.pageStatus': 'Page {{current}} sur {{total}}',
+    'students.previousPage': 'Page précédente',
+    'students.nextPage': 'Page suivante',
     'students.levelValue': 'Niveau {{level}}',
     'students.ageValue': '{{age}} ans',
     'students.emptyListTitle': 'Aucun élève associé',
@@ -571,6 +607,19 @@ export const dictionaries = {
     'studentDetail.activationErrorTitle': 'Lien indisponible',
     'studentDetail.activationErrorBody':
       'Le lien n’a pas pu être généré ou partagé. Vérifiez l’état du compte puis réessayez.',
+    'studentDetail.deleteTitle': 'Supprimer cette fiche élève',
+    'studentDetail.deleteBody':
+      'Cette action est disponible uniquement avant l’activation du compte. Elle supprime définitivement le compte provisoire et toutes ses données associées.',
+    'studentDetail.deleteAction': 'Supprimer l’élève',
+    'studentDetail.deleteConfirmTitle': 'Confirmer la suppression',
+    'studentDetail.deleteConfirmBody':
+      'Voulez-vous vraiment supprimer définitivement la fiche de {{name}} ?',
+    'studentDetail.deleteConfirmAction': 'Supprimer définitivement',
+    'studentDetail.deleteCancelAction': 'Annuler',
+    'studentDetail.deleting': 'Suppression...',
+    'studentDetail.deleteErrorTitle': 'Suppression impossible',
+    'studentDetail.deleteErrorBody':
+      'La fiche n’a pas été supprimée. Le compte a peut-être déjà été activé ou n’est plus associé à votre espace.',
     'studentPrivateNote.loading': 'Chargement de la note privée...',
     'studentPrivateNote.title': 'Note privée coach',
     'studentPrivateNote.privateHint':
@@ -836,6 +885,12 @@ export const dictionaries = {
     'activation.successTitle': 'Compte activé',
     'activation.successBody':
       'Votre mot de passe est enregistré. Vous pouvez maintenant vous connecter.',
+    'activation.redirectingBody':
+      'Votre mot de passe est enregistré. Vous allez être redirigé vers votre espace élève.',
+    'activation.signingIn': 'Connexion à votre espace...',
+    'activation.autoSignInErrorTitle': 'Connexion automatique impossible',
+    'activation.autoSignInErrorBody':
+      'Votre compte est bien activé. Connectez-vous maintenant avec votre email et votre nouveau mot de passe.',
     'activation.signInAction': 'Se connecter',
     'activation.invalidTitle': 'Lien invalide',
     'activation.invalidBody':
@@ -1105,7 +1160,8 @@ export const dictionaries = {
     'planning.loading': 'Loading planning...',
     'planning.refreshing': 'Updating slots...',
     'planning.coachTitle': 'Coach schedule',
-    'planning.coachBody': 'Review upcoming slots by week or day.',
+    'planning.coachBody':
+      'Review past and upcoming slots and lessons by week or day.',
     'planning.display.agenda': 'Agenda',
     'planning.display.list': 'List',
     'planning.mode.week': 'Week',
@@ -1145,6 +1201,13 @@ export const dictionaries = {
     'profile.language.fr': 'French',
     'profile.language.en': 'English',
     'profile.language.es': 'Spanish',
+    'profile.themeTitle': 'Appearance',
+    'profile.themeBody':
+      'Default mode automatically follows your browser or device preference.',
+    'profile.themeLabel': 'Application theme',
+    'profile.theme.system': 'Default (browser preference)',
+    'profile.theme.light': 'Light',
+    'profile.theme.dark': 'Dark',
     'profile.saveAction': 'Save my profile',
     'profile.saving': 'Saving...',
     'profile.saveSuccessTitle': 'Profile saved',
@@ -1213,6 +1276,28 @@ export const dictionaries = {
     'studentAgenda.emptyDayBody': 'No available slot is offered on this day.',
     'studentAgenda.slotDetail': '{{date}} · {{duration}} · {{location}}',
     'studentAgenda.requestableStatus': 'Requestable',
+    'studentAgenda.calendarTitle': 'Choose a day',
+    'studentAgenda.calendarBody':
+      'Highlighted days have at least one available time range.',
+    'studentAgenda.previousMonthAction': 'View previous month',
+    'studentAgenda.nextMonthAction': 'View next month',
+    'studentAgenda.currentMonthAction': 'Return to this month',
+    'studentAgenda.availableLegend': 'Day with availability',
+    'studentAgenda.availableDayLabel':
+      '{{date}}, one available time range',
+    'studentAgenda.availableDayLabelPlural':
+      '{{date}}, {{count}} available time ranges',
+    'studentAgenda.selectedDateTitle': 'Availability on {{date}}',
+    'studentAgenda.availableRangeCount':
+      'One available time range to book',
+    'studentAgenda.availableRangeCountPlural':
+      '{{count}} available time ranges to book',
+    'studentAgenda.selectRangeLabel':
+      'Choose a time between {{start}} and {{end}}, {{location}}',
+    'studentAgenda.chooseTimeAction': 'Choose a time',
+    'studentAgenda.emptyMonthTitle': 'No availability this month',
+    'studentAgenda.emptyMonthBody':
+      'Move to the next month to see upcoming availability.',
     'pricing.loading': 'Loading pricing...',
     'pricing.loadErrorTitle': 'Pricing unavailable',
     'pricing.loadErrorBody':
@@ -1328,6 +1413,9 @@ export const dictionaries = {
     'availability.saveErrorTitle': 'Unable to create',
     'availability.saveErrorBody':
       'No availability was created. Check the information and try again.',
+    'availability.updateErrorTitle': 'Unable to update',
+    'availability.updateErrorBody':
+      'The availability was not updated. Check the date and times, then try again.',
     'availability.conflictTitle': 'Range conflict',
     'availability.conflictBody':
       'This range overlaps an existing availability. Adjust the times.',
@@ -1355,6 +1443,7 @@ export const dictionaries = {
     'availability.slotStatus.booked': 'Booked',
     'availability.slotStatus.cancelled': 'Cancelled',
     'availability.scopeDialogTitle': 'Apply change',
+    'availability.scopeDeleteDialogTitle': 'Apply deletion',
     'availability.scopeDialogBody':
       'Choose whether the action applies only to this occurrence or to the recurring series.',
     'availability.scopeOccurrenceAction': 'This occurrence',
@@ -1413,6 +1502,9 @@ export const dictionaries = {
     'students.resetFilters': 'Reset filters',
     'students.resultsTitle': 'Results',
     'students.resultCount': '{{count}} student(s)',
+    'students.pageStatus': 'Page {{current}} of {{total}}',
+    'students.previousPage': 'Previous page',
+    'students.nextPage': 'Next page',
     'students.levelValue': 'Level {{level}}',
     'students.ageValue': 'Age {{age}}',
     'students.emptyListTitle': 'No associated students',
@@ -1475,6 +1567,19 @@ export const dictionaries = {
     'studentDetail.activationErrorTitle': 'Link unavailable',
     'studentDetail.activationErrorBody':
       'The link could not be generated or shared. Check the account status and try again.',
+    'studentDetail.deleteTitle': 'Delete this student record',
+    'studentDetail.deleteBody':
+      'This action is available only before account activation. It permanently deletes the provisional account and all associated data.',
+    'studentDetail.deleteAction': 'Delete student',
+    'studentDetail.deleteConfirmTitle': 'Confirm deletion',
+    'studentDetail.deleteConfirmBody':
+      'Do you really want to permanently delete {{name}}’s record?',
+    'studentDetail.deleteConfirmAction': 'Delete permanently',
+    'studentDetail.deleteCancelAction': 'Cancel',
+    'studentDetail.deleting': 'Deleting...',
+    'studentDetail.deleteErrorTitle': 'Unable to delete',
+    'studentDetail.deleteErrorBody':
+      'The record was not deleted. The account may already have been activated or may no longer be associated with your space.',
     'studentPrivateNote.loading': 'Loading private note...',
     'studentPrivateNote.title': 'Private coach note',
     'studentPrivateNote.privateHint': 'Visible only in your coach space.',
@@ -1733,6 +1838,12 @@ export const dictionaries = {
     'activation.activating': 'Activating...',
     'activation.successTitle': 'Account activated',
     'activation.successBody': 'Your password is saved. You can now sign in.',
+    'activation.redirectingBody':
+      'Your password is saved. You will be redirected to your student space.',
+    'activation.signingIn': 'Signing in to your space...',
+    'activation.autoSignInErrorTitle': 'Unable to sign in automatically',
+    'activation.autoSignInErrorBody':
+      'Your account is activated. Sign in now with your email and new password.',
     'activation.signInAction': 'Sign in',
     'activation.invalidTitle': 'Invalid link',
     'activation.invalidBody':
@@ -2005,7 +2116,7 @@ export const dictionaries = {
     'planning.refreshing': 'Actualizando horarios...',
     'planning.coachTitle': 'Planificación del coach',
     'planning.coachBody':
-      'Consulta tus próximos horarios en vista semanal o diaria.',
+      'Consulta tus horarios y clases, pasados o próximos, en vista semanal o diaria.',
     'planning.display.agenda': 'Agenda',
     'planning.display.list': 'Lista',
     'planning.mode.week': 'Semana',
@@ -2046,6 +2157,13 @@ export const dictionaries = {
     'profile.language.fr': 'Francés',
     'profile.language.en': 'Inglés',
     'profile.language.es': 'Español',
+    'profile.themeTitle': 'Apariencia',
+    'profile.themeBody':
+      'El modo Predeterminado sigue automáticamente la preferencia de tu navegador o dispositivo.',
+    'profile.themeLabel': 'Tema de la aplicación',
+    'profile.theme.system': 'Predeterminado (preferencia del navegador)',
+    'profile.theme.light': 'Claro',
+    'profile.theme.dark': 'Oscuro',
     'profile.saveAction': 'Guardar mi perfil',
     'profile.saving': 'Guardando...',
     'profile.saveSuccessTitle': 'Perfil guardado',
@@ -2116,6 +2234,28 @@ export const dictionaries = {
     'studentAgenda.emptyDayBody': 'No hay horarios disponibles en este día.',
     'studentAgenda.slotDetail': '{{date}} · {{duration}} · {{location}}',
     'studentAgenda.requestableStatus': 'Solicitable',
+    'studentAgenda.calendarTitle': 'Elige un día',
+    'studentAgenda.calendarBody':
+      'Los días destacados tienen al menos una franja disponible.',
+    'studentAgenda.previousMonthAction': 'Ver el mes anterior',
+    'studentAgenda.nextMonthAction': 'Ver el mes siguiente',
+    'studentAgenda.currentMonthAction': 'Volver a este mes',
+    'studentAgenda.availableLegend': 'Día con disponibilidad',
+    'studentAgenda.availableDayLabel':
+      '{{date}}, una franja disponible',
+    'studentAgenda.availableDayLabelPlural':
+      '{{date}}, {{count}} franjas disponibles',
+    'studentAgenda.selectedDateTitle': 'Disponibilidad del {{date}}',
+    'studentAgenda.availableRangeCount':
+      'Una franja disponible para reservar',
+    'studentAgenda.availableRangeCountPlural':
+      '{{count}} franjas disponibles para reservar',
+    'studentAgenda.selectRangeLabel':
+      'Elegir una hora entre {{start}} y {{end}}, {{location}}',
+    'studentAgenda.chooseTimeAction': 'Elegir una hora',
+    'studentAgenda.emptyMonthTitle': 'Sin disponibilidad este mes',
+    'studentAgenda.emptyMonthBody':
+      'Pasa al mes siguiente para ver las próximas disponibilidades.',
     'pricing.loading': 'Cargando tarifas...',
     'pricing.loadErrorTitle': 'Tarifas no disponibles',
     'pricing.loadErrorBody':
@@ -2232,6 +2372,9 @@ export const dictionaries = {
     'availability.saveErrorTitle': 'No se puede crear',
     'availability.saveErrorBody':
       'No se ha creado ninguna disponibilidad. Revisa la información e inténtalo de nuevo.',
+    'availability.updateErrorTitle': 'No se puede modificar',
+    'availability.updateErrorBody':
+      'No se ha modificado la disponibilidad. Revisa la fecha y los horarios e inténtalo de nuevo.',
     'availability.conflictTitle': 'Franja en conflicto',
     'availability.conflictBody':
       'Esta franja se solapa con una disponibilidad existente. Ajusta los horarios.',
@@ -2259,6 +2402,7 @@ export const dictionaries = {
     'availability.slotStatus.booked': 'Reservado',
     'availability.slotStatus.cancelled': 'Cancelado',
     'availability.scopeDialogTitle': 'Aplicar el cambio',
+    'availability.scopeDeleteDialogTitle': 'Aplicar la eliminación',
     'availability.scopeDialogBody':
       'Elige si la acción afecta solo a esta ocurrencia o a toda la serie recurrente.',
     'availability.scopeOccurrenceAction': 'Esta ocurrencia',
@@ -2319,6 +2463,9 @@ export const dictionaries = {
     'students.resetFilters': 'Restablecer filtros',
     'students.resultsTitle': 'Resultados',
     'students.resultCount': '{{count}} alumno(s)',
+    'students.pageStatus': 'Página {{current}} de {{total}}',
+    'students.previousPage': 'Página anterior',
+    'students.nextPage': 'Página siguiente',
     'students.levelValue': 'Nivel {{level}}',
     'students.ageValue': '{{age}} años',
     'students.emptyListTitle': 'Sin alumnos asociados',
@@ -2382,6 +2529,19 @@ export const dictionaries = {
     'studentDetail.activationErrorTitle': 'Enlace no disponible',
     'studentDetail.activationErrorBody':
       'No se ha podido generar o compartir el enlace. Revisa el estado de la cuenta e inténtalo de nuevo.',
+    'studentDetail.deleteTitle': 'Eliminar esta ficha de alumno',
+    'studentDetail.deleteBody':
+      'Esta acción solo está disponible antes de activar la cuenta. Elimina definitivamente la cuenta provisional y todos sus datos asociados.',
+    'studentDetail.deleteAction': 'Eliminar alumno',
+    'studentDetail.deleteConfirmTitle': 'Confirmar la eliminación',
+    'studentDetail.deleteConfirmBody':
+      '¿Quieres eliminar definitivamente la ficha de {{name}}?',
+    'studentDetail.deleteConfirmAction': 'Eliminar definitivamente',
+    'studentDetail.deleteCancelAction': 'Cancelar',
+    'studentDetail.deleting': 'Eliminando...',
+    'studentDetail.deleteErrorTitle': 'No se puede eliminar',
+    'studentDetail.deleteErrorBody':
+      'La ficha no se ha eliminado. Es posible que la cuenta ya esté activada o que ya no esté asociada a tu espacio.',
     'studentPrivateNote.loading': 'Cargando la nota privada...',
     'studentPrivateNote.title': 'Nota privada del coach',
     'studentPrivateNote.privateHint':
@@ -2647,6 +2807,13 @@ export const dictionaries = {
     'activation.successTitle': 'Cuenta activada',
     'activation.successBody':
       'Tu contraseña está guardada. Ya puedes iniciar sesión.',
+    'activation.redirectingBody':
+      'Tu contraseña está guardada. Se te redirigirá a tu espacio de alumno.',
+    'activation.signingIn': 'Iniciando sesión en tu espacio...',
+    'activation.autoSignInErrorTitle':
+      'No se puede iniciar sesión automáticamente',
+    'activation.autoSignInErrorBody':
+      'Tu cuenta está activada. Inicia sesión ahora con tu email y tu nueva contraseña.',
     'activation.signInAction': 'Iniciar sesión',
     'activation.invalidTitle': 'Enlace no válido',
     'activation.invalidBody':

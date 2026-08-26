@@ -18,8 +18,9 @@ import {
   agendaHourMarks,
   getAgendaSlotPosition,
   getAgendaTimePosition,
-  getNonPastPlanningDays,
+  getCompactPlanningDays,
   getSlotDateKey,
+  isHistoricalPlanningPeriod,
   type PlanningDay,
 } from '@/features/scheduling/planning-window';
 import { useTheme } from '@/hooks/use-theme';
@@ -122,9 +123,10 @@ export function AgendaGrid<TItem extends AgendaGridItem>({
   const currentDate = getSlotDateKey(new Date(nowMs).toISOString());
   const currentTimePosition = getAgendaTimePosition(nowMs);
   const currentTime = getSchedulingTime(nowMs);
+  const historicalPeriod = isHistoricalPlanningPeriod(days, currentDate);
   const visibleDays =
     compact && days.length === 7
-      ? getNonPastPlanningDays(days, currentDate)
+      ? getCompactPlanningDays(days, currentDate)
       : days;
 
   useEffect(() => {
@@ -134,11 +136,13 @@ export function AgendaGrid<TItem extends AgendaGridItem>({
 
   const renderTemporalContext = (date: string) => {
     const pastHeight =
-      date < currentDate
-        ? '100%'
-        : date === currentDate
-          ? currentTimePosition
-          : null;
+      historicalPeriod
+        ? null
+        : date < currentDate
+          ? '100%'
+          : date === currentDate
+            ? currentTimePosition
+            : null;
 
     return (
       <>

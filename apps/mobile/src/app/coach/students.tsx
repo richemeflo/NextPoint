@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { StudentSex } from '@nextpoint/shared';
 import { type Href, useRouter } from 'expo-router';
 import {
@@ -25,6 +25,7 @@ import {
   padelLevels,
   type StudentListFilters,
 } from '@/features/students/student-list-filters';
+import { getStudentListPage } from '@/features/students/student-list-pagination';
 import {
   STUDENT_MAX_AGE,
   STUDENT_MIN_AGE,
@@ -163,12 +164,15 @@ function StudentRow({
 }
 
 export default function CoachStudentsScreen() {
+  const studentListRef = useRef<FlatList<AssociatedStudent>>(null);
+  const resultsHeaderOffset = useRef(0);
   const { width } = useWindowDimensions();
   const { user } = useAuth();
   const { t } = useTranslation();
   const theme = useTheme();
   const [students, setStudents] = useState<AssociatedStudent[]>([]);
   const [filters, setFilters] = useState<StudentListFilters>(emptyFilters);
+  const [currentPage, setCurrentPage] = useState(1);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [createdStudentName, setCreatedStudentName] = useState<string | null>(
     null
@@ -210,6 +214,10 @@ export default function CoachStudentsScreen() {
     () => filterAssociatedStudents(students, filters),
     [filters, students]
   );
+  const studentPage = useMemo(
+    () => getStudentListPage(filteredStudents, currentPage),
+    [currentPage, filteredStudents]
+  );
   const hasFilters =
     filters.query.trim().length > 0 ||
     filters.level !== null ||
@@ -228,6 +236,16 @@ export default function CoachStudentsScreen() {
     },
   ];
 
+  const changePage = (page: number) => {
+    setCurrentPage(page);
+    requestAnimationFrame(() => {
+      studentListRef.current?.scrollToOffset({
+        animated: true,
+        offset: Math.max(0, resultsHeaderOffset.current - Spacing.two),
+      });
+    });
+  };
+
   if (loadState === 'loading') {
     return (
       <ThemedView style={styles.centered}>
@@ -243,7 +261,7 @@ export default function CoachStudentsScreen() {
     <ThemedView style={styles.screen}>
       <FlatList
         contentContainerStyle={styles.scrollContent}
-        data={filteredStudents}
+        data={studentPage.items}
         initialNumToRender={12}
         ItemSeparatorComponent={() => <View style={styles.listSeparator} />}
         keyboardShouldPersistTaps="handled"
@@ -327,18 +345,20 @@ export default function CoachStudentsScreen() {
               autoCapitalize="words"
               containerStyle={styles.searchField}
               label={t('students.searchLabel')}
-              onChangeText={(query) =>
-                setFilters((current) => ({ ...current, query }))
-              }
+              onChangeText={(query) => {
+                setCurrentPage(1);
+                setFilters((current) => ({ ...current, query }));
+              }}
               placeholder={t('students.searchPlaceholder')}
               style={styles.searchInput}
               value={filters.query}
             />
             <StudentFilterSelector
               label={t('students.levelFilterLabel')}
-              onChange={(level) =>
-                setFilters((current) => ({ ...current, level }))
-              }
+              onChange={(level) => {
+                setCurrentPage(1);
+                setFilters((current) => ({ ...current, level }));
+              }}
               options={[
                 { value: null, label: t('students.allLevels') },
                 ...padelLevels.map((level) => ({
@@ -350,29 +370,38 @@ export default function CoachStudentsScreen() {
             />
             <StudentFilterSelector
               label={t('students.sexFilterLabel')}
-              onChange={(sex) =>
-                setFilters((current) => ({ ...current, sex }))
-              }
+              onChange={(sex) => {
+                setCurrentPage(1);
+                setFilters((current) => ({ ...current, sex }));
+              }}
               options={sexOptions}
               value={filters.sex}
             />
             <StudentAgeRangeSlider
-              onChange={([minAge, maxAge]) =>
-                setFilters((current) => ({ ...current, minAge, maxAge }))
-              }
+              onChange={([minAge, maxAge]) => {
+                setCurrentPage(1);
+                setFilters((current) => ({ ...current, minAge, maxAge }));
+              }}
               onInteractionChange={setIsAgeSliderActive}
               value={[filters.minAge, filters.maxAge]}
             />
             {hasFilters ? (
               <Button
                 label={t('students.resetFilters')}
-                onPress={() => setFilters(emptyFilters)}
+                onPress={() => {
+                  setCurrentPage(1);
+                  setFilters(emptyFilters);
+                }}
                 variant="secondary"
               />
             ) : null}
           </Card>
 
-          <View style={styles.resultsHeader}>
+          <View
+            onLayout={(event) => {
+              resultsHeaderOffset.current = event.nativeEvent.layout.y;
+            }}
+            style={styles.resultsHeader}>
             <ThemedText type="smallBold">{t('students.resultsTitle')}</ThemedText>
             <ThemedText type="small" themeColor="textMuted">
               {t('students.resultCount', { count: filteredStudents.length })}
@@ -380,10 +409,39 @@ export default function CoachStudentsScreen() {
           </View>
           </View>
         }
+        ListFooterComponent={
+          studentPage.totalPages > 1 ? (
+            <View style={styles.pagination}>
+              <ThemedText type="small" themeColor="textMuted">
+                {t('students.pageStatus', {
+                  current: studentPage.currentPage,
+                  total: studentPage.totalPages,
+                })}
+              </ThemedText>
+              <View style={styles.paginationActions}>
+                <Button
+                  disabled={studentPage.currentPage === 1}
+                  label={t('students.previousPage')}
+                  onPress={() => changePage(studentPage.currentPage - 1)}
+                  style={styles.paginationButton}
+                  variant="secondary"
+                />
+                <Button
+                  disabled={studentPage.currentPage === studentPage.totalPages}
+                  label={t('students.nextPage')}
+                  onPress={() => changePage(studentPage.currentPage + 1)}
+                  style={styles.paginationButton}
+                  variant="secondary"
+                />
+              </View>
+            </View>
+          ) : null
+        }
         maxToRenderPerBatch={12}
         renderItem={({ item }) => (
           <StudentRow compact={compactStudentRows} student={item} />
         )}
+        ref={studentListRef}
         scrollEnabled={!isAgeSliderActive}
         style={[styles.listScroller, webScrollStyle]}
         windowSize={7}
@@ -460,6 +518,22 @@ const styles = StyleSheet.create({
   },
   listSeparator: {
     height: Spacing.two,
+  },
+  pagination: {
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: MaxContentWidth,
+    alignItems: 'center',
+    gap: Spacing.two,
+    paddingTop: Spacing.four,
+  },
+  paginationActions: {
+    width: '100%',
+    flexDirection: 'row',
+    gap: Spacing.two,
+  },
+  paginationButton: {
+    flex: 1,
   },
   studentListItem: {
     alignSelf: 'center',
