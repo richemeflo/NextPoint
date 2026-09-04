@@ -2,6 +2,8 @@ import type {
   LessonPackAdjustment,
   LessonPackInput,
   LessonPackStatus,
+  PricingDuration,
+  PricingLessonType,
   Tables,
 } from '@nextpoint/shared';
 
@@ -19,6 +21,9 @@ type LessonPackRow = Tables<'lesson_packs'>;
 export type LessonPack = {
   id: string;
   studentId: string;
+  pricingRateId: string | null;
+  lessonType: PricingLessonType;
+  durationMinutes: PricingDuration;
   includedSessions: number;
   usedSessions: number;
   remainingSessions: number;
@@ -48,6 +53,9 @@ function mapLessonPack(row: LessonPackRow): LessonPack {
   return {
     id: row.id,
     studentId: row.student_id,
+    pricingRateId: row.pricing_rate_id ?? null,
+    lessonType: row.lesson_type as PricingLessonType,
+    durationMinutes: row.duration_minutes as PricingDuration,
     includedSessions: row.included_sessions,
     usedSessions: row.used_sessions,
     remainingSessions:
@@ -105,6 +113,9 @@ export async function assignLessonPack(
       .rpc('assign_lesson_pack', {
         p_student_id: studentId,
         p_included_sessions: input.includedSessions,
+        p_pricing_rate_id: input.pricingRateId,
+        p_lesson_type: input.lessonType,
+        p_duration_minutes: input.durationMinutes,
       })
       .abortSignal(signal),
   );

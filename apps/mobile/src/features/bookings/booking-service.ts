@@ -4,12 +4,14 @@ import {
   bookingPricingReadModelSchema,
   bookingReadModelSchema,
   coachCreateBookingSchema,
+  coachCancelBookingRecurrencesSchema,
   coachModifyBookingSchema,
   requestBookingSchema,
   type BookingParticipantProfileReadModel,
   type BookingPricingReadModel,
   type BookingReadModel,
   type CoachCreateBookingInput,
+  type CoachCancelBookingRecurrencesInput,
   type CoachModifyBookingInput,
   type RequestBookingInput,
   type Tables,
@@ -22,6 +24,9 @@ import { mapBookingError, type BookingMutationError } from './booking-error';
 export type { BookingMutationError } from './booking-error';
 
 type BookingRow = Tables<'bookings'>;
+type BookingHydrationRow = Omit<BookingRow, 'recurrence_series_id'> & {
+  recurrence_series_id?: string | null;
+};
 type PricingRateRow = Tables<'pricing_rates'>;
 type StudentProfileRow = Tables<'student_profiles'>;
 
@@ -35,6 +40,9 @@ type BookingResult =
   | { ok: false; error: BookingMutationError };
 type CoachBookingResult =
   | { ok: true; data: Booking[] }
+  | { ok: false; error: BookingMutationError };
+type BookingRecurrenceCancellationResult =
+  | { ok: true; cancelledCount: number }
   | { ok: false; error: BookingMutationError };
 type RequestableParticipantsResult =
   | { ok: true; data: BookingParticipant[] }
@@ -54,13 +62,14 @@ function parsePricing(row: PricingRateRow | undefined): BookingPricing | null {
 }
 
 function parseBooking(
-  row: BookingRow,
+  row: BookingHydrationRow,
   participantsByBookingId: Map<string, BookingParticipant[]>,
   pricingById: Map<string, BookingPricing>
 ): Booking | null {
   const parsed = bookingReadModelSchema.safeParse({
     id: row.id,
     availabilitySlotId: row.availability_slot_id,
+    recurrenceSeriesId: row.recurrence_series_id ?? null,
     coachId: row.coach_id,
     studentId: row.student_id,
     pricingRateId: row.pricing_rate_id,
@@ -85,7 +94,9 @@ function parseBooking(
   return parsed.success ? parsed.data : null;
 }
 
-async function hydrateBookings(rows: BookingRow[]): Promise<Booking[] | null> {
+async function hydrateBookings(
+  rows: BookingHydrationRow[]
+): Promise<Booking[] | null> {
   if (!supabase || rows.length === 0) return [];
 
   const bookingIds = rows.map((row) => row.id);
@@ -352,9 +363,11 @@ export async function modifyBooking(
 
   const { data, error } = await supabase.rpc('modify_booking', {
     p_booking_id: parsed.data.bookingId,
+    p_student_ids: parsed.data.studentIds,
     p_starts_at: parsed.data.startsAt,
     p_duration_minutes: parsed.data.durationMinutes,
     p_location: parsed.data.location,
+    p_lesson_type: parsed.data.lessonType,
   });
 
   if (error || !data) {
@@ -365,4 +378,24 @@ export async function modifyBooking(
   const booking = bookings?.[0];
   if (!booking) return { ok: false, error: 'unknown' };
   return { ok: true, data: booking };
+}
+
+export async function cancelBookingRecurrences(
+  input: CoachCancelBookingRecurrencesInput
+): Promise<BookingRecurrenceCancellationResult> {
+  const parsed = coachCancelBookingRecurrencesSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: 'invalid_input' };
+  if (!supabase) return { ok: false, error: 'unknown' };
+
+  const { data, error } = await supabase.rpc('cancel_booking_recurrences', {
+    p_booking_id: parsed.data.bookingId,
+    p_starts_on: parsed.data.startsOn,
+    p_ends_on: parsed.data.endsOn,
+  });
+
+  if (error || typeof data !== 'number') {
+    return { ok: false, error: mapBookingError(error?.code, error?.message) };
+  }
+
+  return { ok: true, cancelledCount: data };
 }

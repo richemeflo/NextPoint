@@ -198,6 +198,8 @@ export const dictionaries = {
     'planning.filtersLabel': 'Filtrer le planning',
     'planning.availabilityFilter': 'Disponibilités',
     'planning.confirmedLessonsFilter': 'Cours confirmés',
+    'planning.recurringFilterLabel': 'Cours récurrents',
+    'planning.recurringLessonsFilter': 'Voir uniquement les récurrents',
     'planning.previousAction': 'Précédent',
     'planning.todayAction': 'Aujourd’hui',
     'planning.nextAction': 'Suivant',
@@ -655,7 +657,7 @@ export const dictionaries = {
       'Consultez vos crédits de cours. Seul votre coach peut les modifier.',
     'lessonPack.studentEmptyBody':
       'Aucun pack de tickets ne vous a encore été attribué.',
-    'lessonPack.title': 'Pack de cours individuels',
+    'lessonPack.title': 'Packs de cours',
     'lessonPack.trackingOnlyHint':
       'Suivi de crédits uniquement, sans achat ni paiement intégré.',
     'lessonPack.assignAction': 'Attribuer un pack',
@@ -664,12 +666,19 @@ export const dictionaries = {
     'lessonPack.confirmAssignAction': 'Confirmer l’attribution',
     'lessonPack.assigning': 'Attribution...',
     'lessonPack.cancelAction': 'Annuler',
-    'lessonPack.individualTitle': 'Pack individuel',
+    'lessonPack.pricingRateLabel': 'Tarif du pack',
+    'lessonPack.packTitle': 'Pack {{type}} · {{duration}}',
+    'lessonPack.pricingLoadErrorTitle': 'Tarifs indisponibles',
+    'lessonPack.pricingLoadErrorBody':
+      'Impossible de charger les tarifs applicables à cet élève.',
+    'lessonPack.noApplicablePricingTitle': 'Aucun tarif applicable',
+    'lessonPack.noApplicablePricingBody':
+      'Créez ou activez un tarif applicable à cet élève avant d’attribuer un pack.',
     'lessonPack.includedMetric': 'Inclus',
     'lessonPack.usedMetric': 'Utilisés',
     'lessonPack.remainingMetric': 'Restants',
     'lessonPack.emptyBody':
-      'Aucun pack individuel n’est encore rattaché à cet élève.',
+      'Aucun pack n’est encore rattaché à cet élève.',
     'lessonPack.validationInvalidCount':
       'Saisissez un nombre entier compris entre 1 et 100.',
     'lessonPack.saveSuccessTitle': 'Pack attribué',
@@ -677,7 +686,7 @@ export const dictionaries = {
       'Les crédits de cours sont maintenant suivis sur cette fiche.',
     'lessonPack.activeExistsTitle': 'Pack actif existant',
     'lessonPack.activeExistsBody':
-      'Terminez le pack actif avant d’en attribuer un nouveau.',
+      'Terminez le pack actif de ce tarif avant d’en attribuer un nouveau.',
     'lessonPack.saveErrorTitle': 'Attribution impossible',
     'lessonPack.saveErrorBody':
       'Aucun pack n’a été créé. Vérifiez la relation élève puis réessayez.',
@@ -796,12 +805,19 @@ export const dictionaries = {
     'booking.cancelSuccessTitle': 'Réservation annulée',
     'booking.cancelSuccessBody':
       'Le statut est mis à jour et la disponibilité est libérée si applicable.',
+    'booking.recurrenceCancelSuccessTitle': 'Récurrences annulées',
+    'booking.recurrenceCancelSuccessBody':
+      'Les cours récurrents de la période sont annulés.',
     'booking.studentCancelSuccessTitle': 'Réservation annulée',
     'booking.studentCancelSuccessBody':
       'Le statut est mis à jour et votre message a été transmis au coach.',
     'booking.modifySuccessTitle': 'Réservation modifiée',
     'booking.modifySuccessBody':
       'La nouvelle date ou durée est visible dans les plannings.',
+    'booking.recurrenceCancelTitle': 'Annuler une partie de la récurrence',
+    'booking.recurrenceStartsOnLabel': 'Du',
+    'booking.recurrenceEndsOnRangeLabel': 'Au',
+    'booking.recurrenceCancelAction': 'Annuler les cours de cette période',
     'booking.errorTitle': 'Action impossible',
     'booking.slotUnavailable':
       'Ce créneau n’est plus disponible. Essayez un autre créneau.',
@@ -1169,6 +1185,8 @@ export const dictionaries = {
     'planning.filtersLabel': 'Filter the schedule',
     'planning.availabilityFilter': 'Availability',
     'planning.confirmedLessonsFilter': 'Confirmed lessons',
+    'planning.recurringFilterLabel': 'Recurring lessons',
+    'planning.recurringLessonsFilter': 'Show only recurring',
     'planning.previousAction': 'Previous',
     'planning.todayAction': 'Today',
     'planning.nextAction': 'Next',
@@ -1612,7 +1630,7 @@ export const dictionaries = {
       'View your lesson credits. Only your coach can change them.',
     'lessonPack.studentEmptyBody':
       'No ticket pack has been assigned to you yet.',
-    'lessonPack.title': 'Individual lesson pack',
+    'lessonPack.title': 'Lesson packs',
     'lessonPack.trackingOnlyHint':
       'Credit tracking only, with no purchase or integrated payment.',
     'lessonPack.assignAction': 'Assign a pack',
@@ -1621,12 +1639,19 @@ export const dictionaries = {
     'lessonPack.confirmAssignAction': 'Confirm assignment',
     'lessonPack.assigning': 'Assigning...',
     'lessonPack.cancelAction': 'Cancel',
-    'lessonPack.individualTitle': 'Individual pack',
+    'lessonPack.pricingRateLabel': 'Pack rate',
+    'lessonPack.packTitle': '{{type}} pack · {{duration}}',
+    'lessonPack.pricingLoadErrorTitle': 'Rates unavailable',
+    'lessonPack.pricingLoadErrorBody':
+      'Unable to load rates applicable to this student.',
+    'lessonPack.noApplicablePricingTitle': 'No applicable rate',
+    'lessonPack.noApplicablePricingBody':
+      'Create or activate a rate applicable to this student before assigning a pack.',
     'lessonPack.includedMetric': 'Included',
     'lessonPack.usedMetric': 'Used',
     'lessonPack.remainingMetric': 'Remaining',
     'lessonPack.emptyBody':
-      'No individual lesson pack is attached to this student yet.',
+      'No pack is attached to this student yet.',
     'lessonPack.validationInvalidCount':
       'Enter a whole number between 1 and 100.',
     'lessonPack.saveSuccessTitle': 'Pack assigned',
@@ -1634,7 +1659,7 @@ export const dictionaries = {
       'Lesson credits are now tracked on this student record.',
     'lessonPack.activeExistsTitle': 'Active pack already exists',
     'lessonPack.activeExistsBody':
-      'Finish the active pack before assigning a new one.',
+      'Finish the active pack for this rate before assigning a new one.',
     'lessonPack.saveErrorTitle': 'Unable to assign',
     'lessonPack.saveErrorBody':
       'No pack was created. Check the student relationship and try again.',
@@ -1751,12 +1776,19 @@ export const dictionaries = {
     'booking.cancelSuccessTitle': 'Booking cancelled',
     'booking.cancelSuccessBody':
       'The status was updated and the slot is released when applicable.',
+    'booking.recurrenceCancelSuccessTitle': 'Recurrences cancelled',
+    'booking.recurrenceCancelSuccessBody':
+      'The recurring lessons in this period were cancelled.',
     'booking.studentCancelSuccessTitle': 'Booking cancelled',
     'booking.studentCancelSuccessBody':
       'The status was updated and your message was sent to the coach.',
     'booking.modifySuccessTitle': 'Booking modified',
     'booking.modifySuccessBody':
       'The new date or duration is visible in schedules.',
+    'booking.recurrenceCancelTitle': 'Cancel part of the recurrence',
+    'booking.recurrenceStartsOnLabel': 'From',
+    'booking.recurrenceEndsOnRangeLabel': 'To',
+    'booking.recurrenceCancelAction': 'Cancel lessons in this period',
     'booking.errorTitle': 'Action unavailable',
     'booking.slotUnavailable':
       'This slot is no longer available. Try another slot.',
@@ -2124,6 +2156,8 @@ export const dictionaries = {
     'planning.filtersLabel': 'Filtrar el horario',
     'planning.availabilityFilter': 'Disponibilidad',
     'planning.confirmedLessonsFilter': 'Clases confirmadas',
+    'planning.recurringFilterLabel': 'Clases recurrentes',
+    'planning.recurringLessonsFilter': 'Ver solo recurrentes',
     'planning.previousAction': 'Anterior',
     'planning.todayAction': 'Hoy',
     'planning.nextAction': 'Siguiente',
@@ -2577,7 +2611,7 @@ export const dictionaries = {
       'Consulta tus créditos de clase. Solo tu coach puede modificarlos.',
     'lessonPack.studentEmptyBody':
       'Todavía no se te ha asignado ningún pack de tickets.',
-    'lessonPack.title': 'Pack de clases individuales',
+    'lessonPack.title': 'Packs de clases',
     'lessonPack.trackingOnlyHint':
       'Solo seguimiento de créditos, sin compra ni pago integrado.',
     'lessonPack.assignAction': 'Asignar un pack',
@@ -2586,12 +2620,19 @@ export const dictionaries = {
     'lessonPack.confirmAssignAction': 'Confirmar asignación',
     'lessonPack.assigning': 'Asignando...',
     'lessonPack.cancelAction': 'Cancelar',
-    'lessonPack.individualTitle': 'Pack individual',
+    'lessonPack.pricingRateLabel': 'Tarifa del pack',
+    'lessonPack.packTitle': 'Pack {{type}} · {{duration}}',
+    'lessonPack.pricingLoadErrorTitle': 'Tarifas no disponibles',
+    'lessonPack.pricingLoadErrorBody':
+      'No se pueden cargar las tarifas aplicables a este alumno.',
+    'lessonPack.noApplicablePricingTitle': 'Sin tarifa aplicable',
+    'lessonPack.noApplicablePricingBody':
+      'Crea o activa una tarifa aplicable a este alumno antes de asignar un pack.',
     'lessonPack.includedMetric': 'Incluidas',
     'lessonPack.usedMetric': 'Usadas',
     'lessonPack.remainingMetric': 'Restantes',
     'lessonPack.emptyBody':
-      'Todavía no hay ningún pack individual asociado a este alumno.',
+      'Todavía no hay ningún pack asociado a este alumno.',
     'lessonPack.validationInvalidCount':
       'Introduce un número entero entre 1 y 100.',
     'lessonPack.saveSuccessTitle': 'Pack asignado',
@@ -2599,7 +2640,7 @@ export const dictionaries = {
       'Los créditos de clases ya se siguen en esta ficha.',
     'lessonPack.activeExistsTitle': 'Ya existe un pack activo',
     'lessonPack.activeExistsBody':
-      'Finaliza el pack activo antes de asignar uno nuevo.',
+      'Finaliza el pack activo de esta tarifa antes de asignar uno nuevo.',
     'lessonPack.saveErrorTitle': 'No se puede asignar',
     'lessonPack.saveErrorBody':
       'No se ha creado ningún pack. Revisa la relación con el alumno e inténtalo de nuevo.',
@@ -2718,12 +2759,19 @@ export const dictionaries = {
     'booking.cancelSuccessTitle': 'Reserva cancelada',
     'booking.cancelSuccessBody':
       'El estado se actualizó y el horario se libera cuando corresponde.',
+    'booking.recurrenceCancelSuccessTitle': 'Recurrencias canceladas',
+    'booking.recurrenceCancelSuccessBody':
+      'Las clases recurrentes del periodo se cancelaron.',
     'booking.studentCancelSuccessTitle': 'Reserva cancelada',
     'booking.studentCancelSuccessBody':
       'El estado se actualizó y tu mensaje se envió al coach.',
     'booking.modifySuccessTitle': 'Reserva modificada',
     'booking.modifySuccessBody':
       'La nueva fecha o duración es visible en los calendarios.',
+    'booking.recurrenceCancelTitle': 'Cancelar parte de la recurrencia',
+    'booking.recurrenceStartsOnLabel': 'Desde',
+    'booking.recurrenceEndsOnRangeLabel': 'Hasta',
+    'booking.recurrenceCancelAction': 'Cancelar clases de este periodo',
     'booking.errorTitle': 'Acción no disponible',
     'booking.slotUnavailable':
       'Este horario ya no está disponible. Prueba con otro.',

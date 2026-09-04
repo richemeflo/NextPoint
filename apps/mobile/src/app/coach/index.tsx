@@ -25,6 +25,7 @@ import { useAuth } from '@/features/auth/auth-context';
 import {
   approveBooking,
   cancelBooking,
+  cancelBookingRecurrences,
   createCoachBooking,
   modifyBooking,
   refuseBooking,
@@ -45,6 +46,7 @@ import {
 } from '@/features/scheduling/coach-booking-create-section';
 import {
   CoachBookingEditorModal,
+  type CoachBookingRecurrenceCancellationInput,
   type CoachBookingEditInput,
 } from '@/features/scheduling/coach-booking-editor-modal';
 import { PlanningControls } from '@/features/scheduling/planning-controls';
@@ -86,6 +88,7 @@ export default function CoachPlanningScreen() {
   } = useBookingPresentation(locale);
   const [showAvailability, setShowAvailability] = useState(true);
   const [showConfirmedLessons, setShowConfirmedLessons] = useState(true);
+  const [showRecurringOnly, setShowRecurringOnly] = useState(false);
   const {
     displayMode,
     goToToday,
@@ -101,6 +104,7 @@ export default function CoachPlanningScreen() {
     | 'refused'
     | 'created'
     | 'cancelled'
+    | 'recurrencesCancelled'
     | 'modified'
     | BookingMutationError
   >('none');
@@ -156,6 +160,10 @@ export default function CoachPlanningScreen() {
     refused: ['booking.refuseSuccessTitle', 'booking.refuseSuccessBody'],
     created: ['booking.createSuccessTitle', 'booking.createSuccessBody'],
     cancelled: ['booking.cancelSuccessTitle', 'booking.cancelSuccessBody'],
+    recurrencesCancelled: [
+      'booking.recurrenceCancelSuccessTitle',
+      'booking.recurrenceCancelSuccessBody',
+    ],
     modified: ['booking.modifySuccessTitle', 'booking.modifySuccessBody'],
     unauthorized: ['booking.errorTitle', 'booking.unauthorized'],
     slot_unavailable: ['booking.errorTitle', 'booking.slotUnavailable'],
@@ -230,9 +238,13 @@ export default function CoachPlanningScreen() {
     setEditingBookingId(booking.id);
   };
 
+  const visibleBookings = showRecurringOnly
+    ? bookings.filter((booking) => booking.recurrenceSeriesId)
+    : bookings;
+
   const { bookingsBySlotId, planningItems, planningItemsByDay } =
     useCoachPlanningItems({
-      bookings,
+      bookings: visibleBookings,
       showAvailability,
       showConfirmedLessons,
       slots,
@@ -251,6 +263,14 @@ export default function CoachPlanningScreen() {
 
   const updateEditingBooking = (input: CoachBookingEditInput) =>
     runBookingMutation(() => modifyBooking(input), 'modified');
+
+  const cancelEditingBookingRecurrences = (
+    input: CoachBookingRecurrenceCancellationInput
+  ) =>
+    runBookingMutation(
+      () => cancelBookingRecurrences(input),
+      'recurrencesCancelled'
+    );
 
   const getPlanningItemStyle = (item: CoachPlanningItem) =>
     item.kind === 'availability'
@@ -391,34 +411,52 @@ export default function CoachPlanningScreen() {
           <PlanningControls
             displayMode={displayMode}
             filters={
-              <ProfileMultiOptionSelector<'availability' | 'confirmedLessons'>
-                label={t('planning.filtersLabel')}
-                onToggle={(filter) => {
-                  if (filter === 'availability') {
-                    setShowAvailability((current) => !current);
-                    return;
-                  }
+              <View style={styles.filterRow}>
+                <ProfileMultiOptionSelector<'availability' | 'confirmedLessons'>
+                  label={t('planning.filtersLabel')}
+                  onToggle={(filter) => {
+                    if (filter === 'availability') {
+                      setShowAvailability((current) => !current);
+                      return;
+                    }
 
-                  setShowConfirmedLessons((current) => !current);
-                }}
-                options={[
-                  {
-                    value: 'availability',
-                    label: t('planning.availabilityFilter'),
-                  },
-                  {
-                    value: 'confirmedLessons',
-                    label: t('planning.confirmedLessonsFilter'),
-                  },
-                ]}
-                selectedValues={[
-                  ...(showAvailability ? (['availability'] as const) : []),
-                  ...(showConfirmedLessons
-                    ? (['confirmedLessons'] as const)
-                    : []),
-                ]}
-                singleLine
-              />
+                    setShowConfirmedLessons((current) => !current);
+                  }}
+                  options={[
+                    {
+                      value: 'availability',
+                      label: t('planning.availabilityFilter'),
+                    },
+                    {
+                      value: 'confirmedLessons',
+                      label: t('planning.confirmedLessonsFilter'),
+                    },
+                  ]}
+                  selectedValues={[
+                    ...(showAvailability ? (['availability'] as const) : []),
+                    ...(showConfirmedLessons
+                      ? (['confirmedLessons'] as const)
+                      : []),
+                  ]}
+                  singleLine
+                />
+                <ProfileMultiOptionSelector<'recurringLessons'>
+                  label={t('planning.recurringFilterLabel')}
+                  onToggle={() => setShowRecurringOnly((current) => !current)}
+                  options={[
+                    {
+                      value: 'recurringLessons',
+                      label: t('planning.recurringLessonsFilter'),
+                    },
+                  ]}
+                  selectedValues={[
+                    ...(showRecurringOnly
+                      ? (['recurringLessons'] as const)
+                      : []),
+                  ]}
+                  singleLine
+                />
+              </View>
             }
             mode={mode}
             onDisplayModeChange={setDisplayMode}
@@ -464,6 +502,7 @@ export default function CoachPlanningScreen() {
                   'created',
                   'cancelled',
                   'modified',
+                  'recurrencesCancelled',
                 ].includes(feedback)
                   ? 'success'
                   : 'error'
@@ -557,7 +596,7 @@ export default function CoachPlanningScreen() {
                 tone="warning"
               />
             ) : null}
-            {bookings.length === 0 ? (
+            {visibleBookings.length === 0 ? (
               <Feedback
                 title={t('booking.coachEmptyTitle')}
                 message={t('booking.coachEmptyBody')}
@@ -565,7 +604,7 @@ export default function CoachPlanningScreen() {
               />
             ) : (
               <View style={styles.slotGrid}>
-                {bookings.map((booking) => (
+                {visibleBookings.map((booking) => (
                   <CoachBookingCard
                     booking={booking}
                     key={booking.id}
@@ -615,10 +654,12 @@ export default function CoachPlanningScreen() {
           booking={editingBooking}
           formatTime={formatTime}
           key={editingBooking.id}
+          onCancelRecurrences={cancelEditingBookingRecurrences}
           onClose={closeBookingEditor}
           onSubmit={updateEditingBooking}
           pending={isBookingMutationPending}
           studentName={studentName(editingBooking.studentId)}
+          students={students}
         />
       ) : null}
     </ThemedView>
@@ -647,6 +688,11 @@ const styles = StyleSheet.create({
   },
   heading: {
     maxWidth: 720,
+    gap: Spacing.two,
+  },
+  filterRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: Spacing.two,
   },
   periodHeader: {

@@ -3,7 +3,7 @@ import {
   schedulingTimeZone,
   type LessonPackAdjustment,
 } from '@nextpoint/shared';
-import { useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -19,6 +19,7 @@ import { Feedback } from '@/components/ui/feedback';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
+import { useAuth } from '@/features/auth/auth-context';
 import {
   adjustLessonPackSessions,
   assignLessonPack,
@@ -34,8 +35,13 @@ import {
   acquireMutationLock,
   releaseMutationLock,
 } from '@/features/mutations/mutation-lock';
+import {
+  getCoachPricingRates,
+  type PricingRate,
+} from '@/features/pricing/pricing-service';
+import { ProfileOptionSelector } from '@/features/profiles/profile-option-selector';
 import { useTheme } from '@/hooks/use-theme';
-import { useTranslation } from '@/i18n';
+import { useTranslation, type TranslationKey } from '@/i18n';
 
 export function StudentLessonPackCard({ studentId }: { studentId: string }) {
   return <StudentLessonPackCardContent key={studentId} studentId={studentId} />;
@@ -43,6 +49,7 @@ export function StudentLessonPackCard({ studentId }: { studentId: string }) {
 
 function StudentLessonPackCardContent({ studentId }: { studentId: string }) {
   const theme = useTheme();
+  const { user } = useAuth();
   const { locale, t } = useTranslation();
   const { width } = useWindowDimensions();
   const {
@@ -55,7 +62,12 @@ function StudentLessonPackCardContent({ studentId }: { studentId: string }) {
   } = useStudentLessonPacks(studentId);
   const packWidth = Math.max(240, Math.min(width - 96, 640));
   const [includedSessions, setIncludedSessions] = useState('');
+  const [selectedRateId, setSelectedRateId] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [pricingRates, setPricingRates] = useState<PricingRate[]>([]);
+  const [pricingLoadState, setPricingLoadState] = useState<
+    'loading' | 'ready' | 'error'
+  >('loading');
   const [saveState, setSaveState] = useState<
     'idle' | 'saving' | 'saved' | 'duplicate' | 'error'
   >('idle');
@@ -75,11 +87,57 @@ function StudentLessonPackCardContent({ studentId }: { studentId: string }) {
   const [validationError, setValidationError] = useState<string | null>(null);
   const mutationLock = useRef(false);
 
-  const activePack = packs.find((pack) => pack.status === 'active');
-  const adjustablePack = activePack ?? packs[0];
+  const packPricingRates = useMemo(
+    () =>
+      pricingRates.filter(
+        (rate) =>
+          rate.isActive &&
+          (rate.targetStudentIds.length === 0 ||
+            rate.targetStudentIds.includes(studentId)),
+      ),
+    [pricingRates, studentId],
+  );
+  const selectedRate =
+    packPricingRates.find((rate) => rate.id === selectedRateId) ??
+    packPricingRates[0] ??
+    null;
+  const rateLabel = (
+    rate: Pick<PricingRate, 'label' | 'lessonType' | 'durationMinutes'>,
+  ) =>
+    `${rate.label} · ${t(`pricing.type.${rate.lessonType}` as TranslationKey)} · ${t(
+      `pricing.duration.${rate.durationMinutes}` as TranslationKey,
+    )}`;
+
+  useEffect(() => {
+    if (!user?.id) return undefined;
+
+    let active = true;
+    void getCoachPricingRates(user.id)
+      .then((result) => {
+        if (!active) return;
+        if (!result.ok) {
+          setPricingLoadState('error');
+          return;
+        }
+        setPricingRates(result.data);
+        setPricingLoadState('ready');
+      })
+      .catch(() => {
+        if (active) setPricingLoadState('error');
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [user?.id]);
 
   const assignPack = async () => {
-    const parsed = lessonPackSchema.safeParse({ includedSessions });
+    const parsed = lessonPackSchema.safeParse({
+      includedSessions,
+      pricingRateId: selectedRate?.id,
+      lessonType: selectedRate?.lessonType,
+      durationMinutes: String(selectedRate?.durationMinutes),
+    });
     if (!parsed.success) {
       setValidationError(t('lessonPack.validationInvalidCount'));
       return;
@@ -100,6 +158,7 @@ function StudentLessonPackCardContent({ studentId }: { studentId: string }) {
 
       prependPack(result.data);
       setIncludedSessions('');
+      setSelectedRateId('');
       setIsFormOpen(false);
       setSaveState('saved');
     } catch {
@@ -212,7 +271,7 @@ function StudentLessonPackCardContent({ studentId }: { studentId: string }) {
             {t('lessonPack.trackingOnlyHint')}
           </ThemedText>
         </View>
-        {!activePack && !isFormOpen ? (
+        {!isFormOpen ? (
           <Button
             label={t('lessonPack.assignAction')}
             onPress={() => {
@@ -227,6 +286,31 @@ function StudentLessonPackCardContent({ studentId }: { studentId: string }) {
 
       {isFormOpen ? (
         <View style={styles.form}>
+          {pricingLoadState === 'error' ? (
+            <Feedback
+              message={t('lessonPack.pricingLoadErrorBody')}
+              title={t('lessonPack.pricingLoadErrorTitle')}
+              tone="error"
+            />
+          ) : null}
+          {pricingLoadState === 'ready' && packPricingRates.length === 0 ? (
+            <Feedback
+              message={t('lessonPack.noApplicablePricingBody')}
+              title={t('lessonPack.noApplicablePricingTitle')}
+              tone="warning"
+            />
+          ) : null}
+          {packPricingRates.length > 0 ? (
+            <ProfileOptionSelector<string>
+              label={t('lessonPack.pricingRateLabel')}
+              onChange={setSelectedRateId}
+              options={packPricingRates.map((rate) => ({
+                value: rate.id,
+                label: rateLabel(rate),
+              }))}
+              value={selectedRate?.id ?? ''}
+            />
+          ) : null}
           <TextField
             error={validationError ?? undefined}
             inputMode="numeric"
@@ -238,7 +322,11 @@ function StudentLessonPackCardContent({ studentId }: { studentId: string }) {
           />
           <View style={styles.actions}>
             <Button
-              disabled={saveState === 'saving'}
+              disabled={
+                saveState === 'saving' ||
+                pricingLoadState !== 'ready' ||
+                !selectedRate
+              }
               label={
                 saveState === 'saving'
                   ? t('lessonPack.assigning')
@@ -251,6 +339,7 @@ function StudentLessonPackCardContent({ studentId }: { studentId: string }) {
               label={t('lessonPack.cancelAction')}
               onPress={() => {
                 setIncludedSessions('');
+                setSelectedRateId('');
                 setValidationError(null);
                 setIsFormOpen(false);
               }}
@@ -378,7 +467,12 @@ function StudentLessonPackCardContent({ studentId }: { studentId: string }) {
               <View style={styles.packHeading}>
                 <View style={styles.packTitle}>
                   <ThemedText type="smallBold">
-                    {t('lessonPack.individualTitle')}
+                    {t('lessonPack.packTitle', {
+                      type: t(`pricing.type.${pack.lessonType}` as TranslationKey),
+                      duration: t(
+                        `pricing.duration.${pack.durationMinutes}` as TranslationKey,
+                      ),
+                    })}
                   </ThemedText>
                   <ThemedText type="small" themeColor="textMuted">
                     {new Intl.DateTimeFormat(locale, {
@@ -404,7 +498,7 @@ function StudentLessonPackCardContent({ studentId }: { studentId: string }) {
                     {t('lessonPack.usedMetric')}
                   </ThemedText>
                 </View>
-                {pack.id === adjustablePack?.id ? (
+                {pack.status === 'active' ? (
                   <View style={[styles.metric, styles.counterMetric]}>
                     <ThemedText type="small" themeColor="textMuted">
                       {t('lessonPack.remainingMetric')}
@@ -468,7 +562,7 @@ function StudentLessonPackCardContent({ studentId }: { studentId: string }) {
                   </View>
                 )}
               </View>
-              {pack.id === adjustablePack?.id ? (
+              {pack.status === 'active' ? (
                 <Button
                   disabled={
                     adjustmentState === 'adjusting' ||

@@ -5,7 +5,7 @@ import {
   schedulingTimeZone,
 } from '@nextpoint/shared';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -167,15 +167,25 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
     [availabilityMonth.endDate, availabilityMonth.startDate, requestableSlots]
   );
 
-  useEffect(() => {
-    if (!showRequestableSlots || loadState !== 'ready') return;
-
-    setSelectedAvailabilityDate((current) => {
-      if (current && availableDates.includes(current)) return current;
-      if (availableDates.includes(currentDate)) return currentDate;
-      return availableDates[0] ?? null;
-    });
-  }, [availableDates, currentDate, loadState, showRequestableSlots]);
+  const displayedAvailabilityDate = useMemo(() => {
+    if (!showRequestableSlots || loadState !== 'ready') {
+      return selectedAvailabilityDate;
+    }
+    if (
+      selectedAvailabilityDate &&
+      availableDates.includes(selectedAvailabilityDate)
+    ) {
+      return selectedAvailabilityDate;
+    }
+    if (availableDates.includes(currentDate)) return currentDate;
+    return availableDates[0] ?? null;
+  }, [
+    availableDates,
+    currentDate,
+    loadState,
+    selectedAvailabilityDate,
+    showRequestableSlots,
+  ]);
   const getRequestProposalForSlot = useCallback(
     (slot: AvailabilitySlot, startsAt: string) => {
       const earliestStartsAt = getEarliestBookingRequestStartsAt();
@@ -361,7 +371,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
     );
   };
 
-  if (loadState === 'loading') {
+  if (loadState === 'loading' && agendaLoadedAt === null) {
     return (
       <View style={styles.loading}>
         <ActivityIndicator color={theme.primary} size="small" />
@@ -502,7 +512,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
             setSelectedAvailabilityDate(null);
             setAvailabilityMonthAnchor(currentDate);
           }}
-          selectedDate={selectedAvailabilityDate}
+          selectedDate={displayedAvailabilityDate}
           slots={requestableSlots}
         />
       ) : null}

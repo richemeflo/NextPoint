@@ -15,7 +15,7 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { Spacing } from '@/constants/theme';
 import { useStudentLessonPacks } from '@/features/lesson-packs/use-student-lesson-packs';
 import { useTheme } from '@/hooks/use-theme';
-import { useTranslation } from '@/i18n';
+import { useTranslation, type TranslationKey } from '@/i18n';
 
 export function StudentLessonPacksReadonlyCard({
   studentId,
@@ -107,7 +107,12 @@ function StudentLessonPacksReadonlyCardContent({
               <View style={styles.packHeading}>
                 <View style={styles.packTitle}>
                   <ThemedText type="smallBold">
-                    {t('lessonPack.individualTitle')}
+                    {t('lessonPack.packTitle', {
+                      type: t(`pricing.type.${pack.lessonType}` as TranslationKey),
+                      duration: t(
+                        `pricing.duration.${pack.durationMinutes}` as TranslationKey,
+                      ),
+                    })}
                   </ThemedText>
                   <ThemedText type="small" themeColor="textMuted">
                     {new Intl.DateTimeFormat(locale, {
