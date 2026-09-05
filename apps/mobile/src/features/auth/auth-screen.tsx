@@ -13,9 +13,10 @@ import {
 import * as Linking from 'expo-linking';
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
+  Image,
   Platform,
   Pressable,
   ScrollView,
@@ -36,6 +37,7 @@ import {
   establishPasswordRecoverySession,
   isCoachRegistrationOpen,
   requestPasswordReset,
+  type AuthOperationResult,
   updatePassword,
 } from './auth-service';
 
@@ -63,8 +65,10 @@ const authErrorKeys: Record<AuthFailureCode, TranslationKey> = {
   invalid_credentials: 'auth.error.invalidCredentials',
   email_in_use: 'auth.error.emailInUse',
   weak_password: 'auth.error.weakPassword',
+  same_password: 'auth.error.samePassword',
   email_not_confirmed: 'auth.error.emailNotConfirmed',
   rate_limited: 'auth.error.rateLimited',
+  oauth_cancelled: 'auth.error.generic',
   network_error: 'auth.error.network',
   unknown: 'auth.error.generic',
 };
@@ -113,6 +117,66 @@ function AuthFeedback({ code }: { code: AuthFailureCode | null }) {
       title={t('auth.error.title')}
       message={t(authErrorKeys[code])}
       tone="error"
+    />
+  );
+}
+
+function GoogleAuthButton({
+  mode,
+  onError,
+}: {
+  mode: 'sign-in' | 'sign-up';
+  onError: (code: AuthFailureCode) => void;
+}) {
+  const { locale } = useTranslation();
+  const { signInWithGoogle, status } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
+  const labels = {
+    fr: {
+      loading: 'Connexion Google...',
+      signIn: 'Continuer avec Google',
+      signUp: "S'inscrire avec Google (élève)",
+    },
+    en: {
+      loading: 'Connecting to Google...',
+      signIn: 'Continue with Google',
+      signUp: 'Sign up with Google (student)',
+    },
+    es: {
+      loading: 'Conectando con Google...',
+      signIn: 'Continuar con Google',
+      signUp: 'Registrarse con Google (alumno)',
+    },
+  }[locale];
+
+  const submit = async () => {
+    setSubmitting(true);
+    const result = await signInWithGoogle();
+    setSubmitting(false);
+    if (!result.ok && result.code !== 'oauth_cancelled') onError(result.code);
+  };
+
+  return (
+    <Button
+      disabled={submitting || status === 'configuration-error'}
+      label={
+        submitting
+          ? labels.loading
+          : mode === 'sign-up'
+            ? labels.signUp
+            : labels.signIn
+      }
+      leading={
+        <Image
+          accessibilityIgnoresInvertColors
+          accessible={false}
+          resizeMode="contain"
+          source={require('../../../assets/images/google-g-logo.png')}
+          style={styles.googleLogo}
+        />
+      }
+      onPress={() => void submit()}
+      variant="secondary"
     />
   );
 }
@@ -199,6 +263,7 @@ function SignInForm() {
 
   return (
     <View style={styles.form}>
+      <GoogleAuthButton mode="sign-in" onError={setAuthError} />
       <Controller
         control={control}
         name="email"
@@ -353,6 +418,9 @@ function ResetPasswordForm() {
     'loading' | 'ready' | 'invalid' | 'complete'
   >('loading');
   const [authError, setAuthError] = useState<AuthFailureCode | null>(null);
+  const initialRecoveryAttempt = useRef<
+    Promise<AuthOperationResult> | undefined
+  >(undefined);
   const {
     control,
     handleSubmit,
@@ -365,14 +433,15 @@ function ResetPasswordForm() {
   useEffect(() => {
     let active = true;
 
-    const openRecoveryLink = async (url: string | null) => {
+    const establishSession = (url: string | null) => {
       if (!url) {
-        if (active) setRecoveryStatus('invalid');
-        return;
+        return Promise.resolve<AuthOperationResult>({
+          ok: false,
+          code: 'unknown',
+        });
       }
 
-      sanitizeWebPasswordRecoveryUrl(url);
-      const result = await establishPasswordRecoverySession(url, {
+      const attempt = establishPasswordRecoverySession(url, {
         allowedHttpsOrigins: getPasswordRecoveryAllowedHttpsOrigins(
           process.env.EXPO_PUBLIC_APP_URL,
           Platform.OS === 'web' && typeof globalThis.location !== 'undefined'
@@ -381,6 +450,11 @@ function ResetPasswordForm() {
         ),
         allowDevelopmentUrls: __DEV__,
       });
+      sanitizeWebPasswordRecoveryUrl(url);
+      return attempt;
+    };
+
+    const applyRecoveryResult = (result: AuthOperationResult) => {
       if (!active) return;
 
       if (!result.ok && result.code === 'configuration_error') {
@@ -389,10 +463,12 @@ function ResetPasswordForm() {
       setRecoveryStatus(result.ok ? 'ready' : 'invalid');
     };
 
-    void Linking.getInitialURL().then(openRecoveryLink);
+    initialRecoveryAttempt.current ??= Linking.getInitialURL().then(establishSession);
+    void initialRecoveryAttempt.current.then(applyRecoveryResult);
+
     const subscription = Linking.addEventListener('url', ({ url }) => {
       setRecoveryStatus('loading');
-      void openRecoveryLink(url);
+      void establishSession(url).then(applyRecoveryResult);
     });
 
     return () => {
@@ -571,6 +647,7 @@ function SignUpForm() {
 
   return (
     <View style={styles.form}>
+      <GoogleAuthButton mode="sign-up" onError={setAuthError} />
       {coachRegistrationOpen ? (
         <Controller
           control={control}
@@ -763,6 +840,10 @@ const styles = StyleSheet.create({
   },
   form: {
     gap: Spacing.three,
+  },
+  googleLogo: {
+    height: 19,
+    width: 19,
   },
   forgotPasswordLink: {
     alignSelf: 'flex-end',

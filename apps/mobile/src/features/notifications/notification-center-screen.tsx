@@ -672,11 +672,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    alignItems: 'center',
     paddingVertical: Spacing.five,
     paddingHorizontal: Spacing.four,
   },
   content: {
+    alignSelf: 'center',
     width: '100%',
     maxWidth: MaxContentWidth,
     gap: Spacing.four,
@@ -725,6 +725,7 @@ const styles = StyleSheet.create({
     borderWidth: 0,
   },
   emptyResult: {
+    alignSelf: 'center',
     width: '100%',
     maxWidth: MaxContentWidth,
   },
@@ -732,14 +733,17 @@ const styles = StyleSheet.create({
     height: Spacing.two,
   },
   loadingMore: {
+    alignSelf: 'center',
     alignItems: 'center',
     flexDirection: 'row',
     gap: Spacing.two,
     justifyContent: 'center',
     paddingVertical: Spacing.four,
     width: '100%',
+    maxWidth: MaxContentWidth,
   },
   notificationItem: {
+    alignSelf: 'center',
     width: '100%',
     maxWidth: MaxContentWidth,
     borderWidth: 1,

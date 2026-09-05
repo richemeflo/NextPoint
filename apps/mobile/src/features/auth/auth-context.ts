@@ -12,7 +12,9 @@ export type AuthContextValue = {
   accountStatus: StudentAccountStatus | null;
   status: AuthStatus;
   signIn: (email: string, password: string) => Promise<AuthResult>;
+  signInWithGoogle: () => Promise<AuthResult>;
   signUp: (email: string, password: string, role: AppRole) => Promise<AuthResult>;
+  refreshAccess: () => Promise<void>;
   signOut: (scope?: SignOutScope) => Promise<AuthResult>;
 };
 

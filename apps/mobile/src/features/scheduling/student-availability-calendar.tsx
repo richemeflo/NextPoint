@@ -7,10 +7,14 @@ import { ThemedText } from '@/components/themed-text';
 import { Card } from '@/components/ui/card';
 import { Feedback } from '@/components/ui/feedback';
 import { BorderWidth, Radii, Spacing } from '@/constants/theme';
+import { AgendaGrid } from '@/features/scheduling/agenda-grid';
 import type { AvailabilitySlot } from '@/features/scheduling/availability-service';
 import { planningControlIcons } from '@/features/scheduling/planning-control-icons';
 import type { StudentAvailabilityMonth } from '@/features/scheduling/student-availability-month';
-import { getSlotDateKey } from '@/features/scheduling/planning-window';
+import {
+  getSlotDateKey,
+  isStudentBookingDateSelectable,
+} from '@/features/scheduling/planning-window';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/i18n';
 
@@ -21,7 +25,7 @@ type StudentAvailabilityCalendarProps = {
   month: StudentAvailabilityMonth;
   onMoveMonth: (direction: -1 | 1) => void;
   onSelectDate: (date: string) => void;
-  onSelectSlot: (slot: AvailabilitySlot) => void;
+  onSelectSlot: (slot: AvailabilitySlot, desiredStartsAt: string) => void;
   onToday: () => void;
   selectedDate: string | null;
   slots: AvailabilitySlot[];
@@ -155,7 +159,10 @@ export function StudentAvailabilityCalendar({
 
         {month.days.map((day) => {
           const daySlots = slotsByDate.get(day.date) ?? [];
-          const isAvailable = day.inCurrentMonth && daySlots.length > 0;
+          const isAvailable =
+            day.inCurrentMonth &&
+            daySlots.length > 0 &&
+            isStudentBookingDateSelectable(day.date, currentDate);
           const isSelected = day.date === selectedDate;
           const isToday = day.date === currentDate;
           const dateLabel = new Intl.DateTimeFormat(locale, {
@@ -267,42 +274,34 @@ export function StudentAvailabilityCalendar({
                 )}
               </ThemedText>
             </View>
-            <View style={styles.slotList}>
-              {selectedSlots.map((slot) => (
-                <Pressable
-                  accessibilityLabel={t('studentAgenda.selectRangeLabel', {
-                    end: formatTime(slot.endsAt),
-                    location: slot.location,
-                    start: formatTime(slot.startsAt),
-                  })}
-                  accessibilityRole="button"
-                  key={`${slot.id}:${slot.startsAt}`}
-                  onPress={() => onSelectSlot(slot)}
-                  style={({ pressed }) => [
-                    styles.slotButton,
-                    {
-                      backgroundColor: theme.surface,
-                      borderColor: pressed ? theme.primary : theme.border,
-                    },
-                    pressed && styles.pressed,
-                  ]}>
-                  <View style={styles.slotCopy}>
-                    <ThemedText type="smallBold">
-                      {t('planning.slotTime', {
-                        end: formatTime(slot.endsAt),
-                        start: formatTime(slot.startsAt),
-                      })}
-                    </ThemedText>
-                    <ThemedText type="small" themeColor="textMuted">
-                      {slot.location}
-                    </ThemedText>
-                  </View>
-                  <ThemedText type="smallBold" themeColor="primary">
-                    {t('studentAgenda.chooseTimeAction')}
+            <ThemedText type="small" themeColor="textMuted">
+              {t('studentAgenda.dayAgendaBody')}
+            </ThemedText>
+            <AgendaGrid
+              days={[{ date: selectedDate }]}
+              density="compact"
+              formatDay={() => selectedDayLabel}
+              getSlotStyle={() => ({
+                backgroundColor: theme.backgroundSelected,
+                borderColor: theme.primary,
+              })}
+              onSlotPress={onSelectSlot}
+              renderSlot={(slot) => (
+                <View style={styles.agendaSlotCopy}>
+                  <ThemedText numberOfLines={1} type="smallBold">
+                    {t('planning.slotTime', {
+                      end: formatTime(slot.endsAt),
+                      start: formatTime(slot.startsAt),
+                    })}
                   </ThemedText>
-                </Pressable>
-              ))}
-            </View>
+                  <ThemedText numberOfLines={1} type="small" themeColor="textMuted">
+                    {slot.location}
+                  </ThemedText>
+                </View>
+              )}
+              selectionRoundingMinutes={15}
+              slots={selectedSlots}
+            />
           </>
         ) : (
           <Feedback
@@ -440,25 +439,8 @@ const styles = StyleSheet.create({
   selectedDayHeader: {
     gap: Spacing.one,
   },
-  slotList: {
-    gap: Spacing.two,
-  },
-  slotButton: {
-    alignItems: 'center',
-    borderRadius: Radii.medium,
-    borderWidth: BorderWidth.regular,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.three,
-    justifyContent: 'space-between',
-    minHeight: 64,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-  },
-  slotCopy: {
-    flex: 1,
+  agendaSlotCopy: {
     gap: Spacing.one,
-    minWidth: 150,
   },
   pressed: {
     opacity: 0.82,

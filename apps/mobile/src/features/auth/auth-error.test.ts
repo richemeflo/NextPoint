@@ -7,6 +7,7 @@ test('maps known Supabase errors to stable client codes', () => {
   assert.equal(mapSupabaseAuthError({ code: 'invalid_credentials' }), 'invalid_credentials');
   assert.equal(mapSupabaseAuthError({ code: 'user_already_exists' }), 'email_in_use');
   assert.equal(mapSupabaseAuthError({ code: 'weak_password' }), 'weak_password');
+  assert.equal(mapSupabaseAuthError({ code: 'same_password', status: 422 }), 'same_password');
   assert.equal(mapSupabaseAuthError({ status: 429 }), 'rate_limited');
 });
 

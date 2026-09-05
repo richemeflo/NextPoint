@@ -1,4 +1,4 @@
-const staticConfig = require('./app.json').expo;
+const staticConfig = require('./app.base.json');
 
 function getSupabaseConnectSources() {
   const sources = new Set(["'self'"]);
@@ -94,6 +94,12 @@ module.exports = () => {
   const appLinkHost = getAppLinkHost(process.env.EXPO_PUBLIC_APP_URL);
   const baseConfig = {
     ...staticConfig,
+    extra: {
+      ...staticConfig.extra,
+      eas: {
+        projectId: 'cd104cdb-a9b1-4d8c-8479-f7a32907ac2e',
+      },
+    },
     plugins: withWebSecurityHeaders(staticConfig.plugins, Boolean(appLinkHost)),
   };
   if (!appLinkHost) return baseConfig;

@@ -71,6 +71,7 @@ export const bookingPricingReadModelSchema = z.object({
 export const bookingReadModelSchema = z.object({
   id: z.uuid(),
   availabilitySlotId: z.uuid().nullable(),
+  recurrenceSeriesId: z.uuid().nullable(),
   coachId: z.uuid(),
   studentId: z.uuid(),
   pricingRateId: z.uuid().nullable(),
@@ -212,10 +213,35 @@ export const coachCreateBookingSchema = z
 
 export const coachModifyBookingSchema = z.object({
   bookingId: z.uuid(),
+  studentIds: uuidArraySchema.min(1),
   startsAt: z.iso.datetime(),
   durationMinutes: z.union([z.literal(60), z.literal(90)]),
   location: z.enum(availabilityLocations),
+  lessonType: z.enum(pricingLessonTypes),
+}).superRefine((input, context) => {
+  const uniqueStudentCount = new Set(input.studentIds).size;
+  if (
+    uniqueStudentCount !== input.studentIds.length ||
+    !isBookingParticipantCountValid(input.lessonType, uniqueStudentCount)
+  ) {
+    context.addIssue({
+      code: 'custom',
+      message: 'invalid_participants',
+      path: ['studentIds'],
+    });
+  }
 });
+
+export const coachCancelBookingRecurrencesSchema = z
+  .object({
+    bookingId: z.uuid(),
+    startsOn: z.iso.date(),
+    endsOn: z.iso.date(),
+  })
+  .refine((input) => input.endsOn >= input.startsOn, {
+    message: 'invalid_date_range',
+    path: ['endsOn'],
+  });
 
 export type RequestBookingInput = z.infer<typeof requestBookingSchema>;
 export type RefuseBookingInput = z.infer<typeof refuseBookingSchema>;
@@ -225,6 +251,9 @@ export type StudentCancelBookingInput = z.infer<
 >;
 export type CoachCreateBookingInput = z.infer<typeof coachCreateBookingSchema>;
 export type CoachModifyBookingInput = z.infer<typeof coachModifyBookingSchema>;
+export type CoachCancelBookingRecurrencesInput = z.infer<
+  typeof coachCancelBookingRecurrencesSchema
+>;
 
 export function canCreatePendingBooking(
   candidate: PendingBookingCandidate

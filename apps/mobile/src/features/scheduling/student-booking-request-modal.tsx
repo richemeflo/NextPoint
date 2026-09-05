@@ -28,6 +28,7 @@ import {
 import type { PricingRate } from '@/features/pricing/pricing-service';
 import { ProfileOptionSelector } from '@/features/profiles/profile-option-selector';
 import {
+  getDefaultBookingRequestDuration,
   toBookingRequestStartsAt,
   type BookingRequestProposal,
 } from '@/features/scheduling/booking-request-time';
@@ -75,7 +76,11 @@ export function StudentBookingRequestModal({
     getSchedulingTime(initialStartsAt)
   );
   const [requestDurationMinutes, setRequestDurationMinutes] =
-    useState<AvailabilitySlotDuration>(60);
+    useState<AvailabilitySlotDuration>(() =>
+      getDefaultBookingRequestDuration(
+        getRequestProposal(slot, initialStartsAt)
+      )
+    );
   const [lessonType, setLessonType] =
     useState<PricingLessonType>('individual');
   const [studentComment, setStudentComment] = useState('');

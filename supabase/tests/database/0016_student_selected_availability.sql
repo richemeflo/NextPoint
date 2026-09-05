@@ -207,17 +207,19 @@ select results_eq(
   $$values ('refused'::text)$$,
   'coach-created course refuses the overlapping request'
 );
-select lives_ok(
+select throws_ok(
   $$select * from public.create_coach_booking(
     array['16000000-0000-4000-8000-000000000002'::uuid],
     '2027-07-01T13:30:00Z', 60, 'Les Bruyères Centre Sportif', 'individual', null
   )$$,
-  'coach can also create a course over an already confirmed course'
+  '55000',
+  'slot unavailable',
+  'coach cannot create a course over an already confirmed course'
 );
 select results_eq(
   $$select count(*) from public.bookings where origin = 'coach_created'$$,
-  'values (2::bigint)',
-  'both unrestricted coach courses are retained'
+  'values (1::bigint)',
+  'the rejected overlap does not create another coach course'
 );
 select lives_ok(
   $$select public.create_availability_range(

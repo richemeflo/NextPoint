@@ -19,6 +19,7 @@ import {
 const validBookingReadModel = {
   id: '20000000-0000-4000-8000-000000000001',
   availabilitySlotId: '20000000-0000-4000-8000-000000000002',
+  recurrenceSeriesId: null,
   coachId: '20000000-0000-4000-8000-000000000003',
   studentId: '20000000-0000-4000-8000-000000000004',
   pricingRateId: '20000000-0000-4000-8000-000000000005',
@@ -124,9 +125,11 @@ test('coach booking creation validates every RPC input', () => {
 test('coach booking modification rejects malformed RPC input', () => {
   const valid = {
     bookingId: '20000000-0000-4000-8000-000000000001',
+    studentIds: ['10000000-0000-4000-8000-000000000001'],
     startsAt: '2026-08-10T16:00:00.000Z',
     durationMinutes: 90,
     location: 'Les Bruyères Centre Sportif',
+    lessonType: 'individual',
   } as const;
 
   assert.equal(coachModifyBookingSchema.safeParse(valid).success, true);
@@ -137,6 +140,24 @@ test('coach booking modification rejects malformed RPC input', () => {
   );
   assert.equal(
     coachModifyBookingSchema.safeParse({ ...valid, durationMinutes: 30 }).success,
+    false
+  );
+  assert.equal(
+    coachModifyBookingSchema.safeParse({
+      ...valid,
+      lessonType: 'group',
+      studentIds: [
+        '10000000-0000-4000-8000-000000000001',
+        '10000000-0000-4000-8000-000000000002',
+      ],
+    }).success,
+    true
+  );
+  assert.equal(
+    coachModifyBookingSchema.safeParse({
+      ...valid,
+      lessonType: 'duo',
+    }).success,
     false
   );
 });

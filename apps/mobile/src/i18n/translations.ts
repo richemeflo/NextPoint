@@ -240,6 +240,40 @@ export const dictionaries = {
     'profile.theme.system': 'Défaut (préférence du navigateur)',
     'profile.theme.light': 'Clair',
     'profile.theme.dark': 'Sombre',
+    'emailPreferences.title': 'Notifications par email',
+    'emailPreferences.body':
+      'Choisissez les événements pour lesquels Equation Padel peut vous envoyer un email.',
+    'emailPreferences.loading': 'Chargement des préférences...',
+    'emailPreferences.studentConfirmedTitle': 'Cours confirmé',
+    'emailPreferences.studentConfirmedBody':
+      'Recevoir un email lorsqu’un cours est confirmé ou créé par le coach.',
+    'emailPreferences.studentCancelledTitle': 'Cours annulé ou supprimé',
+    'emailPreferences.studentCancelledBody':
+      'Recevoir un email lorsque le coach annule ou retire un cours confirmé.',
+    'emailPreferences.coachCancellationTitle': 'Annulation par un élève',
+    'emailPreferences.coachCancellationBody':
+      'Recevoir un email lorsqu’un élève annule un cours confirmé.',
+    'emailPreferences.weeklyReminderTitle': 'Rappel hebdomadaire',
+    'emailPreferences.weeklyReminderBody':
+      'Recevoir un rappel pour traiter les demandes de la semaine à venir et connaître le nombre de demandes plus lointaines.',
+    'emailPreferences.weekdayLabel': 'Jour du rappel',
+    'emailPreferences.timeLabel': 'Heure du rappel (HH:MM)',
+    'emailPreferences.timezoneHint': 'Heure de Paris.',
+    'emailPreferences.invalidTime': 'Saisissez une heure valide au format HH:MM.',
+    'emailPreferences.weekday.monday': 'Lundi',
+    'emailPreferences.weekday.tuesday': 'Mardi',
+    'emailPreferences.weekday.wednesday': 'Mercredi',
+    'emailPreferences.weekday.thursday': 'Jeudi',
+    'emailPreferences.weekday.friday': 'Vendredi',
+    'emailPreferences.weekday.saturday': 'Samedi',
+    'emailPreferences.weekday.sunday': 'Dimanche',
+    'emailPreferences.saveAction': 'Enregistrer les préférences',
+    'emailPreferences.saveSuccessTitle': 'Préférences enregistrées',
+    'emailPreferences.saveSuccessBody':
+      'Vos choix de notifications par email sont à jour.',
+    'emailPreferences.saveErrorTitle': 'Préférences indisponibles',
+    'emailPreferences.saveErrorBody':
+      'Impossible de charger ou enregistrer vos choix. Réessayez.',
     'profile.saveAction': 'Enregistrer mon profil',
     'profile.saving': 'Enregistrement...',
     'profile.saveSuccessTitle': 'Profil enregistré',
@@ -332,6 +366,8 @@ export const dictionaries = {
     'studentAgenda.selectRangeLabel':
       'Choisir une heure entre {{start}} et {{end}}, {{location}}',
     'studentAgenda.chooseTimeAction': 'Choisir une heure',
+    'studentAgenda.dayAgendaBody':
+      'Appuyez sur la plage disponible à l’heure souhaitée.',
     'studentAgenda.emptyMonthTitle': 'Aucune disponibilité ce mois-ci',
     'studentAgenda.emptyMonthBody':
       'Passez au mois suivant pour consulter les prochaines disponibilités.',
@@ -786,7 +822,11 @@ export const dictionaries = {
     'booking.cancellationConfirmAction': 'Confirmer l’annulation',
     'booking.cancellationSubmitting': 'Annulation...',
     'booking.cancellationCloseAction': 'Fermer la fenêtre d’annulation',
-    'booking.modifyAction': 'Modifier',
+      'booking.modifyAction': 'Modifier',
+      'booking.addToGoogleCalendar': "Ajouter à l'agenda Google",
+      'booking.calendarOpenError': "Impossible d'ouvrir Google Agenda.",
+      'booking.calendarEventTitle': 'Cours de padel',
+      'booking.calendarEventDetails': 'Cours de {lessonType} · {duration}',
     'booking.expiresAt': 'Expire le {{date}}',
     'booking.participantNames': 'Participants : {{names}}',
     'booking.inlineRequest': '{{student}} · {{status}}',
@@ -936,6 +976,8 @@ export const dictionaries = {
     'auth.error.emailInUse':
       'Un compte utilise déjà cette adresse email. Si votre coach l’a créé, utilisez son lien d’activation.',
     'auth.error.weakPassword': 'Choisissez un mot de passe plus robuste.',
+    'auth.error.samePassword':
+      'Le nouveau mot de passe doit être différent de l’ancien.',
     'auth.error.emailNotConfirmed':
       'Confirmez votre adresse email avant de vous connecter.',
     'auth.error.rateLimited':
@@ -1226,6 +1268,40 @@ export const dictionaries = {
     'profile.theme.system': 'Default (browser preference)',
     'profile.theme.light': 'Light',
     'profile.theme.dark': 'Dark',
+    'emailPreferences.title': 'Email notifications',
+    'emailPreferences.body':
+      'Choose the events for which Equation Padel may email you.',
+    'emailPreferences.loading': 'Loading preferences...',
+    'emailPreferences.studentConfirmedTitle': 'Lesson confirmed',
+    'emailPreferences.studentConfirmedBody':
+      'Receive an email when a lesson is confirmed or created by the coach.',
+    'emailPreferences.studentCancelledTitle': 'Lesson cancelled or removed',
+    'emailPreferences.studentCancelledBody':
+      'Receive an email when the coach cancels or removes a confirmed lesson.',
+    'emailPreferences.coachCancellationTitle': 'Student cancellation',
+    'emailPreferences.coachCancellationBody':
+      'Receive an email when a student cancels a confirmed lesson.',
+    'emailPreferences.weeklyReminderTitle': 'Weekly reminder',
+    'emailPreferences.weeklyReminderBody':
+      'Receive a reminder to review next week’s requests and see how many later requests are pending.',
+    'emailPreferences.weekdayLabel': 'Reminder day',
+    'emailPreferences.timeLabel': 'Reminder time (HH:MM)',
+    'emailPreferences.timezoneHint': 'Paris time.',
+    'emailPreferences.invalidTime': 'Enter a valid time in HH:MM format.',
+    'emailPreferences.weekday.monday': 'Monday',
+    'emailPreferences.weekday.tuesday': 'Tuesday',
+    'emailPreferences.weekday.wednesday': 'Wednesday',
+    'emailPreferences.weekday.thursday': 'Thursday',
+    'emailPreferences.weekday.friday': 'Friday',
+    'emailPreferences.weekday.saturday': 'Saturday',
+    'emailPreferences.weekday.sunday': 'Sunday',
+    'emailPreferences.saveAction': 'Save preferences',
+    'emailPreferences.saveSuccessTitle': 'Preferences saved',
+    'emailPreferences.saveSuccessBody':
+      'Your email notification choices are up to date.',
+    'emailPreferences.saveErrorTitle': 'Preferences unavailable',
+    'emailPreferences.saveErrorBody':
+      'Your choices could not be loaded or saved. Try again.',
     'profile.saveAction': 'Save my profile',
     'profile.saving': 'Saving...',
     'profile.saveSuccessTitle': 'Profile saved',
@@ -1313,6 +1389,8 @@ export const dictionaries = {
     'studentAgenda.selectRangeLabel':
       'Choose a time between {{start}} and {{end}}, {{location}}',
     'studentAgenda.chooseTimeAction': 'Choose a time',
+    'studentAgenda.dayAgendaBody':
+      'Tap the available range at your preferred start time.',
     'studentAgenda.emptyMonthTitle': 'No availability this month',
     'studentAgenda.emptyMonthBody':
       'Move to the next month to see upcoming availability.',
@@ -1757,7 +1835,11 @@ export const dictionaries = {
     'booking.cancellationConfirmAction': 'Confirm cancellation',
     'booking.cancellationSubmitting': 'Cancelling...',
     'booking.cancellationCloseAction': 'Close cancellation dialog',
-    'booking.modifyAction': 'Modify',
+      'booking.modifyAction': 'Modify',
+      'booking.addToGoogleCalendar': 'Add to Google Calendar',
+      'booking.calendarOpenError': 'Unable to open Google Calendar.',
+      'booking.calendarEventTitle': 'Padel lesson',
+      'booking.calendarEventDetails': '{lessonType} lesson · {duration}',
     'booking.expiresAt': 'Expires on {{date}}',
     'booking.participantNames': 'Participants: {{names}}',
     'booking.inlineRequest': '{{student}} · {{status}}',
@@ -1904,6 +1986,8 @@ export const dictionaries = {
     'auth.error.emailInUse':
       'An account already uses this email address. If your coach created it, use the activation link.',
     'auth.error.weakPassword': 'Choose a stronger password.',
+    'auth.error.samePassword':
+      'The new password must be different from the current password.',
     'auth.error.emailNotConfirmed':
       'Confirm your email address before signing in.',
     'auth.error.rateLimited': 'Too many attempts. Try again in a few minutes.',
@@ -2198,6 +2282,40 @@ export const dictionaries = {
     'profile.theme.system': 'Predeterminado (preferencia del navegador)',
     'profile.theme.light': 'Claro',
     'profile.theme.dark': 'Oscuro',
+    'emailPreferences.title': 'Notificaciones por email',
+    'emailPreferences.body':
+      'Elige los eventos para los que Equation Padel puede enviarte un email.',
+    'emailPreferences.loading': 'Cargando preferencias...',
+    'emailPreferences.studentConfirmedTitle': 'Clase confirmada',
+    'emailPreferences.studentConfirmedBody':
+      'Recibe un email cuando el coach confirme o cree una clase.',
+    'emailPreferences.studentCancelledTitle': 'Clase cancelada o eliminada',
+    'emailPreferences.studentCancelledBody':
+      'Recibe un email cuando el coach cancele o retire una clase confirmada.',
+    'emailPreferences.coachCancellationTitle': 'Cancelación de un alumno',
+    'emailPreferences.coachCancellationBody':
+      'Recibe un email cuando un alumno cancele una clase confirmada.',
+    'emailPreferences.weeklyReminderTitle': 'Recordatorio semanal',
+    'emailPreferences.weeklyReminderBody':
+      'Recibe un recordatorio para revisar las solicitudes de la próxima semana y ver cuántas solicitudes posteriores están pendientes.',
+    'emailPreferences.weekdayLabel': 'Día del recordatorio',
+    'emailPreferences.timeLabel': 'Hora del recordatorio (HH:MM)',
+    'emailPreferences.timezoneHint': 'Hora de París.',
+    'emailPreferences.invalidTime': 'Introduce una hora válida con el formato HH:MM.',
+    'emailPreferences.weekday.monday': 'Lunes',
+    'emailPreferences.weekday.tuesday': 'Martes',
+    'emailPreferences.weekday.wednesday': 'Miércoles',
+    'emailPreferences.weekday.thursday': 'Jueves',
+    'emailPreferences.weekday.friday': 'Viernes',
+    'emailPreferences.weekday.saturday': 'Sábado',
+    'emailPreferences.weekday.sunday': 'Domingo',
+    'emailPreferences.saveAction': 'Guardar preferencias',
+    'emailPreferences.saveSuccessTitle': 'Preferencias guardadas',
+    'emailPreferences.saveSuccessBody':
+      'Tus opciones de notificaciones por email están actualizadas.',
+    'emailPreferences.saveErrorTitle': 'Preferencias no disponibles',
+    'emailPreferences.saveErrorBody':
+      'No se pudieron cargar o guardar tus opciones. Inténtalo de nuevo.',
     'profile.saveAction': 'Guardar mi perfil',
     'profile.saving': 'Guardando...',
     'profile.saveSuccessTitle': 'Perfil guardado',
@@ -2287,6 +2405,8 @@ export const dictionaries = {
     'studentAgenda.selectRangeLabel':
       'Elegir una hora entre {{start}} y {{end}}, {{location}}',
     'studentAgenda.chooseTimeAction': 'Elegir una hora',
+    'studentAgenda.dayAgendaBody':
+      'Pulsa la franja disponible a la hora de inicio que prefieras.',
     'studentAgenda.emptyMonthTitle': 'Sin disponibilidad este mes',
     'studentAgenda.emptyMonthBody':
       'Pasa al mes siguiente para ver las próximas disponibilidades.',
@@ -2740,7 +2860,11 @@ export const dictionaries = {
     'booking.cancellationConfirmAction': 'Confirmar cancelación',
     'booking.cancellationSubmitting': 'Cancelando...',
     'booking.cancellationCloseAction': 'Cerrar ventana de cancelación',
-    'booking.modifyAction': 'Modificar',
+      'booking.modifyAction': 'Modificar',
+      'booking.addToGoogleCalendar': 'Añadir a Google Calendar',
+      'booking.calendarOpenError': 'No se ha podido abrir Google Calendar.',
+      'booking.calendarEventTitle': 'Clase de pádel',
+      'booking.calendarEventDetails': 'Clase {lessonType} · {duration}',
     'booking.expiresAt': 'Caduca el {{date}}',
     'booking.participantNames': 'Participantes: {{names}}',
     'booking.inlineRequest': '{{student}} · {{status}}',
@@ -2890,6 +3014,8 @@ export const dictionaries = {
     'auth.error.emailInUse':
       'Ya existe una cuenta con este email. Si tu coach la creó, utiliza el enlace de activación.',
     'auth.error.weakPassword': 'Elige una contraseña más segura.',
+    'auth.error.samePassword':
+      'La nueva contraseña debe ser diferente de la contraseña actual.',
     'auth.error.emailNotConfirmed':
       'Confirma tu dirección de email antes de iniciar sesión.',
     'auth.error.rateLimited':

@@ -60,7 +60,8 @@ function StudentLessonPackCardContent({ studentId }: { studentId: string }) {
     prependPack,
     replacePack,
   } = useStudentLessonPacks(studentId);
-  const packWidth = Math.max(240, Math.min(width - 96, 640));
+  const isCompact = width < 480;
+  const packWidth = Math.max(0, Math.min(width - 96, 640));
   const [includedSessions, setIncludedSessions] = useState('');
   const [selectedRateId, setSelectedRateId] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -463,9 +464,15 @@ function StudentLessonPackCardContent({ studentId }: { studentId: string }) {
           onEndReached={() => void loadMore()}
           onEndReachedThreshold={0.4}
           renderItem={({ item: pack }) => (
-            <Card style={[styles.pack, { width: packWidth }]}>
+            <Card
+              style={[
+                styles.pack,
+                { width: packWidth },
+                isCompact && styles.packCompact,
+              ]}>
               <View style={styles.packHeading}>
-                <View style={styles.packTitle}>
+                <View
+                  style={[styles.packTitle, isCompact && styles.packTitleCompact]}>
                   <ThemedText type="smallBold">
                     {t('lessonPack.packTitle', {
                       type: t(`pricing.type.${pack.lessonType}` as TranslationKey),
@@ -484,7 +491,7 @@ function StudentLessonPackCardContent({ studentId }: { studentId: string }) {
                 <StatusBadge status={pack.status} />
               </View>
               <View style={styles.metrics}>
-                <View style={styles.metric}>
+                <View style={[styles.metric, isCompact && styles.metricCompact]}>
                   <ThemedText type="subtitle">
                     {pack.includedSessions}
                   </ThemedText>
@@ -492,14 +499,19 @@ function StudentLessonPackCardContent({ studentId }: { studentId: string }) {
                     {t('lessonPack.includedMetric')}
                   </ThemedText>
                 </View>
-                <View style={styles.metric}>
+                <View style={[styles.metric, isCompact && styles.metricCompact]}>
                   <ThemedText type="subtitle">{pack.usedSessions}</ThemedText>
                   <ThemedText type="small" themeColor="textMuted">
                     {t('lessonPack.usedMetric')}
                   </ThemedText>
                 </View>
                 {pack.status === 'active' ? (
-                  <View style={[styles.metric, styles.counterMetric]}>
+                  <View
+                    style={[
+                      styles.metric,
+                      styles.counterMetric,
+                      isCompact && styles.metricCompact,
+                    ]}>
                     <ThemedText type="small" themeColor="textMuted">
                       {t('lessonPack.remainingMetric')}
                     </ThemedText>
@@ -552,7 +564,7 @@ function StudentLessonPackCardContent({ studentId }: { studentId: string }) {
                     </View>
                   </View>
                 ) : (
-                  <View style={styles.metric}>
+                  <View style={[styles.metric, isCompact && styles.metricCompact]}>
                     <ThemedText type="subtitle">
                       {pack.remainingSessions}
                     </ThemedText>
@@ -591,7 +603,11 @@ function StudentLessonPackCardContent({ studentId }: { studentId: string }) {
 
 const styles = StyleSheet.create({
   card: {
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: 0,
     gap: Spacing.three,
+    overflow: 'hidden',
   },
   loading: {
     flexDirection: 'row',
@@ -599,6 +615,8 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   heading: {
+    width: '100%',
+    minWidth: 0,
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
@@ -607,7 +625,8 @@ const styles = StyleSheet.create({
   },
   headingCopy: {
     flex: 1,
-    minWidth: 220,
+    minWidth: 0,
+    flexBasis: 220,
     gap: Spacing.one,
   },
   form: {
@@ -620,6 +639,8 @@ const styles = StyleSheet.create({
   },
   packList: {
     width: '100%',
+    maxWidth: '100%',
+    minWidth: 0,
   },
   packListContent: {
     paddingRight: Spacing.one,
@@ -629,6 +650,9 @@ const styles = StyleSheet.create({
   },
   pack: {
     gap: Spacing.three,
+  },
+  packCompact: {
+    padding: Spacing.three,
   },
   loadMore: {
     minWidth: 160,
@@ -647,6 +671,10 @@ const styles = StyleSheet.create({
     minWidth: 180,
     gap: Spacing.one,
   },
+  packTitleCompact: {
+    minWidth: 0,
+    flexBasis: '100%',
+  },
   metrics: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -656,6 +684,10 @@ const styles = StyleSheet.create({
     minWidth: 120,
     flex: 1,
     gap: Spacing.one,
+  },
+  metricCompact: {
+    minWidth: 0,
+    flexBasis: '100%',
   },
   counterMetric: {
     minWidth: 180,

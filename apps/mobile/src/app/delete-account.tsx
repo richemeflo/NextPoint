@@ -124,7 +124,7 @@ export default function DeleteAccountScreen() {
 
   return (
     <ThemedView style={styles.screen}>
-      <Stack.Screen options={{ title: `${labels.title} · ${productName}` }} />
+      <Stack.Screen options={{ title: productName }} />
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <SafeAreaView style={styles.content}>
           <View style={styles.heading}>

@@ -32,7 +32,6 @@ const contentSecurityPolicy = [
   `connect-src ${getSupabaseConnectSources().join(' ')}`,
   "font-src 'self' data:",
   "form-action 'self'",
-  "frame-ancestors 'none'",
   "img-src 'self' data: blob:",
   "object-src 'none'",
   "script-src 'self' 'sha256-67fhrP0+BkBqmgGGXTtgiVO/9EQs3QruYNU/7fnRkI8='",
@@ -44,7 +43,6 @@ export default function Root({ children }: PropsWithChildren) {
     <html lang="fr">
       <head>
         <meta charSet="utf-8" />
-        <title>Equation Padel</title>
         <meta
           content="width=device-width, initial-scale=1, shrink-to-fit=no"
           name="viewport"

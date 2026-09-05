@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type PropsWithChildren } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react';
 import type { AppRole, StudentAccountStatus } from '@nextpoint/shared';
 import type { Session } from '@supabase/supabase-js';
 
@@ -6,6 +6,7 @@ import { AuthContext } from './auth-context';
 import { createAuthSessionTransitionGuard } from './auth-session-transition';
 import {
   signInWithPassword,
+  signInWithGoogle,
   signOutSession,
   signUpWithPassword,
 } from './auth-service';
@@ -23,6 +24,41 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [status, setStatus] = useState<AuthStatus>(
     supabase ? 'loading' : 'configuration-error'
   );
+  const sessionRef = useRef<Session | null>(null);
+
+  const applyAccess = useCallback(
+    (nextSession: Session, access: Awaited<ReturnType<typeof getCurrentUserAccess>>) => {
+      if (sessionRef.current?.user.id !== nextSession.user.id) return;
+      setRole(access?.role ?? null);
+      setAccountStatus(access?.accountStatus ?? null);
+      setStatus(
+        !access
+          ? 'access-error'
+          : !access.hasCurrentLegalAcceptance
+            ? 'legal-acceptance-required'
+            : hasPrivateRouteAccess(access)
+              ? 'authenticated'
+              : 'access-error'
+      );
+    },
+    []
+  );
+
+  const refreshAccess = useCallback(async () => {
+    const currentSession = sessionRef.current;
+    if (!currentSession) return;
+    setStatus('loading');
+    try {
+      applyAccess(
+        currentSession,
+        await getCurrentUserAccess(currentSession.user.id)
+      );
+    } catch {
+      if (sessionRef.current?.user.id === currentSession.user.id) {
+        setStatus('access-error');
+      }
+    }
+  }, [applyAccess]);
 
   useEffect(() => {
     if (!supabase) return;
@@ -34,6 +70,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       if (!transitionGuard.isCurrent(transitionVersion)) return;
 
       setSession(nextSession);
+      sessionRef.current = nextSession;
       setRole(null);
       setAccountStatus(null);
 
@@ -48,11 +85,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         const access = await getCurrentUserAccess(nextSession.user.id);
         if (!transitionGuard.isCurrent(transitionVersion)) return;
 
-        setRole(access?.role ?? null);
-        setAccountStatus(access?.accountStatus ?? null);
-        setStatus(
-          hasPrivateRouteAccess(access) ? 'authenticated' : 'access-error'
-        );
+        applyAccess(nextSession, access);
       } catch {
         if (!transitionGuard.isCurrent(transitionVersion)) return;
         setRole(null);
@@ -86,7 +119,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       transitionGuard.deactivate();
       subscription.unsubscribe();
     };
-  }, []);
+  }, [applyAccess]);
 
   const value = useMemo(
     () => ({
@@ -96,10 +129,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
       accountStatus,
       status,
       signIn: signInWithPassword,
+      signInWithGoogle,
       signUp: signUpWithPassword,
+      refreshAccess,
       signOut: signOutSession,
     }),
-    [accountStatus, role, session, status]
+    [accountStatus, refreshAccess, role, session, status]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

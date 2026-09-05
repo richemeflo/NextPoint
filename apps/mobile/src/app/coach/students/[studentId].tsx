@@ -14,7 +14,10 @@ import {
   Pressable,
   Share,
   StyleSheet,
+  useWindowDimensions,
   View,
+  type TextStyle,
+  type ViewStyle,
 } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -86,6 +89,20 @@ type HistoryStatusFilter =
   | 'all'
   | Extract<StudentHistoryEventStatus, 'cancelled' | 'confirmed' | 'refused'>;
 
+const webScrollStyle =
+  Platform.OS === 'web'
+    ? ({
+        overflowX: 'hidden',
+        overflowY: 'auto',
+        overscrollBehavior: 'contain',
+      } as unknown as ViewStyle)
+    : undefined;
+
+const webWrappingTextStyle =
+  Platform.OS === 'web'
+    ? ({ overflowWrap: 'anywhere', wordBreak: 'break-word' } as unknown as TextStyle)
+    : undefined;
+
 function HistoryRow({ event }: { event: StudentHistoryEvent }) {
   const { locale, t } = useTranslation();
   const occurredAt = new Intl.DateTimeFormat(locale, {
@@ -137,7 +154,9 @@ export default function CoachStudentDetailScreen() {
 function CoachStudentDetailContent({ studentId }: { studentId: string }) {
   const router = useRouter();
   const theme = useTheme();
+  const { width } = useWindowDimensions();
   const { locale, t } = useTranslation();
+  const isCompact = width < 480;
   const [detail, setDetail] = useState<AssociatedStudentDetail | null>(null);
   const [loadState, setLoadState] = useState<
     'loading' | 'ready' | 'not_found' | 'error'
@@ -299,7 +318,10 @@ function CoachStudentDetailContent({ studentId }: { studentId: string }) {
   return (
     <ThemedView style={styles.screen}>
       <FlatList
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          isCompact && styles.scrollContentCompact,
+        ]}
         data={history}
         ItemSeparatorComponent={() => <View style={styles.historySeparator} />}
         keyExtractor={(event) => event.id}
@@ -317,7 +339,15 @@ function CoachStudentDetailContent({ studentId }: { studentId: string }) {
                 <ThemedText type="smallBold" themeColor="primary">
                   {t('studentDetail.eyebrow')}
                 </ThemedText>
-                <ThemedText type="title">{student.fullName}</ThemedText>
+                <ThemedText
+                  style={[
+                    styles.wrappingText,
+                    webWrappingTextStyle,
+                    isCompact && styles.titleCompact,
+                  ]}
+                  type="title">
+                  {student.fullName}
+                </ThemedText>
                 {student.profileComplete ? (
                   <StatusBadge
                     status={accountBadgeStatuses[student.accountStatus]}
@@ -360,7 +390,10 @@ function CoachStudentDetailContent({ studentId }: { studentId: string }) {
                 <ThemedText type="smallBold">
                   {t('studentDetail.activationReadyTitle')}
                 </ThemedText>
-                <ThemedText selectable type="code">
+                <ThemedText
+                  selectable
+                  style={[styles.wrappingText, webWrappingTextStyle]}
+                  type="code">
                   {activationLink.activationLink}
                 </ThemedText>
                 <ThemedText type="small" themeColor="textMuted">
@@ -452,7 +485,11 @@ function CoachStudentDetailContent({ studentId }: { studentId: string }) {
                     accessibilityRole="link"
                     onPress={() => void Linking.openURL(`tel:${student.phone}`)}
                   >
-                    <ThemedText type="linkPrimary">{student.phone}</ThemedText>
+                    <ThemedText
+                      style={[styles.wrappingText, webWrappingTextStyle]}
+                      type="linkPrimary">
+                      {student.phone}
+                    </ThemedText>
                   </Pressable>
                 ) : null}
                 {student.email ? (
@@ -462,7 +499,11 @@ function CoachStudentDetailContent({ studentId }: { studentId: string }) {
                       void Linking.openURL(`mailto:${student.email}`)
                     }
                   >
-                    <ThemedText type="linkPrimary">{student.email}</ThemedText>
+                    <ThemedText
+                      style={[styles.wrappingText, webWrappingTextStyle]}
+                      type="linkPrimary">
+                      {student.email}
+                    </ThemedText>
                   </Pressable>
                 ) : null}
               </View>
@@ -608,6 +649,7 @@ function CoachStudentDetailContent({ studentId }: { studentId: string }) {
           </View>
         )}
         windowSize={7}
+        style={[styles.listScroller, webScrollStyle]}
       />
     </ThemedView>
   );
@@ -616,6 +658,15 @@ function CoachStudentDetailContent({ studentId }: { studentId: string }) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: 0,
+  },
+  listScroller: {
+    flex: 1,
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: 0,
   },
   centered: {
     flex: 1,
@@ -625,13 +676,20 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
   },
   scrollContent: {
-    alignItems: 'center',
+    alignItems: 'stretch',
+    minWidth: 0,
     paddingHorizontal: Spacing.four,
     paddingVertical: Spacing.five,
   },
+  scrollContentCompact: {
+    paddingHorizontal: Spacing.two,
+    paddingVertical: Spacing.three,
+  },
   content: {
+    alignSelf: 'center',
     width: '100%',
     maxWidth: MaxContentWidth,
+    minWidth: 0,
     gap: Spacing.four,
     marginBottom: Spacing.two,
   },
@@ -639,6 +697,8 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   heading: {
+    width: '100%',
+    minWidth: 0,
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'flex-start',
@@ -647,14 +707,25 @@ const styles = StyleSheet.create({
   },
   headingCopy: {
     flex: 1,
-    minWidth: 240,
+    minWidth: 0,
     gap: Spacing.two,
+  },
+  titleCompact: {
+    fontSize: 36,
+    lineHeight: 42,
+  },
+  wrappingText: {
+    flexShrink: 1,
+    maxWidth: '100%',
   },
   activationButton: {
     alignSelf: 'flex-start',
   },
   activationCard: {
+    width: '100%',
+    minWidth: 0,
     gap: Spacing.three,
+    overflow: 'hidden',
   },
   activationActions: {
     flexDirection: 'row',
@@ -662,7 +733,10 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   profileCard: {
+    width: '100%',
+    minWidth: 0,
     gap: Spacing.four,
+    overflow: 'hidden',
   },
   profileGrid: {
     flexDirection: 'row',
@@ -670,11 +744,13 @@ const styles = StyleSheet.create({
     gap: Spacing.four,
   },
   profileItem: {
-    minWidth: 160,
+    minWidth: 0,
+    flexBasis: 160,
     flex: 1,
     gap: Spacing.one,
   },
   contactList: {
+    minWidth: 0,
     gap: Spacing.one,
   },
   deleteCard: {
@@ -692,6 +768,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   historySection: {
+    minWidth: 0,
     gap: Spacing.three,
   },
   sectionHeading: {
@@ -705,6 +782,7 @@ const styles = StyleSheet.create({
   historyItem: {
     width: '100%',
     maxWidth: MaxContentWidth,
+    minWidth: 0,
   },
   historySeparator: {
     height: Spacing.two,
@@ -720,8 +798,11 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.three,
   },
   historyRow: {
+    width: '100%',
+    minWidth: 0,
     minHeight: 176,
     gap: Spacing.two,
+    overflow: 'hidden',
   },
   historyHeading: {
     flexDirection: 'row',

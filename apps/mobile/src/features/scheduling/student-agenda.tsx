@@ -23,6 +23,10 @@ import {
   type BookingMutationError,
 } from '@/features/bookings/booking-service';
 import { useBookingPresentation } from '@/features/bookings/use-booking-presentation';
+import {
+  canAddBookingToGoogleCalendar,
+} from '@/features/bookings/google-calendar';
+import { openBookingInGoogleCalendar } from '@/features/bookings/google-calendar-link';
 import { AgendaGrid } from '@/features/scheduling/agenda-grid';
 import { PlanningControls } from '@/features/scheduling/planning-controls';
 import type { AvailabilitySlot } from '@/features/scheduling/availability-service';
@@ -32,7 +36,10 @@ import {
   isSameStudentAvailabilityMonth,
   moveStudentAvailabilityMonth,
 } from '@/features/scheduling/student-availability-month';
-import { getSlotDateKey } from '@/features/scheduling/planning-window';
+import {
+  getSlotDateKey,
+  isStudentBookingDateSelectable,
+} from '@/features/scheduling/planning-window';
 import { StudentBookingCancellationModal } from '@/features/scheduling/student-booking-cancellation-modal';
 import { StudentBookingRequestModal } from '@/features/scheduling/student-booking-request-modal';
 import { useTheme } from '@/hooks/use-theme';
@@ -85,6 +92,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
   const [feedback, setFeedback] = useState<
     'none' | 'requested' | 'cancelled' | BookingMutationError
   >('none');
+  const [calendarError, setCalendarError] = useState(false);
   const showRequestableSlots = surface === 'requestable';
   const showBookingSchedule = surface === 'bookings';
   const currentDate = getSchedulingToday();
@@ -160,11 +168,17 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
             .filter(
               (date) =>
                 date >= availabilityMonth.startDate &&
-                date <= availabilityMonth.endDate
+                date <= availabilityMonth.endDate &&
+                isStudentBookingDateSelectable(date, currentDate)
             )
         ),
       ].sort(),
-    [availabilityMonth.endDate, availabilityMonth.startDate, requestableSlots]
+    [
+      availabilityMonth.endDate,
+      availabilityMonth.startDate,
+      currentDate,
+      requestableSlots,
+    ]
   );
 
   const displayedAvailabilityDate = useMemo(() => {
@@ -244,6 +258,15 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
   };
 
   const openRequest = (slot: AvailabilitySlot, startsAt = slot.startsAt) => {
+    if (
+      !isStudentBookingDateSelectable(
+        getSlotDateKey(slot.startsAt),
+        currentDate
+      )
+    ) {
+      return;
+    }
+
     const proposal = getRequestProposalForSlot(slot, startsAt);
     if (!proposal.startsAt) {
       setFeedback(
@@ -262,6 +285,18 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
 
     setCancellationBookingId(booking.id);
     setFeedback('none');
+  };
+
+  const addToCalendar = async (booking: Booking) => {
+    setCalendarError(false);
+    const opened = await openBookingInGoogleCalendar(booking, {
+      title: t('booking.calendarEventTitle'),
+      details: t('booking.calendarEventDetails', {
+        lessonType: t(`pricing.type.${booking.lessonType}` as TranslationKey),
+        duration: t(`availability.duration.${booking.durationMinutes}` as TranslationKey),
+      }),
+    });
+    if (!opened) setCalendarError(true);
   };
 
   const renderBookingContent = (booking: Booking, includeDate = true) => {
@@ -315,6 +350,13 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
       key={booking.id}
       style={[styles.bookingCard, getBookingStatusStyle(booking.status)]}>
       {renderBookingContent(booking)}
+      {canAddBookingToGoogleCalendar(booking) ? (
+        <Button
+          label={t('booking.addToGoogleCalendar')}
+          onPress={() => void addToCalendar(booking)}
+          variant="secondary"
+        />
+      ) : null}
       {canStudentCancel(booking) ? (
         <Button
           label={t('booking.cancelAction')}
@@ -450,6 +492,13 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
           }
         />
       ) : null}
+      {calendarError ? (
+        <Feedback
+          title={t('booking.errorTitle')}
+          message={t('booking.calendarOpenError')}
+          tone="error"
+        />
+      ) : null}
 
       {selectedSlot && requestSelection ? (
         <StudentBookingRequestModal
@@ -506,7 +555,11 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
               moveStudentAvailabilityMonth(current, direction)
             );
           }}
-          onSelectDate={setSelectedAvailabilityDate}
+          onSelectDate={(date) => {
+            if (isStudentBookingDateSelectable(date, currentDate)) {
+              setSelectedAvailabilityDate(date);
+            }
+          }}
           onSelectSlot={openRequest}
           onToday={() => {
             setSelectedAvailabilityDate(null);

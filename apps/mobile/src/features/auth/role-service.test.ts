@@ -9,7 +9,11 @@ import {
 test('a student without a profile can access onboarding', () => {
   const access = resolveCurrentUserAccess('eleve', null);
 
-  assert.deepEqual(access, { role: 'eleve', accountStatus: null });
+  assert.deepEqual(access, {
+    role: 'eleve',
+    accountStatus: null,
+    hasCurrentLegalAcceptance: true,
+  });
   assert.equal(hasPrivateRouteAccess(access), true);
 });
 
@@ -27,6 +31,7 @@ test('only active student account statuses grant private access', () => {
   assert.deepEqual(active, {
     role: 'eleve',
     accountStatus: 'active',
+    hasCurrentLegalAcceptance: true,
   });
   assert.equal(hasPrivateRouteAccess(active), true);
   assert.equal(hasPrivateRouteAccess(pending), false);
@@ -40,6 +45,13 @@ test('coach access does not require a student profile', () => {
   assert.deepEqual(access, {
     role: 'coach',
     accountStatus: null,
+    hasCurrentLegalAcceptance: true,
   });
   assert.equal(hasPrivateRouteAccess(access), true);
+});
+
+test('current legal acceptance is required for private access', () => {
+  const access = resolveCurrentUserAccess('eleve', 'active', false);
+
+  assert.equal(hasPrivateRouteAccess(access), false);
 });

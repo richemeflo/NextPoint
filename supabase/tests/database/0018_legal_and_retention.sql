@@ -85,7 +85,7 @@ values (
   '',
   now(),
   '{}',
-  '{"role":"eleve","legal_acceptance_source":"signup","terms_version":"2026-08-16","privacy_policy_version":"2026-08-16"}',
+  '{"role":"eleve","legal_acceptance_source":"signup","terms_version":"2026-08-19","privacy_policy_version":"2026-08-19"}',
   now(),
   now()
 );
@@ -94,7 +94,7 @@ select results_eq(
   $$select terms_version, privacy_policy_version, source
     from public.legal_acceptances
     where user_id = '18000000-0000-4000-8000-000000000001'$$,
-  $$values ('2026-08-16'::text, '2026-08-16'::text, 'signup'::text)$$,
+  $$values ('2026-08-19'::text, '2026-08-19'::text, 'signup'::text)$$,
   'signup metadata creates server-side acceptance evidence'
 );
 

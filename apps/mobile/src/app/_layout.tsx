@@ -6,6 +6,7 @@ import {
   usePathname,
 } from 'expo-router';
 import Stack from 'expo-router/stack';
+import Head from 'expo-router/head';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { AppErrorFallback } from '@/components/app-error-fallback';
@@ -16,6 +17,7 @@ import { Spacing } from '@/constants/theme';
 import { getAuthRouteAccess } from '@/features/auth/access-policy';
 import { AuthProvider } from '@/features/auth/auth-provider';
 import { useAuth } from '@/features/auth/auth-context';
+import { productName } from '@/features/legal/legal-config';
 import '@/features/notifications/push-notification-handler';
 import { ProfileLocaleSync } from '@/features/profiles/profile-locale-sync';
 import {
@@ -61,6 +63,7 @@ function RootNavigator() {
     '/legal',
     '/privacy',
     '/reset-password',
+    '/google-auth-callback',
     '/support',
     '/terms',
   ].includes(pathname);
@@ -84,10 +87,11 @@ function RootNavigator() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack screenOptions={{ headerShown: false, title: productName }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="activate-student" />
       <Stack.Screen name="data-rights" />
+      <Stack.Screen name="google-auth-callback" />
       <Stack.Screen name="delete-account" />
       <Stack.Screen name="legal" />
       <Stack.Screen name="privacy" />
@@ -96,6 +100,9 @@ function RootNavigator() {
       <Stack.Screen name="terms" />
       <Stack.Protected guard={access.allowAuthRoutes}>
         <Stack.Screen name="(auth)" />
+      </Stack.Protected>
+      <Stack.Protected guard={access.allowLegalAcceptanceRoute}>
+        <Stack.Screen name="complete-signup" />
       </Stack.Protected>
       <Stack.Protected guard={access.allowCoachRoutes}>
         <Stack.Screen name="coach" />
@@ -119,14 +126,19 @@ function ThemedRoot() {
 
 export default function RootLayout() {
   return (
-    <ThemePreferenceProvider>
-      <AuthProvider>
-        <I18nProvider>
-          <ProfileLocaleSync />
-          <ThemedRoot />
-        </I18nProvider>
-      </AuthProvider>
-    </ThemePreferenceProvider>
+    <>
+      <Head>
+        <title>{productName}</title>
+      </Head>
+      <ThemePreferenceProvider>
+        <AuthProvider>
+          <I18nProvider>
+            <ProfileLocaleSync />
+            <ThemedRoot />
+          </I18nProvider>
+        </AuthProvider>
+      </ThemePreferenceProvider>
+    </>
   );
 }
 

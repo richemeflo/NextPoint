@@ -1,4 +1,5 @@
 import { SymbolView, type SymbolViewProps } from 'expo-symbols';
+import type { ReactNode } from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -20,6 +21,7 @@ export type ButtonProps = Omit<PressableProps, 'style'> & {
   variant?: ButtonVariant;
   icon?: ButtonIcon;
   iconPosition?: 'left' | 'right';
+  leading?: ReactNode;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -28,6 +30,7 @@ export function Button({
   variant = 'primary',
   icon,
   iconPosition = 'left',
+  leading,
   style,
   disabled = false,
   ...props
@@ -60,7 +63,8 @@ export function Button({
       ]}
       {...props}>
       <View pointerEvents="none" style={styles.content}>
-        {icon && iconPosition === 'left' ? (
+        {leading}
+        {!leading && icon && iconPosition === 'left' ? (
           <SymbolView
             name={icon}
             size={18}

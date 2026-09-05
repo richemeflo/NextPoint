@@ -25,6 +25,7 @@ import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/auth-context';
 import { AccountPrivacyCard } from '@/features/legal/account-privacy-card';
 import { StudentLessonPacksReadonlyCard } from '@/features/lesson-packs/student-lesson-packs-readonly-card';
+import { EmailNotificationPreferencesCard } from '@/features/notifications/email-notification-preferences-card';
 import { ProfileOptionSelector } from '@/features/profiles/profile-option-selector';
 import { ProfileThemeCard } from '@/features/profiles/profile-theme-card';
 import {
@@ -340,6 +341,7 @@ export default function EleveAccountScreen() {
             />
           </Card>
           <ProfileThemeCard />
+          <EmailNotificationPreferencesCard role="eleve" />
           {user ? <StudentLessonPacksReadonlyCard studentId={user.id} /> : null}
           <AccountPrivacyCard />
         </View>

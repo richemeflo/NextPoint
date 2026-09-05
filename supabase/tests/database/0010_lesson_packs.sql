@@ -67,7 +67,7 @@ select ok(
 select has_function(
   'public',
   'assign_lesson_pack',
-  array['uuid', 'smallint'],
+  array['uuid', 'smallint', 'uuid', 'text', 'integer'],
   'coach-only assignment command exists'
 );
 select has_function(
@@ -79,7 +79,7 @@ select has_function(
 select ok(
   has_function_privilege(
     'authenticated',
-    'public.assign_lesson_pack(uuid, smallint)',
+    'public.assign_lesson_pack(uuid, smallint, uuid, text, integer)',
     'execute'
   ),
   'authenticated coach can call assignment command'

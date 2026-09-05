@@ -170,6 +170,7 @@ export type Database = {
           modified_at: string | null
           origin: Database["public"]["Enums"]["booking_origin"]
           pricing_rate_id: string | null
+          recurrence_series_id: string | null
           starts_at: string
           status: Database["public"]["Enums"]["booking_status"]
           student_comment: string | null
@@ -193,6 +194,7 @@ export type Database = {
           modified_at?: string | null
           origin?: Database["public"]["Enums"]["booking_origin"]
           pricing_rate_id?: string | null
+          recurrence_series_id?: string | null
           starts_at: string
           status?: Database["public"]["Enums"]["booking_status"]
           student_comment?: string | null
@@ -216,6 +218,7 @@ export type Database = {
           modified_at?: string | null
           origin?: Database["public"]["Enums"]["booking_origin"]
           pricing_rate_id?: string | null
+          recurrence_series_id?: string | null
           starts_at?: string
           status?: Database["public"]["Enums"]["booking_status"]
           student_comment?: string | null
@@ -342,12 +345,45 @@ export type Database = {
         }
         Relationships: []
       }
+      legal_acceptances: {
+        Row: {
+          accepted_at: string
+          created_at: string
+          id: string
+          privacy_policy_version: string
+          source: string
+          terms_version: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string
+          created_at?: string
+          id?: string
+          privacy_policy_version: string
+          source: string
+          terms_version: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string
+          created_at?: string
+          id?: string
+          privacy_policy_version?: string
+          source?: string
+          terms_version?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       lesson_packs: {
         Row: {
           coach_id: string
           created_at: string
+          duration_minutes: number
           id: string
           included_sessions: number
+          lesson_type: string
+          pricing_rate_id: string | null
           remaining_sessions: number | null
           status: Database["public"]["Enums"]["lesson_pack_status"]
           student_id: string
@@ -357,8 +393,11 @@ export type Database = {
         Insert: {
           coach_id: string
           created_at?: string
+          duration_minutes?: number
           id?: string
           included_sessions: number
+          lesson_type?: string
+          pricing_rate_id?: string | null
           remaining_sessions?: number | null
           status?: Database["public"]["Enums"]["lesson_pack_status"]
           student_id: string
@@ -368,13 +407,122 @@ export type Database = {
         Update: {
           coach_id?: string
           created_at?: string
+          duration_minutes?: number
           id?: string
           included_sessions?: number
+          lesson_type?: string
+          pricing_rate_id?: string | null
           remaining_sessions?: number | null
           status?: Database["public"]["Enums"]["lesson_pack_status"]
           student_id?: string
           updated_at?: string
           used_sessions?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_packs_pricing_rate_id_fkey"
+            columns: ["pricing_rate_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_rates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_email_deliveries: {
+        Row: {
+          attempts: number
+          booking_id: string | null
+          created_at: string
+          dedupe_key: string
+          error_code: string | null
+          id: string
+          kind: Database["public"]["Enums"]["email_notification_kind"]
+          next_attempt_at: string
+          payload: Json
+          processing_started_at: string | null
+          provider_message_id: string | null
+          recipient_id: string
+          sent_at: string | null
+          status: Database["public"]["Enums"]["email_delivery_status"]
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          booking_id?: string | null
+          created_at?: string
+          dedupe_key: string
+          error_code?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["email_notification_kind"]
+          next_attempt_at?: string
+          payload?: Json
+          processing_started_at?: string | null
+          provider_message_id?: string | null
+          recipient_id: string
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["email_delivery_status"]
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          booking_id?: string | null
+          created_at?: string
+          dedupe_key?: string
+          error_code?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["email_notification_kind"]
+          next_attempt_at?: string
+          payload?: Json
+          processing_started_at?: string | null
+          provider_message_id?: string | null
+          recipient_id?: string
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["email_delivery_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_email_deliveries_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_email_preferences: {
+        Row: {
+          coach_student_cancellation: boolean
+          coach_weekly_reminder_enabled: boolean
+          coach_weekly_reminder_iso_weekday: number
+          coach_weekly_reminder_time: string
+          created_at: string
+          student_booking_cancelled: boolean
+          student_booking_confirmed: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          coach_student_cancellation?: boolean
+          coach_weekly_reminder_enabled?: boolean
+          coach_weekly_reminder_iso_weekday?: number
+          coach_weekly_reminder_time?: string
+          created_at?: string
+          student_booking_cancelled?: boolean
+          student_booking_confirmed?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          coach_student_cancellation?: boolean
+          coach_weekly_reminder_enabled?: boolean
+          coach_weekly_reminder_iso_weekday?: number
+          coach_weekly_reminder_time?: string
+          created_at?: string
+          student_booking_cancelled?: boolean
+          student_booking_confirmed?: boolean
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -547,6 +695,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      password_sign_in_lockouts: {
+        Row: {
+          failed_attempts: number
+          last_failed_at: string | null
+          locked_until: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          failed_attempts?: number
+          last_failed_at?: string | null
+          locked_until?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          failed_attempts?: number
+          last_failed_at?: string | null
+          locked_until?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       pricing_rate_students: {
         Row: {
@@ -764,7 +936,7 @@ export type Database = {
         }
         Insert: {
           account_status?: Database["public"]["Enums"]["student_account_status"]
-          age: number | null
+          age?: number | null
           created_at?: string
           email: string
           full_name: string
@@ -836,8 +1008,11 @@ export type Database = {
         Returns: {
           coach_id: string
           created_at: string
+          duration_minutes: number
           id: string
           included_sessions: number
+          lesson_type: string
+          pricing_rate_id: string | null
           remaining_sessions: number | null
           status: Database["public"]["Enums"]["lesson_pack_status"]
           student_id: string
@@ -870,6 +1045,7 @@ export type Database = {
           modified_at: string | null
           origin: Database["public"]["Enums"]["booking_origin"]
           pricing_rate_id: string | null
+          recurrence_series_id: string | null
           starts_at: string
           status: Database["public"]["Enums"]["booking_status"]
           student_comment: string | null
@@ -888,12 +1064,21 @@ export type Database = {
         Returns: undefined
       }
       assign_lesson_pack: {
-        Args: { p_included_sessions: number; p_student_id: string }
+        Args: {
+          p_duration_minutes: number
+          p_included_sessions: number
+          p_lesson_type: string
+          p_pricing_rate_id: string
+          p_student_id: string
+        }
         Returns: {
           coach_id: string
           created_at: string
+          duration_minutes: number
           id: string
           included_sessions: number
+          lesson_type: string
+          pricing_rate_id: string | null
           remaining_sessions: number | null
           status: Database["public"]["Enums"]["lesson_pack_status"]
           student_id: string
@@ -930,6 +1115,7 @@ export type Database = {
           modified_at: string | null
           origin: Database["public"]["Enums"]["booking_origin"]
           pricing_rate_id: string | null
+          recurrence_series_id: string | null
           starts_at: string
           status: Database["public"]["Enums"]["booking_status"]
           student_comment: string | null
@@ -942,6 +1128,25 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      cancel_booking_recurrences: {
+        Args: { p_booking_id: string; p_ends_on: string; p_starts_on: string }
+        Returns: number
+      }
+      claim_pending_email_deliveries: {
+        Args: { p_limit?: number }
+        Returns: {
+          attempts: number
+          booking_id: string
+          id: string
+          kind: Database["public"]["Enums"]["email_notification_kind"]
+          payload: Json
+          processing_started_at: string
+          recipient_email: string
+          recipient_id: string
+          recipient_language: Database["public"]["Enums"]["app_language"]
+          recipient_name: string
+        }[]
       }
       claim_pending_push_delivery_attempts: {
         Args: { p_limit?: number }
@@ -984,7 +1189,7 @@ export type Database = {
       }
       complete_manual_student_provisioning: {
         Args: {
-          p_age: number | null
+          p_age: number
           p_coach_id: string
           p_email: string
           p_full_name: string
@@ -1018,8 +1223,11 @@ export type Database = {
         Returns: {
           coach_id: string
           created_at: string
+          duration_minutes: number
           id: string
           included_sessions: number
+          lesson_type: string
+          pricing_rate_id: string | null
           remaining_sessions: number | null
           status: Database["public"]["Enums"]["lesson_pack_status"]
           student_id: string
@@ -1122,6 +1330,7 @@ export type Database = {
           modified_at: string | null
           origin: Database["public"]["Enums"]["booking_origin"]
           pricing_rate_id: string | null
+          recurrence_series_id: string | null
           starts_at: string
           status: Database["public"]["Enums"]["booking_status"]
           student_comment: string | null
@@ -1163,11 +1372,33 @@ export type Database = {
         Args: { p_apply_to_series: boolean; p_slot_id: string }
         Returns: number
       }
+      delete_notification: {
+        Args: { p_notification_id: string }
+        Returns: string
+      }
       delete_pricing_rate: { Args: { p_rate_id: string }; Returns: undefined }
+      enqueue_due_coach_weekly_email_reminders: {
+        Args: { p_now?: string }
+        Returns: number
+      }
       expire_pending_bookings: { Args: never; Returns: number }
       finalize_student_activation: {
         Args: { p_student_id: string; p_token_id: string }
         Returns: undefined
+      }
+      get_associated_students: {
+        Args: { p_coach_id: string }
+        Returns: {
+          account_status: Database["public"]["Enums"]["student_account_status"]
+          age: number
+          email: string
+          full_name: string
+          padel_level: number
+          phone: string
+          profile_complete: boolean
+          sex: Database["public"]["Enums"]["student_sex"]
+          user_id: string
+        }[]
       }
       get_coach_stats: {
         Args: { p_period_end: string; p_period_start: string }
@@ -1182,19 +1413,9 @@ export type Database = {
           period_start: string
         }[]
       }
-      get_associated_students: {
-        Args: { p_coach_id: string }
-        Returns: {
-          account_status: Database["public"]["Enums"]["student_account_status"] | null
-          age: number | null
-          email: string
-          full_name: string
-          padel_level: number | null
-          phone: string | null
-          profile_complete: boolean
-          sex: Database["public"]["Enums"]["student_sex"] | null
-          user_id: string
-        }[]
+      get_current_student_account_status: {
+        Args: never
+        Returns: Database["public"]["Enums"]["student_account_status"]
       }
       get_requestable_booking_participants: {
         Args: never
@@ -1233,13 +1454,10 @@ export type Database = {
           updated_at: string
         }[]
       }
-      get_current_student_account_status: {
-        Args: never
-        Returns: Database["public"]["Enums"]["student_account_status"]
-      }
-      delete_notification: {
-        Args: { p_notification_id: string }
-        Returns: string
+      has_current_legal_acceptance: { Args: never; Returns: boolean }
+      hook_password_verification_attempt: {
+        Args: { event: Json }
+        Returns: Json
       }
       is_coach_registration_open: { Args: never; Returns: boolean }
       mark_all_notifications_read: { Args: never; Returns: number }
@@ -1290,8 +1508,10 @@ export type Database = {
         Args: {
           p_booking_id: string
           p_duration_minutes: number
+          p_lesson_type: string
           p_location: string
           p_starts_at: string
+          p_student_ids: string[]
         }
         Returns: {
           availability_slot_id: string | null
@@ -1310,6 +1530,7 @@ export type Database = {
           modified_at: string | null
           origin: Database["public"]["Enums"]["booking_origin"]
           pricing_rate_id: string | null
+          recurrence_series_id: string | null
           starts_at: string
           status: Database["public"]["Enums"]["booking_status"]
           student_comment: string | null
@@ -1325,6 +1546,8 @@ export type Database = {
       }
       normalize_student_email: { Args: { value: string }; Returns: string }
       normalize_student_phone: { Args: { value: string }; Returns: string }
+      purge_expired_personal_data: { Args: never; Returns: Json }
+      record_current_legal_acceptance: { Args: never; Returns: undefined }
       refuse_booking: {
         Args: { p_booking_id: string; p_refusal_comment: string }
         Returns: {
@@ -1344,6 +1567,7 @@ export type Database = {
           modified_at: string | null
           origin: Database["public"]["Enums"]["booking_origin"]
           pricing_rate_id: string | null
+          recurrence_series_id: string | null
           starts_at: string
           status: Database["public"]["Enums"]["booking_status"]
           student_comment: string | null
@@ -1387,6 +1611,7 @@ export type Database = {
           modified_at: string | null
           origin: Database["public"]["Enums"]["booking_origin"]
           pricing_rate_id: string | null
+          recurrence_series_id: string | null
           starts_at: string
           status: Database["public"]["Enums"]["booking_status"]
           student_comment: string | null
@@ -1527,6 +1752,31 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      update_coach_email_preferences: {
+        Args: {
+          p_student_cancellation: boolean
+          p_weekly_reminder_enabled: boolean
+          p_weekly_reminder_iso_weekday: number
+          p_weekly_reminder_time: string
+        }
+        Returns: {
+          coach_student_cancellation: boolean
+          coach_weekly_reminder_enabled: boolean
+          coach_weekly_reminder_iso_weekday: number
+          coach_weekly_reminder_time: string
+          created_at: string
+          student_booking_cancelled: boolean
+          student_booking_confirmed: boolean
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "notification_email_preferences"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       update_push_notification_preference: {
         Args: {
           p_device_id: string
@@ -1548,6 +1798,26 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      update_student_email_preferences: {
+        Args: { p_booking_cancelled: boolean; p_booking_confirmed: boolean }
+        Returns: {
+          coach_student_cancellation: boolean
+          coach_weekly_reminder_enabled: boolean
+          coach_weekly_reminder_iso_weekday: number
+          coach_weekly_reminder_time: string
+          created_at: string
+          student_booking_cancelled: boolean
+          student_booking_confirmed: boolean
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "notification_email_preferences"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       app_language: "fr" | "en" | "es"
@@ -1562,6 +1832,12 @@ export type Database = {
         | "expired"
         | "cancelled"
         | "modified"
+      email_delivery_status: "pending" | "sent" | "failed"
+      email_notification_kind:
+        | "booking_confirmed"
+        | "booking_cancelled"
+        | "coach_student_cancelled"
+        | "coach_weekly_pending_reminder"
       lesson_pack_status: "active" | "exhausted"
       notification_link_type: "booking"
       notification_type:
@@ -1743,6 +2019,13 @@ export const Constants = {
         "cancelled",
         "modified",
       ],
+      email_delivery_status: ["pending", "sent", "failed"],
+      email_notification_kind: [
+        "booking_confirmed",
+        "booking_cancelled",
+        "coach_student_cancelled",
+        "coach_weekly_pending_reminder",
+      ],
       lesson_pack_status: ["active", "exhausted"],
       notification_link_type: ["booking"],
       notification_type: [
@@ -1789,3 +2072,4 @@ export const Constants = {
     },
   },
 } as const
+

@@ -33,6 +33,7 @@ type AgendaGridItem = {
 };
 
 type AgendaGridProps<TItem extends AgendaGridItem> = {
+  density?: 'default' | 'compact';
   days: PlanningDay[];
   formatDay: (date: string) => string;
   getSlotStyle?: (slot: TItem) => StyleProp<ViewStyle>;
@@ -106,6 +107,7 @@ function AgendaSlotBlock<TItem extends AgendaGridItem>({
 }
 
 export function AgendaGrid<TItem extends AgendaGridItem>({
+  density = 'default',
   days,
   formatDay,
   getSlotStyle,
@@ -210,6 +212,7 @@ export function AgendaGrid<TItem extends AgendaGridItem>({
               <View
                 style={[
                   styles.dayTimeline,
+                  density === 'compact' && styles.compactDayTimeline,
                   { borderColor: theme.border, backgroundColor: theme.surface },
                 ]}>
                 <View style={styles.timeRail}>
@@ -244,6 +247,7 @@ export function AgendaGrid<TItem extends AgendaGridItem>({
                       slot={slot}
                       style={[
                         styles.slotBlock,
+                        density === 'compact' && styles.compactSlotBlock,
                         getAgendaSlotPosition(slot.startsAt, slot.endsAt),
                         {
                           backgroundColor: theme.surfaceElevated,
@@ -282,7 +286,11 @@ export function AgendaGrid<TItem extends AgendaGridItem>({
           </View>
         ))}
       </View>
-      <View style={styles.bodyRow}>
+      <View
+        style={[
+          styles.bodyRow,
+          density === 'compact' && styles.compactBodyRow,
+        ]}>
         <View style={[styles.desktopTimeRail, { borderColor: theme.border }]}>
           {agendaHourMarks.map((hour) => (
             <ThemedText key={hour} type="small" themeColor="textMuted">
@@ -321,6 +329,7 @@ export function AgendaGrid<TItem extends AgendaGridItem>({
                   slot={slot}
                   style={[
                     styles.slotBlock,
+                    density === 'compact' && styles.compactSlotBlock,
                     getAgendaSlotPosition(slot.startsAt, slot.endsAt),
                     {
                       backgroundColor: theme.surfaceElevated,
@@ -353,6 +362,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     minHeight: 640,
     overflow: 'hidden',
+  },
+  compactDayTimeline: {
+    minHeight: 480,
   },
   timeRail: {
     width: 64,
@@ -389,6 +401,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     minHeight: 720,
   },
+  compactBodyRow: {
+    minHeight: 480,
+  },
   desktopTimeRail: {
     width: 64,
     justifyContent: 'space-between',
@@ -417,6 +432,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minHeight: 52,
     overflow: 'hidden',
+  },
+  compactSlotBlock: {
+    minHeight: 36,
+    padding: Spacing.one,
   },
   pastOverlay: {
     position: 'absolute',

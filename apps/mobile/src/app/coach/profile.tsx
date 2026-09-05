@@ -30,6 +30,7 @@ import {
 import { ProfileOptionSelector } from '@/features/profiles/profile-option-selector';
 import { ProfileThemeCard } from '@/features/profiles/profile-theme-card';
 import { AccountPrivacyCard } from '@/features/legal/account-privacy-card';
+import { EmailNotificationPreferencesCard } from '@/features/notifications/email-notification-preferences-card';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
 
@@ -282,6 +283,7 @@ export default function CoachProfileScreen() {
           </Card>
 
           <ProfileThemeCard />
+          <EmailNotificationPreferencesCard role="coach" />
           <View style={styles.settingsGrid}>
             <Card style={styles.settingCard}>
               <ThemedText type="subtitle">
@@ -304,19 +306,6 @@ export default function CoachProfileScreen() {
               <Button
                 label={t('coachProfile.openPricing')}
                 onPress={() => router.navigate('/coach/pricing' as Href)}
-                variant="secondary"
-              />
-            </Card>
-            <Card style={styles.settingCard}>
-              <ThemedText type="subtitle">
-                {t('coachProfile.notificationsTitle')}
-              </ThemedText>
-              <ThemedText type="small" themeColor="textMuted">
-                {t('coachProfile.notificationsBody')}
-              </ThemedText>
-              <Button
-                disabled
-                label={t('coachProfile.comingSoon')}
                 variant="secondary"
               />
             </Card>

@@ -31,6 +31,12 @@ export type BookingRequestProposal = {
   availableDurations: AvailabilitySlotDuration[];
 };
 
+export function getDefaultBookingRequestDuration(
+  proposal: BookingRequestProposal
+): AvailabilitySlotDuration {
+  return proposal.availableDurations.includes(90) ? 90 : 60;
+}
+
 function getBounds(startsAt: string, endsAt: string) {
   const start = new Date(startsAt).getTime();
   const end = new Date(endsAt).getTime();

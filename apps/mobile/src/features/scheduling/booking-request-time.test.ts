@@ -2,10 +2,28 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  getDefaultBookingRequestDuration,
   getEarliestBookingRequestStartsAt,
   getBookingRequestProposal,
   toBookingRequestStartsAt,
 } from './booking-request-time';
+
+test('booking requests default to 90 minutes when the range allows it', () => {
+  assert.equal(
+    getDefaultBookingRequestDuration({
+      startsAt: '2026-07-01T10:00:00.000Z',
+      availableDurations: [60, 90],
+    }),
+    90
+  );
+  assert.equal(
+    getDefaultBookingRequestDuration({
+      startsAt: '2026-07-01T10:00:00.000Z',
+      availableDurations: [60],
+    }),
+    60
+  );
+});
 
 test('the earliest request start rounds up to the next quarter hour', () => {
   assert.equal(

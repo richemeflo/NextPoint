@@ -224,7 +224,11 @@ function StudentPrivateNoteCardContent({
 
 const styles = StyleSheet.create({
   card: {
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: 0,
     gap: Spacing.three,
+    overflow: 'hidden',
   },
   loading: {
     flexDirection: 'row',
@@ -232,6 +236,8 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   heading: {
+    width: '100%',
+    minWidth: 0,
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'flex-start',
@@ -240,7 +246,8 @@ const styles = StyleSheet.create({
   },
   headingCopy: {
     flex: 1,
-    minWidth: 220,
+    minWidth: 0,
+    flexBasis: 220,
     gap: Spacing.one,
   },
   textArea: {

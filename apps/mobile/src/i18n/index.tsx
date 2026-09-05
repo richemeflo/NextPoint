@@ -4,10 +4,12 @@ import {
   useContext,
   useMemo,
   useState,
+  useSyncExternalStore,
   type PropsWithChildren,
 } from 'react';
 
 import {
+  defaultLocale,
   type SupportedLocale,
   type TranslationKey,
 } from './translations';
@@ -22,12 +24,24 @@ type TranslationContextValue = {
   t: (key: TranslationKey, params?: TranslationParams) => string;
 };
 
+function subscribeToDeviceLocale() {
+  return () => undefined;
+}
+
 const TranslationContext = createContext<TranslationContextValue | null>(null);
 
 export function I18nProvider({ children }: PropsWithChildren) {
-  const [locale, setCurrentLocale] = useState<SupportedLocale>(getDeviceLocale);
+  const deviceLocale = useSyncExternalStore(
+    subscribeToDeviceLocale,
+    getDeviceLocale,
+    () => defaultLocale
+  );
+  const [selectedLocale, setSelectedLocale] =
+    useState<SupportedLocale | null>(null);
+  const locale = selectedLocale ?? deviceLocale;
+
   const setLocale = useCallback((nextLocale: SupportedLocale) => {
-    setCurrentLocale(nextLocale);
+    setSelectedLocale(nextLocale);
   }, []);
 
   const value = useMemo(

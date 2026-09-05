@@ -1,5 +1,6 @@
 import { handleOptions, jsonResponse } from '../_shared/http.ts';
 import { adminClient, getRequestUser } from '../_shared/supabase.ts';
+import { sanitizeAccountExport } from './export-sanitizer.ts';
 
 type Row = Record<string, unknown>;
 
@@ -34,30 +35,6 @@ function uniqueRows(rows: Row[]) {
   });
 }
 
-function redactForeignIdentifiers(rows: Row[], userId: string) {
-  const identityKeys = new Set([
-    'coach_id',
-    'created_by',
-    'recipient_id',
-    'sender_id',
-    'student_id',
-    'user_id',
-  ]);
-  const secretKeys = new Set(['token', 'token_hash']);
-
-  return rows.map((row) =>
-    Object.fromEntries(
-      Object.entries(row).filter(([key, value]) => {
-        if (secretKeys.has(key)) return false;
-        if (identityKeys.has(key) && typeof value === 'string' && value !== userId) {
-          return false;
-        }
-        return true;
-      })
-    )
-  );
-}
-
 async function collectAccountData(user: NonNullable<Awaited<ReturnType<typeof getRequestUser>>>) {
   const userId = user.id;
   const [
@@ -77,8 +54,7 @@ async function collectAccountData(user: NonNullable<Awaited<ReturnType<typeof ge
     directBookings,
     notifications,
     pushPreferences,
-    pushTokens,
-    deliveryAttempts,
+    emailPreferences,
     messageThreads,
     sentMessages,
   ] = await Promise.all([
@@ -118,13 +94,7 @@ async function collectAccountData(user: NonNullable<Awaited<ReturnType<typeof ge
     ),
     selectRows(adminClient.from('notifications').select('*').eq('recipient_id', userId)),
     selectRows(adminClient.from('notification_push_preferences').select('*').eq('user_id', userId)),
-    selectRows(adminClient.from('notification_push_tokens').select('*').eq('user_id', userId)),
-    selectRows(
-      adminClient
-        .from('notification_push_delivery_attempts')
-        .select('*')
-        .eq('recipient_id', userId)
-    ),
+    selectRows(adminClient.from('notification_email_preferences').select('*').eq('user_id', userId)),
     selectRows(adminClient.from('coach_message_threads').select('*').eq('coach_id', userId)),
     selectRows(adminClient.from('coach_messages').select('*').eq('sender_id', userId)),
   ]);
@@ -144,39 +114,32 @@ async function collectAccountData(user: NonNullable<Awaited<ReturnType<typeof ge
     ? await selectRows(adminClient.from('coach_messages').select('*').in('thread_id', threadIds))
     : [];
 
-  return {
-    formatVersion: '1.0',
+  return sanitizeAccountExport({
+    formatVersion: '1.1',
     exportedAt: new Date().toISOString(),
     account: {
-      id: user.id,
       email: user.email ?? null,
       createdAt: user.created_at,
       updatedAt: user.updated_at,
       lastSignInAt: user.last_sign_in_at ?? null,
     },
     data: {
-      roles: redactForeignIdentifiers(roles, userId),
-      profiles: redactForeignIdentifiers([...studentProfiles, ...coachProfiles], userId),
-      legalAcceptances: redactForeignIdentifiers(legalAcceptances, userId),
-      coachStudentRelationships: redactForeignIdentifiers(relationships, userId),
-      pricingRates: redactForeignIdentifiers([...pricingRates, ...targetedPricingRates], userId),
-      lessonHistory: redactForeignIdentifiers(history, userId),
-      privateCoachNotes: redactForeignIdentifiers(privateNotes, userId),
-      lessonPacks: redactForeignIdentifiers(lessonPacks, userId),
-      availability: redactForeignIdentifiers([...availabilityRanges, ...availabilitySlots], userId),
-      bookings: redactForeignIdentifiers(allBookings, userId),
-      bookingParticipations: redactForeignIdentifiers(bookingParticipants, userId),
-      notifications: redactForeignIdentifiers(notifications, userId),
-      notificationPreferences: redactForeignIdentifiers(
-        [...pushPreferences, ...pushTokens, ...deliveryAttempts],
-        userId
-      ),
-      messaging: redactForeignIdentifiers(
-        [...messageThreads, ...uniqueRows([...sentMessages, ...threadMessages])],
-        userId
-      ),
+      roles,
+      profiles: [...studentProfiles, ...coachProfiles],
+      legalAcceptances,
+      coachStudentRelationships: relationships,
+      pricingRates: [...pricingRates, ...targetedPricingRates],
+      lessonHistory: history,
+      privateCoachNotes: privateNotes,
+      lessonPacks,
+      availability: [...availabilityRanges, ...availabilitySlots],
+      bookings: allBookings,
+      bookingParticipations: bookingParticipants,
+      notifications,
+      notificationPreferences: [...pushPreferences, ...emailPreferences],
+      messaging: [...messageThreads, ...uniqueRows([...sentMessages, ...threadMessages])],
     },
-  };
+  });
 }
 
 function chunks<T>(values: T[], size = 200) {

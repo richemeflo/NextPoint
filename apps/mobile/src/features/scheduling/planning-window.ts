@@ -29,6 +29,13 @@ export function getNonPastPlanningDays(
   return days.filter((day) => day.date >= currentDate);
 }
 
+export function isStudentBookingDateSelectable(
+  date: string,
+  currentDate: string
+) {
+  return date >= currentDate;
+}
+
 export function getCompactPlanningDays(
   days: PlanningDay[],
   currentDate: string

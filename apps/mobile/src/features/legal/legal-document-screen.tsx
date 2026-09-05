@@ -45,7 +45,7 @@ export function LegalDocumentScreen({ page }: { page: LegalPageId }) {
 
   return (
     <ThemedView style={styles.screen}>
-      <Stack.Screen options={{ title: `${document.title} · ${productName}` }} />
+      <Stack.Screen options={{ title: productName }} />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <SafeAreaView style={styles.content}>
           <View style={styles.heading}>

@@ -12,6 +12,7 @@ import {
   movePlanningAnchor,
   planningViewModes,
   isHistoricalPlanningPeriod,
+  isStudentBookingDateSelectable,
 } from './planning-window';
 
 test('planning view modes stay limited to week and day', () => {
@@ -63,6 +64,21 @@ test('getNonPastPlanningDays keeps today and future days only', () => {
     { date: '2026-08-08' },
     { date: '2026-08-09' },
   ]);
+});
+
+test('student booking rejects strictly past days and keeps today selectable', () => {
+  assert.equal(
+    isStudentBookingDateSelectable('2026-08-04', '2026-08-05'),
+    false
+  );
+  assert.equal(
+    isStudentBookingDateSelectable('2026-08-05', '2026-08-05'),
+    true
+  );
+  assert.equal(
+    isStudentBookingDateSelectable('2026-08-06', '2026-08-05'),
+    true
+  );
 });
 
 test('compact planning keeps every day when the selected week is historical', () => {

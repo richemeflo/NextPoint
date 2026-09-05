@@ -8,9 +8,12 @@ import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Feedback } from '@/components/ui/feedback';
 import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
 import type { Booking } from '@/features/bookings/booking-service';
+import { canAddBookingToGoogleCalendar } from '@/features/bookings/google-calendar';
+import { openBookingInGoogleCalendar } from '@/features/bookings/google-calendar-link';
 import { useBookingPresentation } from '@/features/bookings/use-booking-presentation';
 import { getSlotDateKey } from '@/features/scheduling/planning-window';
 import { useTheme } from '@/hooks/use-theme';
@@ -40,6 +43,7 @@ export function CoachBookingCard({
   const { locale, t } = useTranslation();
   const theme = useTheme();
   const [refusalComment, setRefusalComment] = useState('');
+  const [calendarError, setCalendarError] = useState(false);
   const {
     bookingStatusKey,
     bookingStatusThemeColor,
@@ -60,6 +64,17 @@ export function CoachBookingCard({
       minute: '2-digit',
       timeZone: schedulingTimeZone,
     }).format(new Date(value));
+  const addToCalendar = async () => {
+    setCalendarError(false);
+    const opened = await openBookingInGoogleCalendar(booking, {
+      title: t('booking.calendarEventTitle'),
+      details: t('booking.calendarEventDetails', {
+        lessonType: t(`pricing.type.${booking.lessonType}` as TranslationKey),
+        duration: t(`availability.duration.${booking.durationMinutes}` as TranslationKey),
+      }),
+    });
+    if (!opened) setCalendarError(true);
+  };
 
   return (
     <Card
@@ -141,6 +156,13 @@ export function CoachBookingCard({
 
       {booking.status === 'confirmed' || booking.status === 'modified' ? (
         <View style={styles.bookingActions}>
+          {canAddBookingToGoogleCalendar(booking) ? (
+            <Button
+              label={t('booking.addToGoogleCalendar')}
+              onPress={() => void addToCalendar()}
+              variant="secondary"
+            />
+          ) : null}
           <Button
             disabled={pending}
             label={t('booking.modifyAction')}
@@ -154,6 +176,13 @@ export function CoachBookingCard({
             variant="secondary"
           />
         </View>
+      ) : null}
+      {calendarError ? (
+        <Feedback
+          title={t('booking.errorTitle')}
+          message={t('booking.calendarOpenError')}
+          tone="error"
+        />
       ) : null}
     </Card>
   );

@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { pricingLessonTypes } from './pricing-rate';
+
 export const lessonPackStatuses = ['active', 'exhausted'] as const;
 export const maximumLessonPackSessions = 100;
 
@@ -19,6 +21,11 @@ export const lessonPackSchema = z.object({
         value <= maximumLessonPackSessions,
       'invalid_session_count'
     ),
+  pricingRateId: z.uuid('invalid_pricing_rate'),
+  lessonType: z.enum(pricingLessonTypes),
+  durationMinutes: z
+    .enum(['60', '90'])
+    .transform((value) => Number(value) as 60 | 90),
 });
 
 export type LessonPackFormInput = z.input<typeof lessonPackSchema>;

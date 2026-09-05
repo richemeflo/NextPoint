@@ -23,15 +23,13 @@ export async function getRequestUser(request: Request) {
   return error ? null : data.user;
 }
 
-export async function isServiceRoleRequest(request: Request) {
-  const authorization = request.headers.get('Authorization');
-  const token = authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
-  if (!token) return false;
+async function secretsMatch(actual: string | null, expected: string | undefined) {
+  if (!actual || !expected) return false;
 
   const encoder = new TextEncoder();
   const [actualDigest, expectedDigest] = await Promise.all([
-    crypto.subtle.digest('SHA-256', encoder.encode(token)),
-    crypto.subtle.digest('SHA-256', encoder.encode(serviceRoleKey)),
+    crypto.subtle.digest('SHA-256', encoder.encode(actual)),
+    crypto.subtle.digest('SHA-256', encoder.encode(expected)),
   ]);
   const actualBytes = new Uint8Array(actualDigest);
   const expectedBytes = new Uint8Array(expectedDigest);
@@ -42,6 +40,16 @@ export async function isServiceRoleRequest(request: Request) {
   }
 
   return difference === 0;
+}
+
+export async function isServiceRoleRequest(request: Request) {
+  const authorization = request.headers.get('Authorization');
+  const token = authorization?.match(/^Bearer\s+(.+)$/i)?.[1] ?? request.headers.get('apikey');
+  return secretsMatch(token ?? null, serviceRoleKey);
+}
+
+export async function isApiKeyRequest(request: Request, expectedSecret: string | undefined) {
+  return secretsMatch(request.headers.get('apikey'), expectedSecret);
 }
 
 export async function isCoach(userId: string) {
