@@ -46,7 +46,7 @@
     "eslint": "^9.39.4",
     "patch-package": "^8.0.1",
     "supabase": "^2.107.0",
-    "tsx": "^4.22.4"
+    "tsx": "^4.23.13"
   },
   "overrides": {
     "xcode": {
