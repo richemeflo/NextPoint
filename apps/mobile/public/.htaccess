@@ -15,17 +15,25 @@ DirectoryIndex index.html
   RewriteCond %{REQUEST_FILENAME}.html -f
   RewriteRule ^(.+?)/?$ $1.html [L]
 
-  # Let Expo Router handle dynamic client-side routes and unknown app paths.
+  # Reject common probes and paths that are not part of the Expo application.
+  RewriteRule ^(?:api(?:/|$)|wp-admin(?:/|$)|wp-login\.php$|xmlrpc\.php$|phpmyadmin(?:/|$)|vendor/phpunit(?:/|$)) - [R=404,L,NC]
+
+  # Let Expo Router handle the application's only dynamic route.
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule ^ index.html [L]
+  RewriteRule ^coach/students/[^/]+/?$ index.html [L]
+
+  # Unknown paths must not be reported as successful application pages.
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ - [R=404,L]
 </IfModule>
 
 <IfModule mod_headers.c>
   Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
   Header always set X-Content-Type-Options "nosniff"
   Header always set X-Frame-Options "DENY"
-  Header always set Content-Security-Policy "frame-ancestors 'none'"
+  Header always set Content-Security-Policy "default-src 'self'; base-uri 'self'; connect-src 'self' https://kmvbpksaqrligigojgql.supabase.co wss://kmvbpksaqrligigojgql.supabase.co; font-src 'self' data:; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: blob:; object-src 'none'; script-src 'self' 'sha256-67fhrP0+BkBqmgGGXTtgiVO/9EQs3QruYNU/7fnRkI8='; style-src 'self' 'unsafe-inline'"
   Header always set Referrer-Policy "no-referrer"
   Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
 </IfModule>

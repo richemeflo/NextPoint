@@ -1,0 +1,4 @@
+Contact: https://equationpadel.fr/support
+Expires: 2027-09-01T00:00:00Z
+Preferred-Languages: fr, en
+Canonical: https://equationpadel.fr/.well-known/security.txt

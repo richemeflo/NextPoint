@@ -1478,6 +1478,15 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_public_coach_profile: {
+        Args: never
+        Returns: {
+          bio: string
+          display_name: string
+          email: string
+          phone: string
+        }[]
+      }
       has_current_legal_acceptance: { Args: never; Returns: boolean }
       hook_password_verification_attempt: {
         Args: { event: Json }

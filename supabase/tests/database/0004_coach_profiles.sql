@@ -1,6 +1,6 @@
 begin;
 
-select plan(11);
+select plan(14);
 
 select has_table('public', 'coach_profiles', 'coach_profiles table exists');
 select col_is_pk(
@@ -28,11 +28,11 @@ select is(
       and tablename = 'coach_profiles'
   ),
   3,
-  'coach_profiles has public select and owner coach write policies'
+  'coach_profiles has owner-only select and write policies'
 );
 select ok(
-  has_table_privilege('anon', 'public.coach_profiles', 'select'),
-  'public visitors can read the coach profile'
+  not has_table_privilege('anon', 'public.coach_profiles', 'select'),
+  'public visitors cannot read the coach_profiles table directly'
 );
 select ok(
   not has_table_privilege('anon', 'public.coach_profiles', 'insert')
@@ -58,6 +58,28 @@ select col_has_check(
   'coach_profiles',
   'bio',
   'coach bio length is constrained'
+);
+select has_function(
+  'public',
+  'get_public_coach_profile',
+  array[]::text[],
+  'a dedicated public coach profile function exists'
+);
+select ok(
+  has_function_privilege('anon', 'public.get_public_coach_profile()', 'execute'),
+  'public visitors can execute the restricted profile function'
+);
+select results_eq(
+  $$
+    select parameter_name::text
+    from information_schema.parameters
+    where specific_schema = 'public'
+      and specific_name like 'get_public_coach_profile_%'
+      and parameter_mode = 'OUT'
+    order by ordinal_position
+  $$,
+  $$ values ('display_name'), ('bio'), ('phone'), ('email') $$,
+  'the public profile function exposes only allowlisted fields'
 );
 
 select * from finish();

@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import {
   getPublicCoachProfile,
-  type CoachProfile,
+  type PublicCoachProfile,
 } from './coach-profile-service';
 
 import { ThemedText } from '@/components/themed-text';
@@ -14,7 +14,7 @@ import { useTranslation } from '@/i18n';
 
 export function PublicCoachCard() {
   const { t } = useTranslation();
-  const [profile, setProfile] = useState<CoachProfile | null>(null);
+  const [profile, setProfile] = useState<PublicCoachProfile | null>(null);
   const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {

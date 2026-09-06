@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /coach
+Disallow: /eleve
+Disallow: /activate-student
+Disallow: /complete-signup
+Disallow: /google-auth-callback
+Disallow: /reset-password
+
+Sitemap: https://equationpadel.fr/sitemap.xml
