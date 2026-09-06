@@ -193,7 +193,7 @@ export function CoachBookingCreateSection({
             onChange={setDuration}
             options={pricingOptions.durationMinutes.map((value) => ({
               value: String(value) as '60' | '90',
-              label: t(`availability.duration.${value}` as TranslationKey),
+              label: t(`booking.duration.${value}` as TranslationKey),
             }))}
             value={String(pricingOptions.selection.durationMinutes) as '60' | '90'}
           />

@@ -6,7 +6,8 @@ import {
   type PricingRateFormInput,
 } from '@nextpoint/shared';
 import { Controller, useForm } from 'react-hook-form';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useLocalSearchParams } from 'expo-router';
 import {
   ActivityIndicator,
   ScrollView,
@@ -19,6 +20,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Feedback } from '@/components/ui/feedback';
+import { ResponsivePageTitle } from '@/components/ui/responsive-page-title';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { TextField } from '@/components/ui/text-field';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
@@ -50,6 +52,9 @@ const defaultValues: PricingRateFormInput = {
 };
 
 export default function CoachPricingScreen() {
+  const params = useLocalSearchParams<{ studentId?: string }>();
+  const targetedStudentId =
+    typeof params.studentId === 'string' ? params.studentId : '';
   const { user } = useAuth();
   const { locale, t } = useTranslation();
   const theme = useTheme();
@@ -62,6 +67,7 @@ export default function CoachPricingScreen() {
   );
   const [feedback, setFeedback] = useState<'none' | 'saved' | 'error'>('none');
   const [studentSearch, setStudentSearch] = useState('');
+  const appliedTargetedStudentId = useRef<string | null>(null);
   const {
     control,
     handleSubmit,
@@ -120,6 +126,23 @@ export default function CoachPricingScreen() {
       active = false;
     };
   }, [user]);
+
+  useEffect(() => {
+    if (
+      loadState !== 'ready' ||
+      !targetedStudentId ||
+      appliedTargetedStudentId.current === targetedStudentId ||
+      !students.some((student) => student.userId === targetedStudentId)
+    ) {
+      return;
+    }
+
+    appliedTargetedStudentId.current = targetedStudentId;
+    setEditingId(null);
+    setFeedback('none');
+    setStudentSearch('');
+    reset({ ...defaultValues, targetStudentIds: [targetedStudentId] });
+  }, [loadState, reset, students, targetedStudentId]);
 
   const validationKeys: Record<string, TranslationKey> = {
     label_too_short: 'pricing.validation.labelTooShort',
@@ -208,10 +231,10 @@ export default function CoachPricingScreen() {
         keyboardShouldPersistTaps="handled">
         <View style={styles.content}>
           <View style={styles.heading}>
-            <ThemedText type="smallBold" themeColor="primary">
-              {t('role.coachLabel')}
-            </ThemedText>
-            <ThemedText type="title">{t('pricing.manageTitle')}</ThemedText>
+            <ResponsivePageTitle
+              context={t('role.coachLabel')}
+              title={t('pricing.manageTitle')}
+            />
             <ThemedText type="default" themeColor="textMuted">
               {t('pricing.manageBody')}
             </ThemedText>

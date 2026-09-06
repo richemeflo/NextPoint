@@ -18,6 +18,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Feedback } from '@/components/ui/feedback';
+import { ResponsivePageTitle } from '@/components/ui/responsive-page-title';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/auth-context';
 import {
@@ -309,10 +310,10 @@ export default function CoachMessagingScreen() {
     <ThemedView style={styles.screen}>
       <View style={styles.page}>
         <View style={styles.heading}>
-          <ThemedText type="smallBold" themeColor="primary">
-            {t('role.coachLabel')}
-          </ThemedText>
-          <ThemedText type="title">{t('messaging.title')}</ThemedText>
+          <ResponsivePageTitle
+            context={t('role.coachLabel')}
+            title={t('messaging.title')}
+          />
           <ThemedText themeColor="textMuted">{t('messaging.subtitle')}</ThemedText>
         </View>
 

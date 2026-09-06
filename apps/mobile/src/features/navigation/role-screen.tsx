@@ -5,6 +5,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Card } from '@/components/ui/card';
 import { Feedback } from '@/components/ui/feedback';
+import { ResponsivePageTitle } from '@/components/ui/responsive-page-title';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
 
@@ -22,10 +23,12 @@ export function RoleScreen({
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <View style={styles.heading}>
-            <ThemedText type="smallBold" themeColor="primary">
-              {t(role === 'coach' ? 'role.coachLabel' : 'role.eleveLabel')}
-            </ThemedText>
-            <ThemedText type="title">{t(titleKey)}</ThemedText>
+            <ResponsivePageTitle
+              context={t(
+                role === 'coach' ? 'role.coachLabel' : 'role.eleveLabel'
+              )}
+              title={t(titleKey)}
+            />
           </View>
           <Card elevated style={styles.card}>
             <Feedback

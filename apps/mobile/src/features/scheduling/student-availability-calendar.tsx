@@ -1,6 +1,6 @@
 import { getSchedulingDateLabelInstant, schedulingTimeZone } from '@nextpoint/shared';
 import { SymbolView } from 'expo-symbols';
-import { useMemo } from 'react';
+import { useMemo, type RefObject } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -20,10 +20,12 @@ import { useTranslation } from '@/i18n';
 
 type StudentAvailabilityCalendarProps = {
   currentDate: string;
+  dayAgendaRef?: RefObject<View | null>;
   disablePreviousMonth: boolean;
   formatTime: (value: string) => string;
   month: StudentAvailabilityMonth;
   onMoveMonth: (direction: -1 | 1) => void;
+  onRequestDayAgendaFocus?: () => void;
   onSelectDate: (date: string) => void;
   onSelectSlot: (slot: AvailabilitySlot, desiredStartsAt: string) => void;
   onToday: () => void;
@@ -43,10 +45,12 @@ const weekdayReferenceDates = [
 
 export function StudentAvailabilityCalendar({
   currentDate,
+  dayAgendaRef,
   disablePreviousMonth,
   formatTime,
   month,
   onMoveMonth,
+  onRequestDayAgendaFocus,
   onSelectDate,
   onSelectSlot,
   onToday,
@@ -196,7 +200,10 @@ export function StudentAvailabilityCalendar({
                   selected: isSelected,
                 }}
                 disabled={!isAvailable}
-                onPress={() => onSelectDate(day.date)}
+                onPress={() => {
+                  onSelectDate(day.date);
+                  onRequestDayAgendaFocus?.();
+                }}
                 style={({ pressed }) => [
                   styles.dayButton,
                   isToday && {
@@ -256,7 +263,9 @@ export function StudentAvailabilityCalendar({
         </ThemedText>
       </View>
 
-      <View style={[styles.dayAgenda, { borderTopColor: theme.border }]}>
+      <View
+        ref={dayAgendaRef}
+        style={[styles.dayAgenda, { borderTopColor: theme.border }]}>
         {selectedDate && selectedDayLabel ? (
           <>
             <View style={styles.selectedDayHeader}>

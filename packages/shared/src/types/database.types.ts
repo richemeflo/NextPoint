@@ -1418,23 +1418,47 @@ export type Database = {
         Returns: Database["public"]["Enums"]["student_account_status"]
       }
       get_requestable_booking_participants: {
-        Args: never
+        Args: { p_limit?: number; p_query: string }
         Returns: {
-          account_status: Database["public"]["Enums"]["student_account_status"]
-          age: number | null
-          created_at: string
-          email: string
           full_name: string
-          padel_level: number
-          phone: string
-          preferred_language: Database["public"]["Enums"]["app_language"]
-          sex: Database["public"]["Enums"]["student_sex"]
+          student_id: string
+        }[]
+      }
+      get_notification_booking_schedules: {
+        Args: { p_notification_ids: string[] }
+        Returns: {
+          ends_at: string
+          notification_id: string
+          starts_at: string
+        }[]
+      }
+      get_related_booking_participants: {
+        Args: { p_booking_ids: string[] }
+        Returns: {
+          booking_id: string
+          full_name: string | null
+          student_id: string
+        }[]
+      }
+      get_student_minimum_pricing_rates: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          amount_cents: number
+          applicability_contexts: string[]
+          coach_id: string
+          created_at: string
+          currency: string
+          deleted_at: string | null
+          duration_minutes: number
+          id: string
+          is_active: boolean
+          label: string
+          lesson_type: string
           updated_at: string
-          user_id: string
         }[]
         SetofOptions: {
           from: "*"
-          to: "student_profiles"
+          to: "pricing_rates"
           isOneToOne: false
           isSetofReturn: true
         }
@@ -1460,6 +1484,7 @@ export type Database = {
         Returns: Json
       }
       is_coach_registration_open: { Args: never; Returns: boolean }
+      is_pricing_public_holiday: { Args: { p_date: string }; Returns: boolean }
       mark_all_notifications_read: { Args: never; Returns: number }
       mark_coach_message_thread_read: {
         Args: { p_thread_id: string }
@@ -1684,6 +1709,7 @@ export type Database = {
           p_coach_id: string
           p_duration_minutes: number
           p_lesson_type: string
+          p_starts_at: string
           p_student_id: string
         }
         Returns: {
@@ -2072,4 +2098,3 @@ export const Constants = {
     },
   },
 } as const
-

@@ -3,6 +3,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Feedback } from '@/components/ui/feedback';
+import { ResponsivePageTitle } from '@/components/ui/responsive-page-title';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/auth-context';
 import { AvailabilityAgenda } from '@/features/scheduling/availability-agenda';
@@ -53,10 +54,10 @@ export default function CoachAvailabilityScreen() {
         keyboardShouldPersistTaps="handled">
         <View style={styles.content}>
           <View style={styles.heading}>
-            <ThemedText type="smallBold" themeColor="primary">
-              {t('role.coachLabel')}
-            </ThemedText>
-            <ThemedText type="title">{t('availability.manageTitle')}</ThemedText>
+            <ResponsivePageTitle
+              context={t('role.coachLabel')}
+              title={t('availability.manageTitle')}
+            />
             <ThemedText themeColor="textMuted">
               {t('availability.manageBody')}
             </ThemedText>
@@ -81,6 +82,7 @@ export default function CoachAvailabilityScreen() {
             editingSlotId={editingSlotId}
             onCancelEditing={cancelEditing}
             onEdit={startEditing}
+            ranges={ranges}
             slots={slots}
           />
         </View>

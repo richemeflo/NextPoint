@@ -38,17 +38,32 @@ test('only the recipient can mark a notification as read', () => {
 test('notification booking links resolve to the role surface', () => {
   assert.equal(
     resolveNotificationLink(
-      { linkType: 'booking', linkId: 'booking-1' },
+      {
+        linkType: 'booking',
+        linkId: 'booking-1',
+        bookingStartsAt: '2026-09-17T11:30:00.000Z',
+      },
       'coach'
     ),
-    '/coach'
+    '/coach?bookingId=booking-1&startsAt=2026-09-17T11%3A30%3A00.000Z'
   );
   assert.equal(
     resolveNotificationLink(
       { linkType: 'booking', linkId: 'booking-1' },
       'eleve'
     ),
-    '/eleve/planning'
+    '/eleve/planning?bookingId=booking-1'
+  );
+  assert.equal(
+    resolveNotificationLink(
+      {
+        linkType: 'booking',
+        linkId: 'booking-1',
+        bookingStartsAt: 'invalid',
+      },
+      'coach'
+    ),
+    '/coach?bookingId=booking-1'
   );
   assert.equal(resolveNotificationLink({ linkType: null, linkId: null }, 'coach'), null);
 });

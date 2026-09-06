@@ -118,7 +118,9 @@ export function selectApplicablePricingRate(
     }))
     .sort(
       (left, right) =>
-        right.specificity - left.specificity || left.index - right.index
+        left.rate.amountCents - right.rate.amountCents ||
+        right.specificity - left.specificity ||
+        left.index - right.index
     );
 
   return candidates[0]?.rate ?? null;

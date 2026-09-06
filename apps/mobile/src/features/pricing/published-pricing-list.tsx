@@ -8,8 +8,10 @@ import {
 
 import {
   getPublishedPricingRates,
+  getStudentMinimumPricingRates,
   type PricingRate,
 } from './pricing-service';
+import { selectStudentPricingCatalog } from './student-pricing-catalog';
 
 import { ThemedText } from '@/components/themed-text';
 import { Card } from '@/components/ui/card';
@@ -72,7 +74,11 @@ function PricingRow({ compact, rate }: { compact: boolean; rate: PricingRate }) 
   );
 }
 
-export function PublishedPricingList() {
+export function PublishedPricingList({
+  audience = 'public',
+}: {
+  audience?: 'public' | 'student';
+}) {
   const { t } = useTranslation();
   const theme = useTheme();
   const { width } = useWindowDimensions();
@@ -83,7 +89,9 @@ export function PublishedPricingList() {
   useEffect(() => {
     let active = true;
 
-    void getPublishedPricingRates()
+    void (audience === 'student'
+      ? getStudentMinimumPricingRates()
+      : getPublishedPricingRates())
       .then((result) => {
         if (!active) return;
 
@@ -92,7 +100,11 @@ export function PublishedPricingList() {
           return;
         }
 
-        setRates(result.data);
+        setRates(
+          audience === 'student'
+            ? selectStudentPricingCatalog(result.data)
+            : result.data
+        );
         setState('ready');
       })
       .catch(() => {
@@ -103,7 +115,7 @@ export function PublishedPricingList() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [audience]);
 
   if (state === 'loading') {
     return (

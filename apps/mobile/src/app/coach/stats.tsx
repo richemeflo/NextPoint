@@ -11,6 +11,7 @@ import {
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { ResponsivePageTitle } from '@/components/ui/responsive-page-title';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Feedback } from '@/components/ui/feedback';
@@ -167,10 +168,10 @@ export default function CoachStatsScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <View style={styles.heading}>
-            <ThemedText type="smallBold" themeColor="primary">
-              {t('role.coachLabel')}
-            </ThemedText>
-            <ThemedText type="title">{t('stats.title')}</ThemedText>
+            <ResponsivePageTitle
+              context={t('role.coachLabel')}
+              title={t('stats.title')}
+            />
             <ThemedText themeColor="textMuted">{t('stats.subtitle')}</ThemedText>
           </View>
 

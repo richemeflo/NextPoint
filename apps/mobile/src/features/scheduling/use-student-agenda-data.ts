@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
-  getRequestableBookingParticipants,
   getStudentBookingsInRange,
   type Booking,
-  type BookingParticipant,
 } from '@/features/bookings/booking-service';
 import {
-  getPublishedPricingRates,
+  getStudentMinimumPricingRates,
   type PricingRate,
 } from '@/features/pricing/pricing-service';
 import {
@@ -30,7 +28,6 @@ type AgendaLoadState = 'loading' | 'ready' | 'error';
 type StudentAgendaData = {
   slots: AvailabilitySlot[];
   bookings: Booking[];
-  participants: BookingParticipant[];
   pricingRates: PricingRate[];
   agendaLoadedAt: number | null;
   loadState: AgendaLoadState;
@@ -41,7 +38,6 @@ type StudentAgendaData = {
 const initialState: StudentAgendaData = {
   slots: [],
   bookings: [],
-  participants: [],
   pricingRates: [],
   agendaLoadedAt: null,
   loadState: 'loading',
@@ -50,27 +46,22 @@ const initialState: StudentAgendaData = {
 };
 
 type StudentAgendaReferences = {
-  participants: BookingParticipant[];
   pricingRates: PricingRate[];
 };
 
 const emptyStudentAgendaReferences: ReferenceLoadResult<StudentAgendaReferences> =
   {
     ok: true,
-    data: { participants: [], pricingRates: [] },
+    data: { pricingRates: [] },
   };
 
 async function loadStudentAgendaReferences() {
-  const [participantsResult, pricingResult] = await Promise.all([
-    getRequestableBookingParticipants(),
-    getPublishedPricingRates(),
-  ]);
+  const pricingResult = await getStudentMinimumPricingRates();
 
-  return participantsResult.ok && pricingResult.ok
+  return pricingResult.ok
     ? {
         ok: true as const,
         data: {
-          participants: participantsResult.data,
           pricingRates: pricingResult.data,
         },
       }
@@ -131,7 +122,6 @@ export function useStudentAgendaData({
       setState((current) => ({
         slots: slotsResult.data,
         bookings: bookingsResult.data,
-        participants: referencesResult.data.participants,
         pricingRates: referencesResult.data.pricingRates,
         agendaLoadedAt: Date.now(),
         loadState: 'ready',

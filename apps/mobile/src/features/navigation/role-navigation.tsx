@@ -147,7 +147,7 @@ export function RoleNavigation({ role }: { role: AppRole }) {
       active = false;
       clearInterval(interval);
     };
-  }, [pathname, user?.id]);
+  }, [user?.id]);
 
   const navigation = (
     <View accessibilityLabel={t('nav.mainLabel')} role="navigation">

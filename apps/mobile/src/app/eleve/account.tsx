@@ -20,6 +20,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Feedback } from '@/components/ui/feedback';
+import { ResponsivePageTitle } from '@/components/ui/responsive-page-title';
 import { TextField } from '@/components/ui/text-field';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useAuth } from '@/features/auth/auth-context';
@@ -181,10 +182,10 @@ export default function EleveAccountScreen() {
         keyboardShouldPersistTaps="handled">
         <View style={styles.content}>
           <View style={styles.heading}>
-            <ThemedText type="smallBold" themeColor="primary">
-              {t('role.eleveLabel')}
-            </ThemedText>
-            <ThemedText type="title">{t('profile.title')}</ThemedText>
+            <ResponsivePageTitle
+              context={t('role.eleveLabel')}
+              title={t('profile.title')}
+            />
             <ThemedText type="default" themeColor="textMuted">
               {t('profile.subtitle')}
             </ThemedText>

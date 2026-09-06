@@ -5,7 +5,7 @@ import {
   schedulingTimeZone,
 } from '@nextpoint/shared';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, type RefObject } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Feedback } from '@/components/ui/feedback';
 import { Spacing } from '@/constants/theme';
-import { useAuth } from '@/features/auth/auth-context';
 import {
   getEarliestBookingRequestStartsAt,
   getBookingRequestProposal,
@@ -24,11 +23,16 @@ import {
 } from '@/features/bookings/booking-service';
 import { useBookingPresentation } from '@/features/bookings/use-booking-presentation';
 import {
+  filterStudentBookings,
+  type StudentBookingStatusFilter,
+} from '@/features/bookings/student-booking-filter';
+import {
   canAddBookingToGoogleCalendar,
 } from '@/features/bookings/google-calendar';
 import { openBookingInGoogleCalendar } from '@/features/bookings/google-calendar-link';
 import { AgendaGrid } from '@/features/scheduling/agenda-grid';
 import { PlanningControls } from '@/features/scheduling/planning-controls';
+import { ProfileOptionSelector } from '@/features/profiles/profile-option-selector';
 import type { AvailabilitySlot } from '@/features/scheduling/availability-service';
 import { StudentAvailabilityCalendar } from '@/features/scheduling/student-availability-calendar';
 import {
@@ -42,6 +46,7 @@ import {
 } from '@/features/scheduling/planning-window';
 import { StudentBookingCancellationModal } from '@/features/scheduling/student-booking-cancellation-modal';
 import { StudentBookingRequestModal } from '@/features/scheduling/student-booking-request-modal';
+import { StudentNextLessonCard } from '@/features/scheduling/student-next-lesson-card';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
 import { useStudentAgendaData } from '@/features/scheduling/use-student-agenda-data';
@@ -56,6 +61,9 @@ function canStudentCancel(booking: Booking) {
 }
 
 type StudentAgendaProps = {
+  availabilityAgendaRef?: RefObject<View | null>;
+  initialAnchorDate?: string;
+  onAvailabilityDateSelected?: () => void;
   surface?: 'requestable' | 'bookings';
 };
 
@@ -63,8 +71,12 @@ function getCurrentTimestamp() {
   return Date.now();
 }
 
-export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
-  const { user } = useAuth();
+export function StudentAgenda({
+  availabilityAgendaRef,
+  initialAnchorDate,
+  onAvailabilityDateSelected,
+  surface = 'requestable',
+}: StudentAgendaProps) {
   const { locale, t } = useTranslation();
   const theme = useTheme();
   const {
@@ -78,10 +90,11 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
     goToToday,
     mode,
     move,
+    setAnchorDate,
     setDisplayMode,
     setMode,
     window,
-  } = usePlanningView();
+  } = usePlanningView(initialAnchorDate);
   const [requestSelection, setRequestSelection] = useState<{
     slotId: string;
     startsAt: string;
@@ -93,6 +106,8 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
     'none' | 'requested' | 'cancelled' | BookingMutationError
   >('none');
   const [calendarError, setCalendarError] = useState(false);
+  const [bookingStatusFilter, setBookingStatusFilter] =
+    useState<StudentBookingStatusFilter>('all');
   const showRequestableSlots = surface === 'requestable';
   const showBookingSchedule = surface === 'bookings';
   const currentDate = getSchedulingToday();
@@ -119,7 +134,6 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
     isRefreshing,
     loadAgenda,
     loadState,
-    participants,
     pricingRates,
     slots,
     updateBookings,
@@ -228,6 +242,21 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
       bookings.find((booking) => booking.id === cancellationBookingId) ?? null,
     [bookings, cancellationBookingId]
   );
+  const filteredVisibleBookings = useMemo(
+    () => filterStudentBookings(visibleBookings, bookingStatusFilter),
+    [bookingStatusFilter, visibleBookings]
+  );
+  const bookingStatusOptions: {
+    value: StudentBookingStatusFilter;
+    label: string;
+  }[] = [
+    { value: 'all', label: t('booking.studentFilter.all') },
+    { value: 'pending', label: t('status.pending') },
+    { value: 'confirmed', label: t('status.confirmed') },
+    { value: 'refused', label: t('status.refused') },
+    { value: 'cancelled', label: t('status.cancelled') },
+    { value: 'expired', label: t('status.expired') },
+  ];
 
   const feedbackCopy: Partial<
     Record<typeof feedback, [TranslationKey, TranslationKey]>
@@ -297,6 +326,11 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
       }),
     });
     if (!opened) setCalendarError(true);
+  };
+
+  const viewBookingInAgenda = (booking: Booking) => {
+    setAnchorDate(getSlotDateKey(booking.startsAt));
+    setDisplayMode('agenda');
   };
 
   const renderBookingContent = (booking: Booking, includeDate = true) => {
@@ -426,6 +460,12 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
 
   return (
     <View style={styles.container}>
+      {showBookingSchedule ? (
+        <StudentNextLessonCard
+          onViewInAgenda={viewBookingInAgenda}
+          refreshKey={agendaLoadedAt}
+        />
+      ) : null}
       <View style={styles.header}>
         <View style={styles.heading}>
           <ThemedText type="subtitle">
@@ -513,9 +553,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
             setFeedback('requested');
             await loadAgenda();
           }}
-          participants={participants}
           pricingRates={pricingRates}
-          requesterId={user?.id}
           slot={selectedSlot}
         />
       ) : null}
@@ -541,6 +579,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
       {showRequestableSlots ? (
         <StudentAvailabilityCalendar
           currentDate={currentDate}
+          dayAgendaRef={availabilityAgendaRef}
           disablePreviousMonth={
             isSameStudentAvailabilityMonth(
               availabilityMonth.startDate,
@@ -555,6 +594,7 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
               moveStudentAvailabilityMonth(current, direction)
             );
           }}
+          onRequestDayAgendaFocus={onAvailabilityDateSelected}
           onSelectDate={(date) => {
             if (isStudentBookingDateSelectable(date, currentDate)) {
               setSelectedAvailabilityDate(date);
@@ -618,15 +658,31 @@ export function StudentAgenda({ surface = 'requestable' }: StudentAgendaProps) {
           <ThemedText type="subtitle">
             {t('booking.studentListTitle')}
           </ThemedText>
-          {visibleBookings.length === 0 ? (
+          <ProfileOptionSelector
+            label={t('booking.studentFilter.label')}
+            onChange={setBookingStatusFilter}
+            options={bookingStatusOptions}
+            value={bookingStatusFilter}
+          />
+          {filteredVisibleBookings.length === 0 ? (
             <Feedback
-              title={t('booking.studentEmptyTitle')}
-              message={t('booking.studentEmptyBody')}
+              title={t(
+                bookingStatusFilter === 'all'
+                  ? 'booking.studentEmptyTitle'
+                  : 'booking.studentFilter.emptyTitle'
+              )}
+              message={t(
+                bookingStatusFilter === 'all'
+                  ? 'booking.studentEmptyBody'
+                  : 'booking.studentFilter.emptyBody'
+              )}
               tone="info"
             />
           ) : (
             <View style={styles.slotGrid}>
-              {visibleBookings.map((booking) => renderBookingCard(booking))}
+              {filteredVisibleBookings.map((booking) =>
+                renderBookingCard(booking)
+              )}
             </View>
           )}
         </View>

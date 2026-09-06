@@ -36,6 +36,7 @@ export type NotificationReadCandidate = {
 export type NotificationLinkCandidate = {
   linkType: NotificationLinkType | null;
   linkId: string | null;
+  bookingStartsAt?: string | null;
 };
 
 export const pushPreferenceSchema = z.object({
@@ -72,5 +73,13 @@ export function resolveNotificationLink(
     return null;
   }
 
-  return role === 'coach' ? '/coach' : '/eleve/planning';
+  const basePath = role === 'coach' ? '/coach' : '/eleve/planning';
+  const bookingId = encodeURIComponent(candidate.linkId);
+  const startsAt = candidate.bookingStartsAt;
+  const startsAtParameter =
+    startsAt && !Number.isNaN(new Date(startsAt).getTime())
+      ? `&startsAt=${encodeURIComponent(startsAt)}`
+      : '';
+
+  return `${basePath}?bookingId=${bookingId}${startsAtParameter}`;
 }

@@ -13,6 +13,7 @@ import {
   Pressable,
   StyleSheet,
   Switch,
+  useWindowDimensions,
   View,
 } from 'react-native';
 
@@ -21,6 +22,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Feedback } from '@/components/ui/feedback';
+import { ResponsivePageTitle } from '@/components/ui/responsive-page-title';
 import {
   MaxContentWidth,
   Radii,
@@ -111,6 +113,7 @@ const notificationVisuals = {
 
 type NotificationListItemProps = {
   notification: AppNotification;
+  compactDate: boolean;
   deletePending: boolean;
   deleting: boolean;
   onCancelDelete: () => void;
@@ -121,6 +124,7 @@ type NotificationListItemProps = {
 
 function NotificationListItem({
   notification,
+  compactDate,
   deletePending,
   deleting,
   onCancelDelete,
@@ -137,6 +141,28 @@ function NotificationListItem({
     timeStyle: 'short',
     timeZone: schedulingTimeZone,
   }).format(new Date(notification.createdAt));
+  const courseDateTime =
+    notification.bookingStartsAt && notification.bookingEndsAt
+      ? t('notifications.courseSchedule', {
+          date: new Intl.DateTimeFormat(locale, {
+            weekday: 'short',
+            day: 'numeric',
+            month: 'short',
+            year: compactDate ? undefined : 'numeric',
+            timeZone: schedulingTimeZone,
+          }).format(new Date(notification.bookingStartsAt)),
+          start: new Intl.DateTimeFormat(locale, {
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone: schedulingTimeZone,
+          }).format(new Date(notification.bookingStartsAt)),
+          end: new Intl.DateTimeFormat(locale, {
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone: schedulingTimeZone,
+          }).format(new Date(notification.bookingEndsAt)),
+        })
+      : null;
 
   return (
     <View
@@ -191,6 +217,23 @@ function NotificationListItem({
             <ThemedText numberOfLines={2} type="small" themeColor="textMuted">
               {notification.body}
             </ThemedText>
+            {courseDateTime ? (
+              <View style={styles.courseSchedule}>
+                <SymbolView
+                  name={{
+                    ios: 'calendar',
+                    android: 'calendar_today',
+                    web: 'calendar_today',
+                  }}
+                  size={16}
+                  weight="semibold"
+                  tintColor={theme.text}
+                />
+                <ThemedText type="smallBold" style={styles.courseScheduleText}>
+                  {courseDateTime}
+                </ThemedText>
+              </View>
+            ) : null}
             <ThemedText
               type="small"
               themeColor="textMuted"
@@ -275,6 +318,8 @@ function NotificationListItem({
 export function NotificationCenterScreen({ role }: { role: AppRole }) {
   const { t } = useTranslation();
   const theme = useTheme();
+  const { width } = useWindowDimensions();
+  const compactDate = width < 760;
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [pushPreference, setPushPreference] = useState<PushPreference | null>(null);
   const [pushPreferenceSaving, setPushPreferenceSaving] = useState(false);
@@ -302,7 +347,9 @@ export function NotificationCenterScreen({ role }: { role: AppRole }) {
     void Promise.all([
       getNotificationsPage(),
       getUnreadNotificationCount(),
-      getPushPreference(),
+      Platform.OS === 'web'
+        ? Promise.resolve({ ok: true, data: null } as const)
+        : getPushPreference(),
     ])
       .then(([notificationsResult, unreadResult, preferenceResult]) => {
         if (!mounted.current) return;
@@ -464,7 +511,11 @@ export function NotificationCenterScreen({ role }: { role: AppRole }) {
         setNotifications((current) =>
           current.map((currentNotification) =>
             currentNotification.id === notification.id
-              ? markResult.data
+              ? {
+                  ...markResult.data,
+                  bookingStartsAt: currentNotification.bookingStartsAt,
+                  bookingEndsAt: currentNotification.bookingEndsAt,
+                }
               : currentNotification
           )
         );
@@ -474,7 +525,11 @@ export function NotificationCenterScreen({ role }: { role: AppRole }) {
       }
 
       const href = resolveNotificationLink(
-        { linkType: notification.linkType, linkId: notification.linkId },
+        {
+          linkType: notification.linkType,
+          linkId: notification.linkId,
+          bookingStartsAt: notification.bookingStartsAt,
+        },
         role
       );
 
@@ -532,10 +587,12 @@ export function NotificationCenterScreen({ role }: { role: AppRole }) {
         ListHeaderComponent={
           <View style={styles.content}>
             <View style={styles.heading}>
-              <ThemedText type="smallBold" themeColor="primary">
-                {t(role === 'coach' ? 'role.coachLabel' : 'role.eleveLabel')}
-              </ThemedText>
-              <ThemedText type="title">{t('notifications.title')}</ThemedText>
+              <ResponsivePageTitle
+                context={t(
+                  role === 'coach' ? 'role.coachLabel' : 'role.eleveLabel'
+                )}
+                title={t('notifications.title')}
+              />
               <ThemedText themeColor="textMuted">
                 {t('notifications.subtitle')}
               </ThemedText>
@@ -549,69 +606,71 @@ export function NotificationCenterScreen({ role }: { role: AppRole }) {
               />
             ) : null}
 
-            <View
-              style={[
-                styles.preferences,
-                {
-                  backgroundColor: theme.surface,
-                  borderColor: theme.border,
-                  opacity: pushPreferenceSaving ? 0.65 : 1,
-                },
-              ]}>
+            {!pushUnavailableOnWeb ? (
               <View
                 style={[
-                  styles.preferenceIcon,
+                  styles.preferences,
                   {
-                    backgroundColor: pushEnabled
-                      ? theme.successSurface
-                      : theme.backgroundSelected,
+                    backgroundColor: theme.surface,
+                    borderColor: theme.border,
+                    opacity: pushPreferenceSaving ? 0.65 : 1,
                   },
                 ]}>
-                <SymbolView
-                  name={
-                    pushEnabled
-                      ? {
-                          ios: 'bell.badge.fill',
-                          android: 'notifications_active',
-                          web: 'notifications_active',
-                        }
-                      : {
-                          ios: 'bell.slash',
-                          android: 'notifications_off',
-                          web: 'notifications_off',
-                        }
-                  }
-                  size={20}
-                  weight="semibold"
-                  tintColor={pushEnabled ? theme.success : theme.textMuted}
-                />
+                <View
+                  style={[
+                    styles.preferenceIcon,
+                    {
+                      backgroundColor: pushEnabled
+                        ? theme.successSurface
+                        : theme.backgroundSelected,
+                    },
+                  ]}>
+                  <SymbolView
+                    name={
+                      pushEnabled
+                        ? {
+                            ios: 'bell.badge.fill',
+                            android: 'notifications_active',
+                            web: 'notifications_active',
+                          }
+                        : {
+                            ios: 'bell.slash',
+                            android: 'notifications_off',
+                            web: 'notifications_off',
+                          }
+                    }
+                    size={20}
+                    weight="semibold"
+                    tintColor={pushEnabled ? theme.success : theme.textMuted}
+                  />
+                </View>
+                <View style={styles.preferenceText}>
+                  <ThemedText type="smallBold">
+                    {t('notifications.pushTitle')}
+                  </ThemedText>
+                  <ThemedText
+                    type="small"
+                    themeColor={pushEnabled ? 'success' : 'textMuted'}>
+                    {permissionLabel}
+                  </ThemedText>
+                </View>
+                <View style={styles.preferenceControl}>
+                  <Switch
+                    accessibilityLabel={t('notifications.pushTitle')}
+                    accessibilityState={{
+                      checked: pushEnabled,
+                      disabled: pushUnavailable,
+                    }}
+                    disabled={loading || pushPreferenceSaving || pushUnavailable}
+                    onValueChange={(enabled) =>
+                      void registerPushPreference(enabled)
+                    }
+                    trackColor={{ false: theme.border, true: theme.success }}
+                    value={pushEnabled}
+                  />
+                </View>
               </View>
-              <View style={styles.preferenceText}>
-                <ThemedText type="smallBold">
-                  {t('notifications.pushTitle')}
-                </ThemedText>
-                <ThemedText
-                  type="small"
-                  themeColor={pushEnabled ? 'success' : 'textMuted'}>
-                  {permissionLabel}
-                </ThemedText>
-              </View>
-              <View style={styles.preferenceControl}>
-                <Switch
-                  accessibilityLabel={t('notifications.pushTitle')}
-                  accessibilityState={{
-                    checked: pushEnabled,
-                    disabled: pushUnavailable,
-                  }}
-                  disabled={loading || pushPreferenceSaving || pushUnavailable}
-                  onValueChange={(enabled) =>
-                    void registerPushPreference(enabled)
-                  }
-                  trackColor={{ false: theme.border, true: theme.success }}
-                  value={pushEnabled}
-                />
-              </View>
-            </View>
+            ) : null}
 
             <View style={styles.listHeader}>
               <View>
@@ -646,6 +705,7 @@ export function NotificationCenterScreen({ role }: { role: AppRole }) {
         onEndReachedThreshold={0.4}
         renderItem={({ item: notification }) => (
           <NotificationListItem
+            compactDate={compactDate}
             deletePending={pendingDeleteNotificationId === notification.id}
             deleting={deletingNotificationId === notification.id}
             notification={notification}
@@ -791,6 +851,14 @@ const styles = StyleSheet.create({
   },
   notificationDate: {
     opacity: 0.78,
+  },
+  courseSchedule: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.one,
+  },
+  courseScheduleText: {
+    flex: 1,
   },
   deleteAction: {
     width: 48,

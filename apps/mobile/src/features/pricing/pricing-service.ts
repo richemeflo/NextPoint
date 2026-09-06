@@ -71,6 +71,18 @@ export async function getPublishedPricingRates(): Promise<PricingRatesResult> {
   return parsedRates ? { ok: true, data: parsedRates } : { ok: false };
 }
 
+export async function getStudentMinimumPricingRates(): Promise<PricingRatesResult> {
+  if (!supabase) return { ok: false };
+
+  const { data, error } = await supabase.rpc(
+    'get_student_minimum_pricing_rates'
+  );
+
+  if (error) return { ok: false };
+  const parsedRates = parsePricingRates(data);
+  return parsedRates ? { ok: true, data: parsedRates } : { ok: false };
+}
+
 export async function getCoachPricingRates(
   coachId: string
 ): Promise<PricingRatesResult> {

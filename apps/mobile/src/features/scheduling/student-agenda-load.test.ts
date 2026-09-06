@@ -7,6 +7,6 @@ test('student agenda accepts a successfully loaded dependency', () => {
   assert.equal(isStudentAgendaDependencyReady({ ok: true }), true);
 });
 
-test('student agenda fails when participants cannot be loaded', () => {
+test('student agenda fails when a required dependency cannot be loaded', () => {
   assert.equal(isStudentAgendaDependencyReady({ ok: false }), false);
 });

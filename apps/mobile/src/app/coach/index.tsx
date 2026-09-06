@@ -18,6 +18,7 @@ import {
 import { AppErrorFallback } from '@/components/app-error-fallback';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { ResponsivePageTitle } from '@/components/ui/responsive-page-title';
 import { Card } from '@/components/ui/card';
 import { Feedback } from '@/components/ui/feedback';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
@@ -399,28 +400,35 @@ export default function CoachPlanningScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <View style={styles.heading}>
-            <ThemedText type="smallBold" themeColor="primary">
-              {t('role.coachLabel')}
-            </ThemedText>
-            <ThemedText type="title">{t('planning.coachTitle')}</ThemedText>
-            <ThemedText type="default" themeColor="textMuted">
-              {t('planning.coachBody')}
-            </ThemedText>
+            <ResponsivePageTitle
+              context={t('role.coachLabel')}
+              title={t('planning.coachTitle')}
+            />
+            {!isMobile ? (
+              <ThemedText type="default" themeColor="textMuted">
+                {t('planning.coachBody')}
+              </ThemedText>
+            ) : null}
           </View>
 
           <PlanningControls
             displayMode={displayMode}
             filters={
               <View style={styles.filterRow}>
-                <ProfileMultiOptionSelector<'availability' | 'confirmedLessons'>
+                <ProfileMultiOptionSelector<
+                  'availability' | 'confirmedLessons' | 'recurringLessons'
+                >
                   label={t('planning.filtersLabel')}
                   onToggle={(filter) => {
                     if (filter === 'availability') {
                       setShowAvailability((current) => !current);
                       return;
                     }
-
-                    setShowConfirmedLessons((current) => !current);
+                    if (filter === 'confirmedLessons') {
+                      setShowConfirmedLessons((current) => !current);
+                      return;
+                    }
+                    setShowRecurringOnly((current) => !current);
                   }}
                   options={[
                     {
@@ -431,30 +439,20 @@ export default function CoachPlanningScreen() {
                       value: 'confirmedLessons',
                       label: t('planning.confirmedLessonsFilter'),
                     },
-                  ]}
-                  selectedValues={[
-                    ...(showAvailability ? (['availability'] as const) : []),
-                    ...(showConfirmedLessons
-                      ? (['confirmedLessons'] as const)
-                      : []),
-                  ]}
-                  singleLine
-                />
-                <ProfileMultiOptionSelector<'recurringLessons'>
-                  label={t('planning.recurringFilterLabel')}
-                  onToggle={() => setShowRecurringOnly((current) => !current)}
-                  options={[
                     {
                       value: 'recurringLessons',
                       label: t('planning.recurringLessonsFilter'),
                     },
                   ]}
                   selectedValues={[
+                    ...(showAvailability ? (['availability'] as const) : []),
+                    ...(showConfirmedLessons
+                      ? (['confirmedLessons'] as const)
+                      : []),
                     ...(showRecurringOnly
                       ? (['recurringLessons'] as const)
                       : []),
                   ]}
-                  singleLine
                 />
               </View>
             }

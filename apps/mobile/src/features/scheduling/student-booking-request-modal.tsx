@@ -8,8 +8,8 @@ import {
   type PricingLessonType,
 } from '@nextpoint/shared';
 
-import { useMemo, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
@@ -18,9 +18,11 @@ import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
 import {
   requestBooking,
+  searchRequestableBookingParticipants,
   type BookingMutationError,
   type BookingParticipant,
 } from '@/features/bookings/booking-service';
+import { isPartnerSearchReady } from '@/features/bookings/booking-participant-search';
 import {
   acquireBookingMutationLock,
   releaseBookingMutationLock,
@@ -35,6 +37,7 @@ import {
 import type { AvailabilitySlot } from '@/features/scheduling/availability-service';
 import { getSlotDateKey } from '@/features/scheduling/planning-window';
 import { SchedulingModal } from '@/features/scheduling/scheduling-modal';
+import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
 
 type StudentBookingRequestModalProps = {
@@ -47,9 +50,7 @@ type StudentBookingRequestModalProps = {
   onClose: () => void;
   onError: (error: BookingMutationError) => void;
   onSuccess: () => Promise<void> | void;
-  participants: BookingParticipant[];
   pricingRates: PricingRate[];
-  requesterId?: string;
   slot: AvailabilitySlot;
 };
 
@@ -64,12 +65,11 @@ export function StudentBookingRequestModal({
   onClose,
   onError,
   onSuccess,
-  participants,
   pricingRates,
-  requesterId,
   slot,
 }: StudentBookingRequestModalProps) {
   const { t } = useTranslation();
+  const theme = useTheme();
   const mutationLock = useRef(false);
   const [desiredStartsAt, setDesiredStartsAt] = useState(initialStartsAt);
   const [requestStartTime, setRequestStartTime] = useState(() =>
@@ -84,9 +84,16 @@ export function StudentBookingRequestModal({
   const [lessonType, setLessonType] =
     useState<PricingLessonType>('individual');
   const [studentComment, setStudentComment] = useState('');
-  const [selectedParticipantIds, setSelectedParticipantIds] = useState<
-    string[]
+  const [selectedParticipants, setSelectedParticipants] = useState<
+    BookingParticipant[]
   >([]);
+  const [participantQuery, setParticipantQuery] = useState('');
+  const [participantResults, setParticipantResults] = useState<
+    BookingParticipant[]
+  >([]);
+  const [participantSearchState, setParticipantSearchState] = useState<
+    'idle' | 'loading' | 'ready' | 'error'
+  >('idle');
   const [pending, setPending] = useState(false);
 
   const proposal = useMemo(
@@ -116,8 +123,8 @@ export function StudentBookingRequestModal({
   const selectedLessonType = availableLessonTypes.includes(lessonType)
     ? lessonType
     : (availableLessonTypes[0] ?? 'individual');
-  const additionalParticipantIds = selectedParticipantIds.filter(
-    (id) => id !== requesterId
+  const additionalParticipantIds = selectedParticipants.map(
+    (participant) => participant.studentId
   );
   const hasValidParticipants = isBookingParticipantCountValid(
     selectedLessonType,
@@ -146,11 +153,46 @@ export function StudentBookingRequestModal({
     }
   };
 
-  const toggleParticipant = (studentId: string) => {
-    setSelectedParticipantIds((current) =>
-      current.includes(studentId)
-        ? current.filter((id) => id !== studentId)
-        : [...current, studentId]
+  useEffect(() => {
+    if (
+      selectedLessonType === 'individual' ||
+      !isPartnerSearchReady(participantQuery)
+    ) {
+      return;
+    }
+
+    let active = true;
+    const timeout = setTimeout(() => {
+      setParticipantResults([]);
+      setParticipantSearchState('loading');
+      void searchRequestableBookingParticipants(participantQuery)
+        .then((result) => {
+          if (!active) return;
+          if (!result.ok) {
+            setParticipantSearchState('error');
+            return;
+          }
+          setParticipantResults(result.data);
+          setParticipantSearchState('ready');
+        })
+        .catch(() => {
+          if (active) setParticipantSearchState('error');
+        });
+    }, 300);
+
+    return () => {
+      active = false;
+      clearTimeout(timeout);
+    };
+  }, [participantQuery, selectedLessonType]);
+
+  const toggleParticipant = (participant: BookingParticipant) => {
+    setSelectedParticipants((current) =>
+      current.some(({ studentId }) => studentId === participant.studentId)
+        ? current.filter(
+            ({ studentId }) => studentId !== participant.studentId
+          )
+        : [...current, participant]
     );
   };
 
@@ -263,7 +305,9 @@ export function StudentBookingRequestModal({
           label={t('booking.lessonTypeLabel')}
           onChange={(value) => {
             setLessonType(value);
-            setSelectedParticipantIds([]);
+            setSelectedParticipants([]);
+            setParticipantQuery('');
+            setParticipantResults([]);
           }}
           options={availableLessonTypes.map((type) => ({
             value: type,
@@ -283,30 +327,74 @@ export function StudentBookingRequestModal({
             <ThemedText type="smallBold">
               {t('booking.participantsLabel')}
             </ThemedText>
-            {participants.map((participant) => (
+            <ThemedText type="small" themeColor="textMuted">
+              {t('booking.requesterIncluded')}
+            </ThemedText>
+            {selectedParticipants.map((participant) => (
               <Button
-                disabled={
-                  participant.studentId === requesterId ||
-                  pending ||
-                  (!additionalParticipantIds.includes(participant.studentId) &&
-                    additionalParticipantIds.length >=
-                      additionalParticipantLimit)
-                }
+                disabled={pending}
                 key={participant.studentId}
-                label={
-                  participant.studentId === requesterId
-                    ? t('booking.requesterIncluded')
-                    : (participant.fullName ?? t('booking.unknownStudent'))
-                }
-                onPress={() => toggleParticipant(participant.studentId)}
-                variant={
-                  participant.studentId === requesterId ||
-                  selectedParticipantIds.includes(participant.studentId)
-                    ? 'primary'
-                    : 'secondary'
-                }
+                label={participant.fullName ?? t('booking.unknownStudent')}
+                onPress={() => toggleParticipant(participant)}
+                variant="primary"
               />
             ))}
+            <TextField
+              autoCapitalize="words"
+              autoCorrect={false}
+              label={t('booking.partnerSearchLabel')}
+              onChangeText={(value) => {
+                setParticipantQuery(value);
+                setParticipantResults([]);
+                setParticipantSearchState('idle');
+              }}
+              placeholder={t('booking.partnerSearchPlaceholder')}
+              value={participantQuery}
+            />
+            {!isPartnerSearchReady(participantQuery) ? (
+              <ThemedText type="small" themeColor="textMuted">
+                {t('booking.partnerSearchHint')}
+              </ThemedText>
+            ) : null}
+            {participantSearchState === 'loading' ? (
+              <View style={styles.participantSearchStatus}>
+                <ActivityIndicator color={theme.primary} size="small" />
+                <ThemedText type="small" themeColor="textMuted">
+                  {t('booking.partnerSearchLoading')}
+                </ThemedText>
+              </View>
+            ) : null}
+            {participantSearchState === 'error' ? (
+              <Feedback
+                message={t('booking.partnerSearchError')}
+                title={t('booking.errorTitle')}
+                tone="error"
+              />
+            ) : null}
+            {participantSearchState === 'ready' &&
+            participantResults.length === 0 ? (
+              <ThemedText type="small" themeColor="textMuted">
+                {t('booking.partnerSearchEmpty')}
+              </ThemedText>
+            ) : null}
+            {participantResults
+              .filter(
+                (participant) =>
+                  !additionalParticipantIds.includes(participant.studentId)
+              )
+              .map((participant) => (
+                <Button
+                  disabled={
+                    pending ||
+                    additionalParticipantIds.length >=
+                      additionalParticipantLimit
+                  }
+                  key={participant.studentId}
+                  label={participant.fullName ?? t('booking.unknownStudent')}
+                  onPress={() => toggleParticipant(participant)}
+                  variant="secondary"
+                />
+              ))}
             {selectedLessonType === 'duo' && !hasValidParticipants ? (
               <ThemedText type="small" themeColor="error">
                 {t('booking.duoParticipantRequired')}
@@ -355,6 +443,11 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   participantList: {
+    gap: Spacing.two,
+  },
+  participantSearchStatus: {
+    alignItems: 'center',
+    flexDirection: 'row',
     gap: Spacing.two,
   },
 });

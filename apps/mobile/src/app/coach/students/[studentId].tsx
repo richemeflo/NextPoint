@@ -507,6 +507,19 @@ function CoachStudentDetailContent({ studentId }: { studentId: string }) {
                   </Pressable>
                 ) : null}
               </View>
+              {student.profileComplete ? (
+                <Button
+                  label={t('studentDetail.createTargetedRateAction')}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/coach/pricing',
+                      params: { studentId: student.userId },
+                    })
+                  }
+                  style={styles.targetedRateButton}
+                  variant="secondary"
+                />
+              ) : null}
             </Card>
 
             <StudentPrivateNoteCard studentId={student.userId} />
@@ -752,6 +765,9 @@ const styles = StyleSheet.create({
   contactList: {
     minWidth: 0,
     gap: Spacing.one,
+  },
+  targetedRateButton: {
+    alignSelf: 'flex-start',
   },
   deleteCard: {
     gap: Spacing.three,

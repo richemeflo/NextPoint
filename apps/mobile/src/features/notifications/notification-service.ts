@@ -17,6 +17,11 @@ import {
 type NotificationRow = Tables<'notifications'>;
 type PushPreferenceRow = Tables<'notification_push_preferences'>;
 
+type NotificationBookingSchedule = {
+  startsAt: string;
+  endsAt: string;
+};
+
 export type AppNotification = {
   id: string;
   type: NotificationType;
@@ -27,6 +32,8 @@ export type AppNotification = {
   linkType: NotificationLinkType | null;
   linkId: string | null;
   bookingId: string | null;
+  bookingStartsAt: string | null;
+  bookingEndsAt: string | null;
 };
 
 export type PushPreference = {
@@ -63,7 +70,10 @@ export type PushPreferenceMutationResult =
   | { ok: true; data: PushPreference }
   | { ok: false };
 
-function mapNotification(row: NotificationRow): AppNotification {
+function mapNotification(
+  row: NotificationRow,
+  bookingSchedule?: NotificationBookingSchedule
+): AppNotification {
   return {
     id: row.id,
     type: row.type,
@@ -74,6 +84,8 @@ function mapNotification(row: NotificationRow): AppNotification {
     linkType: row.link_type,
     linkId: row.link_id,
     bookingId: row.booking_id,
+    bookingStartsAt: bookingSchedule?.startsAt ?? null,
+    bookingEndsAt: bookingSchedule?.endsAt ?? null,
   };
 }
 
@@ -109,7 +121,30 @@ export async function getNotificationsPage({
   const { data, error } = await query;
 
   if (error) return { ok: false };
-  const notifications = data.slice(0, pageLimit).map(mapNotification);
+  const pageRows = data.slice(0, pageLimit);
+  const notificationIdsWithBooking = pageRows
+    .filter((row) => row.booking_id)
+    .map((row) => row.id);
+  const bookingSchedules = new Map<string, NotificationBookingSchedule>();
+
+  if (notificationIdsWithBooking.length > 0) {
+    const { data: scheduleRows, error: scheduleError } = await supabase.rpc(
+      'get_notification_booking_schedules',
+      { p_notification_ids: notificationIdsWithBooking }
+    );
+
+    if (scheduleError) return { ok: false };
+    for (const row of scheduleRows) {
+      bookingSchedules.set(row.notification_id, {
+        startsAt: row.starts_at,
+        endsAt: row.ends_at,
+      });
+    }
+  }
+
+  const notifications = pageRows.map((row) =>
+    mapNotification(row, bookingSchedules.get(row.id))
+  );
   return {
     ok: true,
     data: {

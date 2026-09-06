@@ -132,7 +132,7 @@ test('selectApplicablePricingRate uses active type, duration and criteria', () =
       durationMinutes: 60,
       isWeekend: true,
     })?.id,
-    'weekend'
+    'general'
   );
   assert.equal(
     selectApplicablePricingRate(rates, {
@@ -143,38 +143,45 @@ test('selectApplicablePricingRate uses active type, duration and criteria', () =
   );
 });
 
-test('selectApplicablePricingRate prioritizes an explicitly targeted student', () => {
-  const selected = selectApplicablePricingRate(
-    [
-      {
-        id: 'general',
-        label: 'Tarif général',
-        amountCents: 4500,
-        currency: 'EUR',
-        durationMinutes: 90,
-        lessonType: 'group',
-        isActive: true,
-        applicabilityContexts: [],
-        targetStudentIds: [],
-      },
-      {
-        id: 'targeted',
-        label: 'Tarif ciblé',
-        amountCents: 4000,
-        currency: 'EUR',
-        durationMinutes: 90,
-        lessonType: 'group',
-        isActive: true,
-        applicabilityContexts: [],
-        targetStudentIds: ['44a05daf-7d65-4b74-8d9f-093d0ee3f678'],
-      },
-    ],
+test('selectApplicablePricingRate compares explicitly targeted student rates by amount', () => {
+  const rates = [
     {
-      lessonType: 'group',
-      durationMinutes: 90,
-      studentId: '44a05daf-7d65-4b74-8d9f-093d0ee3f678',
-    }
+      id: 'general',
+      label: 'Tarif général',
+      amountCents: 4200,
+      currency: 'EUR' as const,
+      durationMinutes: 90 as const,
+      lessonType: 'group' as const,
+      isActive: true,
+      applicabilityContexts: [],
+      targetStudentIds: [],
+    },
+    {
+      id: 'targeted',
+      label: 'Tarif ciblé',
+      amountCents: 4500,
+      currency: 'EUR' as const,
+      durationMinutes: 90 as const,
+      lessonType: 'group' as const,
+      isActive: true,
+      applicabilityContexts: [],
+      targetStudentIds: ['44a05daf-7d65-4b74-8d9f-093d0ee3f678'],
+    },
+  ];
+  const context = {
+    lessonType: 'group' as const,
+    durationMinutes: 90 as const,
+    studentId: '44a05daf-7d65-4b74-8d9f-093d0ee3f678',
+  };
+
+  const selected = selectApplicablePricingRate(rates, context);
+  const selectedWithCheaperTarget = selectApplicablePricingRate(
+    rates.map((rate) =>
+      rate.id === 'targeted' ? { ...rate, amountCents: 4000 } : rate
+    ),
+    context
   );
 
-  assert.equal(selected?.id, 'targeted');
+  assert.equal(selected?.id, 'general');
+  assert.equal(selectedWithCheaperTarget?.id, 'targeted');
 });

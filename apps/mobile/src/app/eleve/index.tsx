@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -7,6 +8,7 @@ import {
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { ResponsivePageTitle } from '@/components/ui/responsive-page-title';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { PublicCoachCard } from '@/features/coaches/public-coach-card';
 import { PublishedPricingList } from '@/features/pricing/published-pricing-list';
@@ -17,24 +19,50 @@ export default function EleveHomeScreen() {
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const isMobile = width < 760;
+  const scrollRef = useRef<ScrollView>(null);
+  const contentRef = useRef<View>(null);
+  const availabilityAgendaRef = useRef<View>(null);
+
+  const scrollToAvailabilityAgenda = () => {
+    const scrollView = scrollRef.current;
+    const content = contentRef.current;
+    const target = availabilityAgendaRef.current;
+    if (!scrollView || !content || !target) return;
+
+    target.measureLayout(
+      content,
+      (_x, y) => {
+        scrollView.scrollTo({
+          animated: true,
+          y: Math.max(0, y - Spacing.two),
+        });
+      },
+      () => undefined
+    );
+  };
 
   return (
     <ThemedView style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.content}>
+      <ScrollView ref={scrollRef} contentContainerStyle={styles.scrollContent}>
+        <View ref={contentRef} style={styles.content}>
           <View style={styles.heading}>
-            <ThemedText type="smallBold" themeColor="primary">
-              {t('role.eleveLabel')}
-            </ThemedText>
-            <ThemedText type="title">{t('studentHome.title')}</ThemedText>
+            <ResponsivePageTitle
+              context={t('role.eleveLabel')}
+              title={t('studentHome.title')}
+            />
             {isMobile ? null : (
               <ThemedText type="default" themeColor="textMuted">
                 {t('studentHome.subtitle')}
               </ThemedText>
             )}
           </View>
-          <PublishedPricingList />
-          <StudentAgenda />
+          <PublishedPricingList audience="student" />
+          <StudentAgenda
+            availabilityAgendaRef={availabilityAgendaRef}
+            onAvailabilityDateSelected={
+              isMobile ? scrollToAvailabilityAgenda : undefined
+            }
+          />
           <PublicCoachCard />
         </View>
       </ScrollView>

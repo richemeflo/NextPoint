@@ -1,8 +1,9 @@
 import {
   getSchedulingDateLabelInstant,
   schedulingTimeZone,
+  type AvailabilityRecurrenceType,
 } from '@nextpoint/shared';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
@@ -10,9 +11,13 @@ import { Button } from '@/components/ui/button';
 import { Feedback } from '@/components/ui/feedback';
 import { Spacing } from '@/constants/theme';
 import { AgendaGrid } from '@/features/scheduling/agenda-grid';
-import type { AvailabilitySlot } from '@/features/scheduling/availability-service';
+import type {
+  AvailabilityRange,
+  AvailabilitySlot,
+} from '@/features/scheduling/availability-service';
 import { isCoachPlanningSlotVisible } from '@/features/scheduling/coach-planning-visibility';
 import { planningControlIcons } from '@/features/scheduling/planning-control-icons';
+import { ProfileOptionSelector } from '@/features/profiles/profile-option-selector';
 import { usePlanningView } from '@/features/scheduling/use-planning-view';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation, type TranslationKey } from '@/i18n';
@@ -21,20 +26,35 @@ export function AvailabilityAgenda({
   editingSlotId,
   onCancelEditing,
   onEdit,
+  ranges,
   slots,
 }: {
   editingSlotId: string | null;
   onCancelEditing: () => void;
   onEdit: (slot: AvailabilitySlot) => void;
+  ranges: AvailabilityRange[];
   slots: AvailabilitySlot[];
 }) {
   const { locale, t } = useTranslation();
   const theme = useTheme();
   const { goToToday, mode, move, setMode, window } = usePlanningView();
-  const visibleSlots = useMemo(
+  const [recurrenceFilter, setRecurrenceFilter] = useState<
+    'all' | AvailabilityRecurrenceType
+  >('all');
+  const availableSlots = useMemo(
     () => slots.filter((slot) => isCoachPlanningSlotVisible(slot.status)),
     [slots]
   );
+  const visibleSlots = useMemo(() => {
+    if (recurrenceFilter === 'all') return availableSlots;
+
+    const recurrenceByRangeId = new Map(
+      ranges.map((range) => [range.id, range.recurrenceType])
+    );
+    return availableSlots.filter(
+      (slot) => recurrenceByRangeId.get(slot.rangeId) === recurrenceFilter
+    );
+  }, [availableSlots, ranges, recurrenceFilter]);
   const agendaSlots = useMemo(() => {
     const startsAt = new Date(window.startsAt).getTime();
     const endsAt = new Date(window.endsAt).getTime();
@@ -76,7 +96,20 @@ export function AvailabilityAgenda({
   return (
     <View style={styles.list}>
       <ThemedText type="subtitle">{t('availability.listTitle')}</ThemedText>
-      {visibleSlots.length === 0 ? (
+      {availableSlots.length > 0 ? (
+        <ProfileOptionSelector<'all' | AvailabilityRecurrenceType>
+          label={t('availability.filterLabel')}
+          onChange={setRecurrenceFilter}
+          options={[
+            { value: 'all', label: t('availability.filter.all') },
+            { value: 'none', label: t('availability.filter.none') },
+            { value: 'daily', label: t('availability.filter.daily') },
+            { value: 'weekly', label: t('availability.filter.weekly') },
+          ]}
+          value={recurrenceFilter}
+        />
+      ) : null}
+      {availableSlots.length === 0 ? (
         <Feedback
           message={t('availability.emptyBody')}
           title={t('availability.emptyTitle')}

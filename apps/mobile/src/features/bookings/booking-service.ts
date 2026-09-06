@@ -28,7 +28,6 @@ type BookingHydrationRow = Omit<BookingRow, 'recurrence_series_id'> & {
   recurrence_series_id?: string | null;
 };
 type PricingRateRow = Tables<'pricing_rates'>;
-type StudentProfileRow = Tables<'student_profiles'>;
 
 export type BookingParticipant = BookingParticipantProfileReadModel;
 export type BookingPricing = BookingPricingReadModel;
@@ -46,6 +45,9 @@ type BookingRecurrenceCancellationResult =
   | { ok: false; error: BookingMutationError };
 type RequestableParticipantsResult =
   | { ok: true; data: BookingParticipant[] }
+  | { ok: false };
+type StudentAgendaAnchorResult =
+  | { ok: true; startsAt: string | null }
   | { ok: false };
 
 function parsePricing(row: PricingRateRow | undefined): BookingPricing | null {
@@ -111,37 +113,20 @@ async function hydrateBookings(
   const pricingById = new Map<string, BookingPricing>();
 
   const [participantsResult, pricingResult] = await Promise.all([
-    supabase
-      .from('booking_participants')
-      .select('booking_id, student_id, created_at')
-      .in('booking_id', bookingIds),
+    supabase.rpc('get_related_booking_participants', {
+      p_booking_ids: bookingIds,
+    }),
     pricingIds.length > 0
       ? supabase.from('pricing_rates').select('*').in('id', pricingIds)
       : Promise.resolve({ data: [], error: null }),
   ]);
 
   if (!participantsResult.error && participantsResult.data.length > 0) {
-    const participantRows = participantsResult.data;
-    const studentIds = Array.from(
-      new Set(participantRows.map((participant) => participant.student_id))
-    );
-    const profileResult = await supabase
-      .from('student_profiles')
-      .select('*')
-      .in('user_id', studentIds);
-    const profilesById = new Map<string, StudentProfileRow>();
-
-    if (!profileResult.error) {
-      for (const profile of profileResult.data) {
-        profilesById.set(profile.user_id, profile);
-      }
-    }
-
-    for (const participant of participantRows) {
+    for (const participant of participantsResult.data) {
       const parsedParticipant = bookingParticipantReadModelSchema.safeParse({
         bookingId: participant.booking_id,
         studentId: participant.student_id,
-        fullName: profilesById.get(participant.student_id)?.full_name ?? null,
+        fullName: participant.full_name,
       });
       if (!parsedParticipant.success) return null;
 
@@ -212,18 +197,69 @@ export async function getStudentBookingsInRange(
   return bookings ? { ok: true, data: bookings } : { ok: false };
 }
 
-export async function getRequestableBookingParticipants(): Promise<RequestableParticipantsResult> {
+async function getStudentBookingAnchor(
+  boundary: string,
+  direction: 'future' | 'past'
+) {
+  if (!supabase) return { data: null, error: true } as const;
+
+  const query = supabase
+    .from('bookings')
+    .select('starts_at')
+    .order('starts_at', { ascending: direction === 'future' })
+    .limit(1);
+  const { data, error } =
+    direction === 'future'
+      ? await query.gte('starts_at', boundary)
+      : await query.lt('starts_at', boundary);
+
+  return { data: data?.[0]?.starts_at ?? null, error: !!error };
+}
+
+export async function getStudentAgendaInitialStartsAt(): Promise<StudentAgendaAnchorResult> {
+  const boundary = new Date().toISOString();
+  const upcoming = await getStudentBookingAnchor(boundary, 'future');
+  if (upcoming.error) return { ok: false };
+  if (upcoming.data) return { ok: true, startsAt: upcoming.data };
+
+  const previous = await getStudentBookingAnchor(boundary, 'past');
+  if (previous.error) return { ok: false };
+  return { ok: true, startsAt: previous.data };
+}
+
+export async function getStudentNextBooking(): Promise<
+  { ok: true; data: Booking | null } | { ok: false }
+> {
+  if (!supabase) return { ok: false };
+
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*')
+    .in('status', ['confirmed', 'modified'])
+    .gte('starts_at', new Date().toISOString())
+    .order('starts_at')
+    .limit(1);
+
+  if (error) return { ok: false };
+  const bookings = await hydrateBookings(data);
+  return bookings ? { ok: true, data: bookings[0] ?? null } : { ok: false };
+}
+
+export async function searchRequestableBookingParticipants(
+  query: string
+): Promise<RequestableParticipantsResult> {
   if (!supabase) return { ok: false };
 
   const { data, error } = await supabase.rpc(
-    'get_requestable_booking_participants'
+    'get_requestable_booking_participants',
+    { p_query: query, p_limit: 8 }
   );
 
   if (error || !data) return { ok: false };
 
   const participants = bookingParticipantProfileReadModelSchema.array().safeParse(
     data.map((profile) => ({
-      studentId: profile.user_id,
+      studentId: profile.student_id,
       fullName: profile.full_name,
     }))
   );
